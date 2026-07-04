@@ -1,0 +1,43 @@
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { AppError } from '../lib/AppError';
+
+export interface AuthRequest extends Request {
+  userId?: string;
+  userRole?: string;
+}
+
+export function authenticate(req: AuthRequest, _res: Response, next: NextFunction) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) throw new AppError('UNAUTHENTICATED', 401, 'No token provided');
+
+  try {
+    const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET!) as any;
+    req.userId = payload.userId;
+    req.userRole = payload.role;
+    next();
+  } catch {
+    throw new AppError('UNAUTHENTICATED', 401, 'Token expired or invalid');
+  }
+}
+
+export function requireAdmin(req: AuthRequest, _res: Response, next: NextFunction) {
+  if (req.userRole !== 'admin') {
+    throw new AppError('FORBIDDEN', 403, 'Admin access required');
+  }
+  next();
+}
+
+export function optionalAuth(req: AuthRequest, _res: Response, next: NextFunction) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (token) {
+    try {
+      const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET!) as any;
+      req.userId = payload.userId;
+      req.userRole = payload.role;
+    } catch {
+      // token invalid — continue as guest
+    }
+  }
+  next();
+}
