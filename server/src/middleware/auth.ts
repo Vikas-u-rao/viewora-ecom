@@ -9,7 +9,7 @@ export interface AuthRequest extends Request {
 
 export function authenticate(req: AuthRequest, _res: Response, next: NextFunction) {
   const token = req.headers.authorization?.split(' ')[1];
-  if (!token) throw new AppError('UNAUTHENTICATED', 401, 'No token provided');
+  if (!token) return next(new AppError('UNAUTHENTICATED', 401, 'No token provided'));
 
   try {
     const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET!) as any;
@@ -17,13 +17,13 @@ export function authenticate(req: AuthRequest, _res: Response, next: NextFunctio
     req.userRole = payload.role;
     next();
   } catch {
-    throw new AppError('UNAUTHENTICATED', 401, 'Token expired or invalid');
+    return next(new AppError('UNAUTHENTICATED', 401, 'Token expired or invalid'));
   }
 }
 
 export function requireAdmin(req: AuthRequest, _res: Response, next: NextFunction) {
   if (req.userRole !== 'admin') {
-    throw new AppError('FORBIDDEN', 403, 'Admin access required');
+    return next(new AppError('FORBIDDEN', 403, 'Admin access required'));
   }
   next();
 }
