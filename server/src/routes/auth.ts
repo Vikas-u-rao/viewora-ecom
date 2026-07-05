@@ -1,7 +1,14 @@
 import { Router } from 'express';
+import { register, login, refresh, logout, logoutAll } from '../controllers/auth';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
 
-// TODO: register, login, refresh, logout, logout-all
+router.post('/register', register);
+router.post('/login', login);
+router.post('/refresh', refresh);
+router.post('/logout', authenticate, logout);
+router.post('/logout-all', authenticate, logoutAll);
 
 export default router;
+

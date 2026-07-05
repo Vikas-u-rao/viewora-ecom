@@ -274,6 +274,8 @@ model Order {
   discountAmount     Decimal           @default(0) @map("discount_amount") @db.Decimal(10, 2)
   shippingFee        Decimal           @default(99) @map("shipping_fee") @db.Decimal(10, 2)
   finalPayableAmount Decimal           @map("final_payable_amount") @db.Decimal(10, 2)
+  trackingNumber     String?           @map("tracking_number")
+  carrier            String?           @default("DTDC")
   createdAt          DateTime          @default(now()) @map("created_at")
   updatedAt          DateTime          @updatedAt @map("updated_at")
 
