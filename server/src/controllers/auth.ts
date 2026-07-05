@@ -1,222 +1,280 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
-import { logger } from '../lib/logger';
+import { AuthRequest } from '../middleware/auth';
 
-// Helper to generate access and refresh tokens
-function generateTokens(userId: string, role: string) {
-  const accessToken = jwt.sign(
-    { userId, role },
-    process.env.JWT_ACCESS_SECRET!,
-    { expiresIn: (process.env.JWT_ACCESS_EXPIRES_IN || '15m') as any }
-  );
-  const refreshToken = jwt.sign(
-    { userId },
-    process.env.JWT_REFRESH_SECRET!,
-    { expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as any }
-  );
-  return { accessToken, refreshToken };
-}
-
-// Helper to hash refresh token
-import crypto from 'crypto';
+// Helper to hash token for database storage
 function hashToken(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex');
 }
 
+// Helper to sign access token
+function signAccessToken(userId: string, role: string): string {
+  return jwt.sign(
+    { userId, role },
+    process.env.JWT_ACCESS_SECRET!,
+    { expiresIn: (process.env.JWT_ACCESS_EXPIRES_IN || '15m') as any }
+  );
+}
+
+// Helper to sign refresh token with jti
+function signRefreshToken(userId: string): { token: string; expiresAt: Date } {
+  const token = jwt.sign(
+    { userId, jti: uuidv4() },
+    process.env.JWT_REFRESH_SECRET!,
+    { expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as any }
+  );
+
+
+  const decoded = jwt.decode(token) as { exp: number };
+  const expiresAt = new Date(decoded.exp * 1000);
+
+  return { token, expiresAt };
+}
+
+// Helper to set refresh cookie
+function setRefreshCookie(res: Response, token: string, expiresAt: Date) {
+  res.cookie('refreshToken', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    expires: expiresAt,
+  });
+}
+
+// POST /auth/register
 export async function register(req: Request, res: Response, next: NextFunction) {
   try {
     const { name, email, password, phone } = req.body;
 
     if (!name || !email || !password) {
-      throw new AppError('VALIDATION_ERROR', 400, 'Missing required fields', [
-        { field: 'name/email/password', issue: 'required' }
-      ]);
+      throw new AppError('VALIDATION_ERROR', 400, 'Name, email, and password are required');
     }
 
-    // Check if email already exists
-    const existingUser = await prisma.user.findUnique({ where: { email } });
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const normalizedName = String(name).trim();
+    const normalizedPhone = phone ? String(phone).trim() : null;
+
+    const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existingUser) {
-      throw new AppError('EMAIL_ALREADY_EXISTS', 409, 'Email is already registered');
+      throw new AppError('ALREADY_EXISTS', 409, 'A user with this email already exists');
     }
 
-    // Check if phone already exists (if provided)
-    if (phone) {
-      const existingPhone = await prisma.user.findUnique({ where: { phone } });
+    if (normalizedPhone) {
+      const existingPhone = await prisma.user.findFirst({ where: { phone: normalizedPhone } });
       if (existingPhone) {
-        throw new AppError('PHONE_ALREADY_EXISTS', 409, 'Phone number is already registered');
+        throw new AppError('ALREADY_EXISTS', 409, 'A user with this phone number already exists');
       }
     }
 
-    // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        phone: phone || null,
-        passwordHash,
-        role: 'customer',
-      },
-    });
+    let user;
+    try {
+      user = await prisma.user.create({
+        data: {
+          name: normalizedName,
+          email: normalizedEmail,
+          phone: normalizedPhone,
+          passwordHash,
+        },
+      });
+    } catch (err: any) {
+      if (err.code === 'P2002') {
+        throw new AppError('ALREADY_EXISTS', 409, 'A user with this email or phone number already exists');
+      }
+      throw err;
+    }
 
-    const { accessToken, refreshToken } = generateTokens(user.id, user.role);
+    const accessToken = signAccessToken(user.id, user.role);
+    const { token: refreshToken, expiresAt } = signRefreshToken(user.id);
 
-    // Save refresh token in DB
     await prisma.refreshToken.create({
       data: {
         userId: user.id,
         tokenHash: hashToken(refreshToken),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        expiresAt,
       },
     });
 
-    // Set refresh token in HttpOnly cookie
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    setRefreshCookie(res, refreshToken, expiresAt);
 
     res.status(201).json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      },
       accessToken,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role }
     });
   } catch (error) {
     next(error);
   }
 }
 
+// POST /auth/login
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      throw new AppError('VALIDATION_ERROR', 400, 'Missing email or password');
+      throw new AppError('VALIDATION_ERROR', 400, 'Email and password are required');
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const normalizedEmail = String(email).trim().toLowerCase();
+
+    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (!user || !user.passwordHash) {
-      throw new AppError('INVALID_CREDENTIALS', 401, 'Invalid email or password');
+      throw new AppError('UNAUTHORIZED', 401, 'Invalid email or password');
     }
 
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!isMatch) {
-      throw new AppError('INVALID_CREDENTIALS', 401, 'Invalid email or password');
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) {
+      throw new AppError('UNAUTHORIZED', 401, 'Invalid email or password');
     }
 
-    const { accessToken, refreshToken } = generateTokens(user.id, user.role);
+    const accessToken = signAccessToken(user.id, user.role);
+    const { token: refreshToken, expiresAt } = signRefreshToken(user.id);
 
-    // Save refresh token in DB
     await prisma.refreshToken.create({
       data: {
         userId: user.id,
         tokenHash: hashToken(refreshToken),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        expiresAt,
       },
     });
 
-    // Set cookie
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    setRefreshCookie(res, refreshToken, expiresAt);
 
-    res.status(200).json({
+    res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      },
       accessToken,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role }
     });
   } catch (error) {
     next(error);
   }
 }
 
+// POST /auth/refresh
 export async function refresh(req: Request, res: Response, next: NextFunction) {
   try {
-    const { refreshToken } = req.cookies;
-    if (!refreshToken) {
-      throw new AppError('UNAUTHENTICATED', 401, 'Refresh token missing');
+    const token = req.cookies.refreshToken;
+    if (!token) {
+      throw new AppError('UNAUTHORIZED', 401, 'Refresh token not found');
     }
 
     let payload: any;
     try {
-      payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!);
-    } catch {
-      throw new AppError('UNAUTHENTICATED', 401, 'Refresh token expired or invalid');
+      payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET!);
+    } catch (err) {
+      throw new AppError('UNAUTHORIZED', 401, 'Invalid or expired refresh token');
     }
 
-    const tokenHash = hashToken(refreshToken);
-    const storedToken = await prisma.refreshToken.findFirst({
-      where: { tokenHash },
-    });
-
-    if (!storedToken || storedToken.revokedAt || storedToken.expiresAt < new Date()) {
-      // Security measure: if token is reused or invalid, revoke all user tokens
-      if (storedToken && storedToken.revokedAt) {
-        await prisma.refreshToken.updateMany({
-          where: { userId: payload.userId },
-          data: { revokedAt: new Date() },
-        });
-        logger.warn({ event: 'token_theft_detected', userId: payload.userId }, 'Reused refresh token detected, all tokens revoked');
-      }
-      throw new AppError('UNAUTHENTICATED', 401, 'Invalid session token');
+    const userId = payload.userId;
+    if (!userId || typeof userId !== 'string') {
+      throw new AppError('UNAUTHORIZED', 401, 'Invalid or expired refresh token');
     }
 
-    // Revoke old token
-    await prisma.refreshToken.update({
-      where: { id: storedToken.id },
-      data: { revokedAt: new Date() },
+    const tokenHash = hashToken(token);
+
+    const tokenRow = await prisma.refreshToken.findFirst({
+      where: { tokenHash, userId },
     });
 
-    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+    // Reuse/theft detection: If the refresh token signature is valid but the token is not active in DB (or marked revoked),
+    // we assume it's a reuse attempt. We revoke all tokens for this user.
+    if (!tokenRow || tokenRow.revokedAt) {
+      await prisma.refreshToken.deleteMany({
+        where: { userId },
+      });
+      res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+      throw new AppError('UNAUTHORIZED', 401, 'Token reuse detected. Session invalidated.');
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-      throw new AppError('NOT_FOUND', 404, 'User not found');
+      throw new AppError('UNAUTHORIZED', 401, 'User not found');
     }
 
-    const tokens = generateTokens(user.id, user.role);
+    // Invalidate the old token
+    await prisma.refreshToken.delete({
+      where: { id: tokenRow.id },
+    });
 
-    // Save new token
+    // Generate new pair
+    const accessToken = signAccessToken(user.id, user.role);
+    const { token: newRefreshToken, expiresAt } = signRefreshToken(user.id);
+
     await prisma.refreshToken.create({
       data: {
         userId: user.id,
-        tokenHash: hashToken(tokens.refreshToken),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        tokenHash: hashToken(newRefreshToken),
+        expiresAt,
       },
     });
 
-    res.cookie('refreshToken', tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    setRefreshCookie(res, newRefreshToken, expiresAt);
 
-    res.status(200).json({ accessToken: tokens.accessToken });
+    res.json({ accessToken });
   } catch (error) {
     next(error);
   }
 }
 
-export async function logout(req: Request, res: Response, next: NextFunction) {
+// POST /auth/logout
+export async function logout(req: AuthRequest, res: Response, next: NextFunction) {
   try {
-    const { refreshToken } = req.cookies;
-    if (refreshToken) {
-      const tokenHash = hashToken(refreshToken);
-      await prisma.refreshToken.updateMany({
+    const token = req.cookies.refreshToken;
+    if (token) {
+      const tokenHash = hashToken(token);
+      await prisma.refreshToken.deleteMany({
         where: { tokenHash },
-        data: { revokedAt: new Date() },
       });
     }
 
-    res.clearCookie('refreshToken');
-    res.status(200).json({ message: 'Logged out successfully' });
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+    res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// POST /auth/logout-all
+export async function logoutAll(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const userId = req.userId;
+    if (userId) {
+      await prisma.refreshToken.deleteMany({
+        where: { userId },
+      });
+    }
+
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+    res.json({ message: 'Logged out from all devices successfully' });
   } catch (error) {
     next(error);
   }
