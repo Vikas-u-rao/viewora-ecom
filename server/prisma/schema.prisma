@@ -385,3 +385,18 @@ model Referral {
 
   @@map("referrals")
 }
+
+model OtpVerification {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  purpose      String   // "signup" or "forgot_password"
+  otp          String
+  expiresAt    DateTime @map("expires_at")
+  name         String?  // stored temporarily for signup
+  phone        String?  // stored temporarily for signup
+  passwordHash String?  @map("password_hash") // stored temporarily for signup
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("otp_verifications")
+}
+

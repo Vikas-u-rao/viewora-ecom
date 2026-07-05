@@ -13,7 +13,7 @@ const nav = [
 ];
 
 const utilityNav = [
-  { label: "LOGIN", href: "/#login" },
+  { label: "LOGIN", href: "/login" },
 ];
 
 const megaCategories = [

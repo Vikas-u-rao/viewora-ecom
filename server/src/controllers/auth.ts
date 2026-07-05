@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { AuthRequest } from '../middleware/auth';
+import { sendOtpEmail } from '../services/email';
 
 // Helper to hash token for database storage
 function hashToken(token: string): string {
@@ -48,6 +49,21 @@ function setRefreshCookie(res: Response, token: string, expiresAt: Date) {
   });
 }
 
+// Helper to check password strength
+function isPasswordStrong(password: string): boolean {
+  if (password.length < 8) return false;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecial = /[^A-Za-z0-9]/.test(password);
+  return hasUppercase && hasLowercase && hasNumber && hasSpecial;
+}
+
+// Helper to generate 6-digit OTP
+function generateOtp(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
 // POST /auth/register
 export async function register(req: Request, res: Response, next: NextFunction) {
   try {
@@ -60,6 +76,21 @@ export async function register(req: Request, res: Response, next: NextFunction) 
     const normalizedEmail = String(email).trim().toLowerCase();
     const normalizedName = String(name).trim();
     const normalizedPhone = phone ? String(phone).trim() : null;
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalizedEmail)) {
+      throw new AppError('VALIDATION_ERROR', 400, 'Invalid email format');
+    }
+
+    // Validate password strength
+    if (!isPasswordStrong(password)) {
+      throw new AppError(
+        'VALIDATION_ERROR',
+        400,
+        'Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character'
+      );
+    }
 
     const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existingUser) {
@@ -74,46 +105,38 @@ export async function register(req: Request, res: Response, next: NextFunction) 
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
+    const otp = generateOtp();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes expiry
 
-    let user;
-    try {
-      user = await prisma.user.create({
-        data: {
-          name: normalizedName,
-          email: normalizedEmail,
-          phone: normalizedPhone,
-          passwordHash,
-        },
-      });
-    } catch (err: any) {
-      if (err.code === 'P2002') {
-        throw new AppError('ALREADY_EXISTS', 409, 'A user with this email or phone number already exists');
-      }
-      throw err;
-    }
-
-    const accessToken = signAccessToken(user.id, user.role);
-    const { token: refreshToken, expiresAt } = signRefreshToken(user.id);
-
-    await prisma.refreshToken.create({
-      data: {
-        userId: user.id,
-        tokenHash: hashToken(refreshToken),
+    // Save pending verification info
+    await prisma.otpVerification.upsert({
+      where: { email: normalizedEmail },
+      update: {
+        purpose: 'signup',
+        otp,
         expiresAt,
+        name: normalizedName,
+        phone: normalizedPhone,
+        passwordHash,
+      },
+      create: {
+        email: normalizedEmail,
+        purpose: 'signup',
+        otp,
+        expiresAt,
+        name: normalizedName,
+        phone: normalizedPhone,
+        passwordHash,
       },
     });
 
-    setRefreshCookie(res, refreshToken, expiresAt);
+    // Send OTP email
+    await sendOtpEmail(normalizedEmail, otp, 'signup');
 
-    res.status(201).json({
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-      },
-      accessToken,
+    res.status(200).json({
+      message: 'Registration initiated. OTP sent to your email.',
+      email: normalizedEmail,
+      purpose: 'signup',
     });
   } catch (error) {
     next(error);
@@ -131,8 +154,26 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 
     const normalizedEmail = String(email).trim().toLowerCase();
 
+    // Check if user exists in the verified users table
     const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
-    if (!user || !user.passwordHash) {
+    if (!user) {
+      // Check if user exists in the pending verification table
+      const pendingVerification = await prisma.otpVerification.findFirst({
+        where: { email: normalizedEmail, purpose: 'signup' },
+      });
+
+      if (pendingVerification && pendingVerification.passwordHash) {
+        // Verify password for pending user
+        const isPasswordValid = await bcrypt.compare(password, pendingVerification.passwordHash);
+        if (isPasswordValid) {
+          throw new AppError('UNAUTHORIZED', 403, 'Account is not verified');
+        }
+      }
+      
+      throw new AppError('UNAUTHORIZED', 401, 'Invalid email or password');
+    }
+
+    if (!user.passwordHash) {
       throw new AppError('UNAUTHORIZED', 401, 'Invalid email or password');
     }
 
@@ -169,6 +210,270 @@ export async function login(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+// POST /auth/verify-otp
+export async function verifyOtp(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { email, otp, purpose } = req.body;
+
+    if (!email || !otp || !purpose) {
+      throw new AppError('VALIDATION_ERROR', 400, 'Email, OTP, and purpose are required');
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+
+    // Find verification request
+    const verification = await prisma.otpVerification.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    if (!verification || verification.purpose !== purpose) {
+      throw new AppError('NOT_FOUND', 404, 'No verification request found for this email');
+    }
+
+    // Check expiry
+    if (verification.expiresAt < new Date()) {
+      throw new AppError('VALIDATION_ERROR', 400, 'OTP has expired');
+    }
+
+    // Check OTP
+    if (verification.otp !== String(otp).trim()) {
+      throw new AppError('UNAUTHORIZED', 400, 'Invalid OTP');
+    }
+
+    if (purpose === 'signup') {
+      if (!verification.name || !verification.passwordHash) {
+        throw new AppError('INTERNAL_ERROR', 500, 'Verification request corrupted');
+      }
+
+      // Check if user exists (edge case)
+      const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+      if (existingUser) {
+        throw new AppError('ALREADY_EXISTS', 409, 'User already verified and created');
+      }
+
+      // Create verified user
+      const user = await prisma.user.create({
+        data: {
+          name: verification.name,
+          email: normalizedEmail,
+          phone: verification.phone,
+          passwordHash: verification.passwordHash,
+        },
+      });
+
+      // Invalidate the OTP
+      await prisma.otpVerification.delete({
+        where: { email: normalizedEmail },
+      });
+
+      res.status(200).json({
+        message: 'Account verified and created successfully.',
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+        },
+      });
+    } else if (purpose === 'forgot_password') {
+      // Generate a reset token (JWT) valid for 10 minutes
+      const resetToken = jwt.sign(
+        { email: normalizedEmail, purpose: 'reset_password' },
+        process.env.JWT_ACCESS_SECRET!,
+        { expiresIn: '10m' }
+      );
+
+      // Invalidate the OTP
+      await prisma.otpVerification.delete({
+        where: { email: normalizedEmail },
+      });
+
+      res.status(200).json({
+        message: 'OTP verified. You can now reset your password.',
+        resetToken,
+      });
+    } else {
+      throw new AppError('VALIDATION_ERROR', 400, 'Invalid verification purpose');
+    }
+  } catch (error) {
+    next(error);
+  }
+}
+
+// POST /auth/resend-otp
+export async function resendOtp(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { email, purpose } = req.body;
+
+    if (!email || !purpose) {
+      throw new AppError('VALIDATION_ERROR', 400, 'Email and purpose are required');
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const otp = generateOtp();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    if (purpose === 'signup') {
+      const verification = await prisma.otpVerification.findUnique({
+        where: { email: normalizedEmail },
+      });
+
+      if (!verification || verification.purpose !== 'signup') {
+        throw new AppError('NOT_FOUND', 404, 'No signup session found for this email. Please register again.');
+      }
+
+      await prisma.otpVerification.update({
+        where: { email: normalizedEmail },
+        data: {
+          otp,
+          expiresAt,
+        },
+      });
+
+      await sendOtpEmail(normalizedEmail, otp, 'signup');
+    } else if (purpose === 'forgot_password') {
+      const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+      if (!user) {
+        throw new AppError('NOT_FOUND', 404, 'No account found with this email');
+      }
+
+      await prisma.otpVerification.upsert({
+        where: { email: normalizedEmail },
+        update: {
+          purpose: 'forgot_password',
+          otp,
+          expiresAt,
+          name: null,
+          phone: null,
+          passwordHash: null,
+        },
+        create: {
+          email: normalizedEmail,
+          purpose: 'forgot_password',
+          otp,
+          expiresAt,
+        },
+      });
+
+      await sendOtpEmail(normalizedEmail, otp, 'forgot_password');
+    } else {
+      throw new AppError('VALIDATION_ERROR', 400, 'Invalid purpose');
+    }
+
+    res.status(200).json({
+      message: 'OTP resent successfully.',
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// POST /auth/forgot-password
+export async function forgotPassword(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      throw new AppError('VALIDATION_ERROR', 400, 'Email is required');
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    if (!user) {
+      throw new AppError('NOT_FOUND', 404, 'No account found with this email.');
+    }
+
+    const otp = generateOtp();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    // Create or update verification code
+    await prisma.otpVerification.upsert({
+      where: { email: normalizedEmail },
+      update: {
+        purpose: 'forgot_password',
+        otp,
+        expiresAt,
+        name: null,
+        phone: null,
+        passwordHash: null,
+      },
+      create: {
+        email: normalizedEmail,
+        purpose: 'forgot_password',
+        otp,
+        expiresAt,
+      },
+    });
+
+    // Send OTP
+    await sendOtpEmail(normalizedEmail, otp, 'forgot_password');
+
+    res.status(200).json({
+      message: 'OTP sent to email. Proceed to OTP verification.',
+      email: normalizedEmail,
+      purpose: 'forgot_password',
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// POST /auth/reset-password
+export async function resetPassword(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { resetToken, password } = req.body;
+
+    if (!resetToken || !password) {
+      throw new AppError('VALIDATION_ERROR', 400, 'Reset token and password are required');
+    }
+
+    // Verify token
+    let decoded: any;
+    try {
+      decoded = jwt.verify(resetToken, process.env.JWT_ACCESS_SECRET!);
+    } catch (err) {
+      throw new AppError('UNAUTHORIZED', 401, 'Invalid or expired reset token');
+    }
+
+    if (decoded.purpose !== 'reset_password' || !decoded.email) {
+      throw new AppError('UNAUTHORIZED', 401, 'Invalid or expired reset token');
+    }
+
+    // Validate password strength
+    if (!isPasswordStrong(password)) {
+      throw new AppError(
+        'VALIDATION_ERROR',
+        400,
+        'Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character'
+      );
+    }
+
+    const normalizedEmail = decoded.email;
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    if (!user) {
+      throw new AppError('NOT_FOUND', 404, 'User not found');
+    }
+
+    // Update password
+    const passwordHash = await bcrypt.hash(password, 12);
+    await prisma.user.update({
+      where: { email: normalizedEmail },
+      data: { passwordHash },
+    });
+
+    res.status(200).json({
+      message: 'Password updated successfully.',
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // POST /auth/refresh
 export async function refresh(req: Request, res: Response, next: NextFunction) {
   try {
@@ -195,8 +500,6 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
       where: { tokenHash, userId },
     });
 
-    // Reuse/theft detection: If the refresh token signature is valid but the token is not active in DB (or marked revoked),
-    // we assume it's a reuse attempt. We revoke all tokens for this user.
     if (!tokenRow || tokenRow.revokedAt) {
       await prisma.refreshToken.deleteMany({
         where: { userId },
@@ -214,12 +517,10 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
       throw new AppError('UNAUTHORIZED', 401, 'User not found');
     }
 
-    // Invalidate the old token
     await prisma.refreshToken.delete({
       where: { id: tokenRow.id },
     });
 
-    // Generate new pair
     const accessToken = signAccessToken(user.id, user.role);
     const { token: newRefreshToken, expiresAt } = signRefreshToken(user.id);
 
