@@ -21,23 +21,22 @@ export function startStockCleanupJob() {
 
       await prisma.$transaction(async (tx) => {
         for (const reservation of expired) {
-          // Re-fetch within the transaction using a lock or simple check to verify it is still active
-          const freshReservation = await tx.stockReservation.findUnique({
-            where: { id: reservation.id },
+          // Atomically transition the status from 'active' to 'released'
+          // This prevents concurrent execution/multiple app instances from double-releasing
+          const updateResult = await tx.stockReservation.updateMany({
+            where: { id: reservation.id, status: 'active' },
+            data: { status: 'released' },
           });
 
-          if (!freshReservation || freshReservation.status !== 'active') {
+          if (updateResult.count === 0) {
+            // Already released or fulfilled by another transaction
             continue;
           }
 
+          // Safely restore variant stock since we successfully claimed the release
           await tx.productVariant.update({
             where: { id: reservation.variantId },
             data: { stock: { increment: reservation.quantity } },
-          });
-
-          await tx.stockReservation.update({
-            where: { id: reservation.id },
-            data: { status: 'released' },
           });
 
           logger.warn({

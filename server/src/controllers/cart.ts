@@ -62,10 +62,15 @@ export async function getCart(req: AuthRequest, res: Response, next: NextFunctio
 export async function addToCart(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const userId = req.userId!;
-    const { variantId, quantity = 1 } = req.body;
+    const { variantId, quantity: rawQuantity = 1 } = req.body;
 
     if (!variantId) {
       throw new AppError('VALIDATION_ERROR', 400, 'variantId is required');
+    }
+
+    const quantity = Number(rawQuantity);
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      throw new AppError('VALIDATION_ERROR', 400, 'Quantity must be a positive integer');
     }
 
     // Verify variant exists and is active
@@ -116,10 +121,15 @@ export async function updateCartItem(req: AuthRequest, res: Response, next: Next
   try {
     const userId = req.userId!;
     const { itemId } = req.params;
-    const { quantity } = req.body;
+    const { quantity: rawQuantity } = req.body;
 
-    if (quantity === undefined || quantity < 1) {
-      throw new AppError('VALIDATION_ERROR', 400, 'Quantity must be at least 1');
+    if (rawQuantity === undefined) {
+      throw new AppError('VALIDATION_ERROR', 400, 'Quantity is required');
+    }
+
+    const quantity = Number(rawQuantity);
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      throw new AppError('VALIDATION_ERROR', 400, 'Quantity must be a positive integer');
     }
 
     // Find cart item
@@ -182,7 +192,16 @@ export async function mergeCart(req: AuthRequest, res: Response, next: NextFunct
     const skippedItems: any[] = [];
 
     for (const guestItem of items) {
-      const { variantId, quantity } = guestItem;
+      if (!guestItem || typeof guestItem !== 'object') {
+        continue;
+      }
+      const { variantId, quantity: rawQuantity } = guestItem;
+      const quantity = Number(rawQuantity);
+
+      if (!variantId || typeof variantId !== 'string' || !Number.isInteger(quantity) || quantity < 1) {
+        skippedItems.push({ variantId: variantId || null, reason: 'INVALID_ITEM' });
+        continue;
+      }
 
       try {
         const variant = await prisma.productVariant.findFirst({

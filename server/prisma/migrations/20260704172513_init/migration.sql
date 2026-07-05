@@ -187,6 +187,8 @@ CREATE TABLE "orders" (
     "discount_amount" DECIMAL(10,2) NOT NULL DEFAULT 0,
     "shipping_fee" DECIMAL(10,2) NOT NULL DEFAULT 99,
     "final_payable_amount" DECIMAL(10,2) NOT NULL,
+    "tracking_number" TEXT,
+    "carrier" TEXT DEFAULT 'DTDC',
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 

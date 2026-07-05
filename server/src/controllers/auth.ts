@@ -29,8 +29,10 @@ function signRefreshToken(userId: string): { token: string; expiresAt: Date } {
     { expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as any }
   );
 
-
-  const decoded = jwt.decode(token) as { exp: number };
+  const decoded = jwt.decode(token) as { exp?: number } | null;
+  if (!decoded?.exp) {
+    throw new AppError('INTERNAL_ERROR', 500, 'Failed to decode refresh token expiry');
+  }
   const expiresAt = new Date(decoded.exp * 1000);
 
   return { token, expiresAt };
