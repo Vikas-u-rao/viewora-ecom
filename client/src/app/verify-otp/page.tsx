@@ -163,7 +163,7 @@ function OtpVerifyContent() {
               {purpose === 'signup' ? 'Verify Your Account' : 'Verify Your Identity'}
             </h1>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              We've sent a 6-digit OTP to{' '}
+              We&apos;ve sent a 6-digit OTP to{' '}
               <span className="text-gold font-medium">{maskedEmail}</span>
             </p>
           </div>

@@ -8,57 +8,35 @@ import { useAuth } from "@/context/AuthContext";
 
 const nav = [
   { label: "HOME", href: "/#home" },
-  { label: "COLLECTIONS", href: "/#collections", mega: true },
   { label: "ABOUT", href: "/#about" },
-  { label: "CONTACT", href: "/#contact" },
+  { label: "COLLECTIONS", href: "/#collections", megaCollections: true },
+  { label: "SHOP", href: "/#shop", megaShop: true },
+  { label: "SOCIALS", href: "/socials" },
 ];
 
-// Mega categories list
-const megaCategories = [
+const internationalBrands = [
+  "Ray-Ban", "Oakley", "Gucci", "Prada",
+  "Versace", "Persol", "Tom Ford", "Cartier",
+  "Police", "Carrera", "Burberry", "Vogue Eyewear"
+];
+
+const shopMenu = [
   {
-    slug: "premium-sunglasses",
-    title: "Premium International Brands Sunglasses",
-    items: [
-      "Rayban Metal Sunglasses",
-      "Police Black Sunglass",
-      "FILA Fancy Sunglasses",
-      "Polaroid Unisex Sunglasses",
-      "Allen Solly WAYFARER Sunglasses",
-    ],
+    title: "Shop by Type",
+    items: ["Sunglasses", "Optical Frames", "Reading Glasses", "Blue Light Glasses"]
   },
   {
-    slug: "signature-eyewear",
-    title: "Jaiswal Opticals Signature Eyewear",
-    items: [
-      "Jaiswal Opticals Brands Eyeglass Frame",
-      "Jacob Marin Ladies Eyewear Eyeglass Frame",
-      "GERMAN PHILLIPE Wooden Sunglasses",
-      "IGO Eyewear Titanium Rimless Eyeglass Frame",
-      "Jacob Marin Polarized Eyeglass Frame",
-    ],
+    title: "Shop by Features",
+    items: ["Polarized", "UV Protected", "Anti-Glare", "Photochromic", "Lightweight Frames", "Prescription Ready"]
   },
   {
-    slug: "luxury-eyewear",
-    title: "Luxury Branded Eyewear",
-    items: [
-      "Maybach Premium Eyewear Sunglasses",
-      "Mont Blanc Rimless Eye Frames Sunglasses",
-      "Silhouette 23K Golden Sunglasses",
-      "Versace Premium Sunglasses",
-      "Cutler Gross Sunglasses",
-    ],
+    title: "Smart Eyewear",
+    items: ["Oakley Meta", "Ray-Ban Meta", "Smart Glasses"]
   },
   {
-    slug: "premium-eyewear",
-    title: "Premium International Brand Eyewear",
-    items: [
-      "Tommy Hilfiger Eyeglasses",
-      "Emporio Armani Clip on Eyeglasses",
-      "Rayban Unisex Eyewear",
-      "Jimmy Choo Sunglasses",
-      "Montblanc Eyewear Sunglasses",
-    ],
-  },
+    title: "Shop by Shape",
+    items: ["Wayfarer", "Round", "Cat Eye", "Aviator", "Rectangle", "Square"]
+  }
 ];
 
 export default function Header() {
@@ -70,48 +48,97 @@ export default function Header() {
         <Link href="/" className="flex items-center">
           <Image src={logoImg} alt="Viewora" className="h-12 md:h-14 w-auto" width={112} height={112} priority />
         </Link>
+
         <nav className="hidden md:flex items-center gap-8 lg:gap-10">
-          {nav.map((n) =>
-            n.mega ? (
-              <div key={n.label} className="group relative">
-                <Link href={n.href} className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors py-6">
-                  {n.label}
-                </Link>
-                <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[64px] md:top-[68px] bg-background border-t border-b border-gold/30 shadow-2xl">
-                  <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-10">
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-                      {megaCategories.map((cat) => (
-                        <div key={cat.title}>
-                          <h4 className="font-serif text-gold text-lg mb-4 leading-snug">{cat.title}</h4>
-                          <ul className="space-y-2.5 mb-4">
-                            {cat.items.map((it) => (
-                              <li key={it}>
-                                <Link href={`/shop/${cat.slug}`} className="text-sm text-foreground/85 hover:text-gold transition-colors">
-                                  {it}
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                          <Link href={`/shop/${cat.slug}`} className="text-sm tracking-[0.2em] text-gold border-b border-gold/50 hover:border-gold pb-0.5">
-                            VIEW ALL PRODUCTS
+          {nav.map((n) => {
+            if (n.megaCollections) {
+              return (
+                <div key={n.label} className="group relative">
+                  <Link href={n.href} className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors py-6">
+                    {n.label}
+                  </Link>
+                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[64px] md:top-[68px] bg-background border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
+                    <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-10">
+                      <div className="text-center mb-8">
+                        <p className="text-gold tracking-[0.3em] text-xs mb-2">CURATED BRANDS</p>
+                        <h4 className="font-serif text-2xl text-white font-normal">International Collections</h4>
+                        <div className="h-[1px] w-12 bg-gold/35 mx-auto mt-2"></div>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-6 max-w-4xl mx-auto py-4">
+                        {internationalBrands.map((brand) => (
+                          <Link
+                            key={brand}
+                            href={`/shop?brand=${brand.toLowerCase().replace(' ', '-')}`}
+                            className="text-sm text-foreground/80 hover:text-gold transition-all duration-200 py-1 hover:translate-x-1 inline-block"
+                          >
+                            {brand}
                           </Link>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-8 pt-6 border-t border-border">
-                      <Link href="/#collections" className="inline-block bg-gold text-background px-6 py-2.5 text-xs font-bold tracking-[0.2em] hover:bg-gold-soft transition-colors">
-                        VIEW ALL CATEGORIES
-                      </Link>
+                        ))}
+                      </div>
+
+                      <div className="mt-8 pt-6 border-t border-border text-center">
+                        <Link
+                          href="/shop"
+                          className="inline-block border border-gold/50 text-gold hover:bg-gold hover:text-background px-8 py-3 text-xs font-bold tracking-[0.2em] transition-colors duration-300"
+                        >
+                          VIEW ALL BRANDS
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ) : (
+              );
+            }
+
+            if (n.megaShop) {
+              return (
+                <div key={n.label} className="group relative">
+                  <Link href={n.href} className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors py-6">
+                    {n.label}
+                  </Link>
+                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[64px] md:top-[68px] bg-background border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
+                    <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-10">
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                        {shopMenu.map((cat) => (
+                          <div key={cat.title} className="border-l border-gold/10 pl-6 first:border-l-0 first:pl-0 text-left">
+                            <h4 className="font-serif text-gold text-lg mb-4 leading-snug">{cat.title}</h4>
+                            <ul className="space-y-2.5 mb-4">
+                              {cat.items.map((item) => (
+                                <li key={item}>
+                                  <Link
+                                    href={`/shop?filter=${item.toLowerCase().replace(' ', '-')}`}
+                                    className="text-sm text-foreground/85 hover:text-gold hover:translate-x-0.5 transition-all duration-200 inline-block"
+                                  >
+                                    {item}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="mt-10 pt-6 border-t border-border text-center">
+                        <Link
+                          href="/shop"
+                          className="inline-block bg-gold text-background px-8 py-3 text-xs font-bold tracking-[0.2em] hover:bg-gold-soft transition-colors duration-300"
+                        >
+                          VIEW ALL PRODUCTS
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            return (
               <Link key={n.label} href={n.href} className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors">
                 {n.label}
               </Link>
-            )
-          )}
+            );
+          })}
         </nav>
 
         <div className="hidden md:flex items-center gap-8 lg:gap-10">
@@ -128,14 +155,9 @@ export default function Header() {
               </button>
             </>
           ) : (
-            <>
-              <Link href="/login" className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors">
-                LOGIN
-              </Link>
-              <Link href="/register" className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors">
-                REGISTER
-              </Link>
-            </>
+            <Link href="/login" className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors">
+              LOGIN
+            </Link>
           )}
           <Link href="/cart" className="hover:text-gold transition-colors" aria-label="Cart">
             <ShoppingCart size={20} strokeWidth={1.5} />

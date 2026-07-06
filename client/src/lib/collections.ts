@@ -105,17 +105,17 @@ export const collections: Collection[] = [
   },
   {
     slug: "signature-eyewear",
-    title: "Jaiswal Opticals Signature Eyewear",
+    title: "Viewora Signature Eyewear",
     tagline: "Our house label — designed in-studio",
     hero: colOpt,
     products: build(
       [
-        "Jaiswal Signature Frame",
+        "Viewora Signature Frame",
         "Jacob Marin Ladies Frame",
         "German Phillipe Wooden",
         "IGO Titanium Rimless",
         "Jacob Marin Polarized",
-        "Jaiswal Heritage Oval",
+        "Viewora Heritage Oval",
         "Jacob Marin Cat-Eye",
         "IGO Ultralight Square",
       ],
