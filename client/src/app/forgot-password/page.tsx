@@ -80,7 +80,7 @@ function ForgotPasswordContent() {
           <div className="mb-7">
             <h1 className="font-serif text-2xl font-normal text-foreground mb-1">Forgot Password?</h1>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Enter your registered email address and we'll send you a one-time password to reset it.
+              Enter your registered email address and we&apos;ll send you a one-time password to reset it.
             </p>
           </div>
 

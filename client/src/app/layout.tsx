@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/providers";
+import InquiryModal from "@/components/InquiryModal";
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-serif",
@@ -41,6 +42,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
         <Providers>
           {children}
+          <InquiryModal />
         </Providers>
       </body>
     </html>
