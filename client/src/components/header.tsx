@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import logoImg from "@/assets/logo.png";
+import { useAuth } from "@/context/AuthContext";
 
 const nav = [
   { label: "HOME", href: "/#home" },
@@ -12,10 +13,7 @@ const nav = [
   { label: "CONTACT", href: "/#contact" },
 ];
 
-const utilityNav = [
-  { label: "LOGIN", href: "/login" },
-];
-
+// Mega categories list
 const megaCategories = [
   {
     slug: "premium-sunglasses",
@@ -64,6 +62,8 @@ const megaCategories = [
 ];
 
 export default function Header() {
+  const { user, logout } = useAuth();
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur border-b border-border">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-3 flex items-center justify-between">
@@ -115,12 +115,29 @@ export default function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-8 lg:gap-10">
-          {utilityNav.map((n) => (
-            <Link key={n.label} href={n.href} className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors">
-              {n.label}
-            </Link>
-          ))}
-          <Link href="/#cart" className="hover:text-gold transition-colors" aria-label="Cart">
+          {user ? (
+            <>
+              <Link href="/profile" className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors">
+                PROFILE
+              </Link>
+              <button
+                onClick={logout}
+                className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors bg-transparent border-none cursor-pointer p-0"
+              >
+                LOGOUT
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors">
+                LOGIN
+              </Link>
+              <Link href="/register" className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors">
+                REGISTER
+              </Link>
+            </>
+          )}
+          <Link href="/cart" className="hover:text-gold transition-colors" aria-label="Cart">
             <ShoppingCart size={20} strokeWidth={1.5} />
           </Link>
         </div>

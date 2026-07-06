@@ -52,3 +52,23 @@ export const updateCartItemSchema = z.object({
     z.number().int('Quantity must be an integer').min(1, 'Quantity must be at least 1')
   ),
 });
+
+// ── User Profile & Address Schemas ──────────────────────────────────────────
+
+export const updateProfileSchema = z.object({
+  name: z.string().trim().min(1, 'Name is required').optional(),
+  email: z.string().trim().email('Invalid email address').optional(),
+  phone: z.string().trim().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format').optional().nullable(),
+});
+
+export const addressSchema = z.object({
+  label: z.string().trim().optional().nullable(),
+  name: z.string().trim().min(1, 'Name is required'),
+  line1: z.string().trim().min(1, 'Address line 1 is required'),
+  line2: z.string().trim().optional().nullable(),
+  city: z.string().trim().min(1, 'City is required'),
+  state: z.string().trim().min(1, 'State is required'),
+  pincode: z.string().trim().min(1, 'Pincode is required'),
+  isDefault: z.boolean().optional(),
+});
+
