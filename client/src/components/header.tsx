@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import logoImg from "@/assets/logo.png";
 import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
 
 const nav = [
   { label: "HOME", href: "/#home" },
@@ -40,7 +41,8 @@ const shopMenu = [
 ];
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const { cartCount } = useCart();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur border-b border-border">
@@ -143,24 +145,21 @@ export default function Header() {
 
         <div className="hidden md:flex items-center gap-8 lg:gap-10">
           {user ? (
-            <>
-              <Link href="/profile" className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors">
-                PROFILE
-              </Link>
-              <button
-                onClick={logout}
-                className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors bg-transparent border-none cursor-pointer p-0"
-              >
-                LOGOUT
-              </button>
-            </>
+            <Link href="/account/profile" className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors">
+              PROFILE
+            </Link>
           ) : (
             <Link href="/login" className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors">
               LOGIN
             </Link>
           )}
-          <Link href="/cart" className="hover:text-gold transition-colors" aria-label="Cart">
+          <Link href="/cart" className="relative hover:text-gold transition-colors" aria-label={`Cart with ${cartCount} items`}>
             <ShoppingCart size={20} strokeWidth={1.5} />
+            {cartCount > 0 && (
+              <span className="absolute -right-2.5 -top-2.5 min-w-5 h-5 rounded-full bg-gold px-1 text-[10px] font-bold leading-5 text-background text-center tabular-nums">
+                {cartCount > 99 ? "99+" : cartCount}
+              </span>
+            )}
           </Link>
         </div>
       </div>

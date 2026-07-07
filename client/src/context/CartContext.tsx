@@ -63,7 +63,7 @@ interface CartContextValue {
   addToCart: (variantId: string, quantity?: number, variantSnapshot?: CartVariant | null) => Promise<void>;
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
   removeItem: (itemId: string) => Promise<void>;
-  clearCart: () => void;
+  clearCart: () => Promise<void>;
   refreshCart: () => Promise<void>;
 }
 
@@ -200,7 +200,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
         try {
           await addToCartApi(accessToken, variantId, quantity);
-          toast.success('Added to cart');
+          toast.success('Item added to cart.');
           // Refresh to get accurate server state
           await loadAuthCart();
         } catch (err: any) {
@@ -220,7 +220,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
         writeGuestCart(guestItems);
         loadGuestCart();
-        toast.success('Added to cart');
+        toast.success('Item added to cart.');
       }
     },
     [accessToken, items, loadAuthCart, loadGuestCart],
@@ -282,12 +282,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [accessToken, items, loadGuestCart],
   );
 
-  const clearCart = useCallback(() => {
-    setItems([]);
-    if (!accessToken) {
-      clearGuestCart();
+  const clearCart = useCallback(async () => {
+    if (accessToken) {
+      const prevItems = [...items];
+      setItems([]);
+      try {
+        await Promise.all(prevItems.map((item) => removeCartItemApi(accessToken, item.id)));
+      } catch (err) {
+        setItems(prevItems);
+        throw err;
+      }
+      return;
     }
-  }, [accessToken]);
+
+    setItems([]);
+    clearGuestCart();
+  }, [accessToken, items]);
 
   // ── Render ──────────────────────────────────────────────────────────────
 

@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
-import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/header';
 import {
   ShoppingBag,
@@ -40,6 +40,7 @@ function formatPrice(amount: number): string {
 // ── Cart Page ───────────────────────────────────────────────────────────────
 
 export default function CartPage() {
+  const router = useRouter();
   const {
     items,
     isLoading,
@@ -47,19 +48,10 @@ export default function CartPage() {
     subtotal,
     updateQuantity,
     removeItem,
-    clearCart,
   } = useCart();
-  const { accessToken } = useAuth();
 
   const [couponCode, setCouponCode] = useState('');
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [checkoutMessage, setCheckoutMessage] = useState<string | null>(null);
-  const [cardNumber, setCardNumber] = useState('4242 4242 4242 4242');
-  const [cardHolder, setCardHolder] = useState('VIEWORA CUSTOMER');
-  const [expiryMonth, setExpiryMonth] = useState('12');
-  const [expiryYear, setExpiryYear] = useState('2028');
-  const [cvv, setCvv] = useState('123');
 
   const availableItems = items.filter((i) => !i.productUnavailable);
   const unavailableItems = items.filter((i) => i.productUnavailable);
@@ -100,46 +92,15 @@ export default function CartPage() {
   };
 
   const handleCheckout = async () => {
-    if (availableItems.length === 0 || !accessToken) {
-      toast.error('Please sign in and add items to checkout');
+    if (unavailableItems.length > 0) {
+      toast.error('Remove unavailable products before checkout.');
       return;
     }
-
-    setIsCheckingOut(true);
-    setCheckoutMessage(null);
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/payments/checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          cardNumber,
-          cardHolder,
-          expiryMonth,
-          expiryYear,
-          cvv,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.error?.message || 'Checkout failed');
-      }
-
-      clearCart();
-      setCheckoutMessage(`Payment successful for order ${data.orderId}.`);
-      toast.success('Payment completed successfully');
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Checkout failed';
-      setCheckoutMessage(message);
-      toast.error(message);
-    } finally {
-      setIsCheckingOut(false);
+    if (availableItems.length === 0) {
+      toast.error('Add items to checkout.');
+      return;
     }
+    router.push('/checkout');
   };
 
   // ── Loading state ─────────────────────────────────────────────────────
@@ -523,38 +484,15 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <div className="mt-6 rounded-sm border border-border bg-background/70 p-4 text-sm">
-                <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-2">Demo card</p>
-                <div className="space-y-2">
-                  <input value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} className="w-full border border-border bg-background px-3 py-2 text-sm" placeholder="Card Number" />
-                  <input value={cardHolder} onChange={(e) => setCardHolder(e.target.value)} className="w-full border border-border bg-background px-3 py-2 text-sm" placeholder="Card Holder" />
-                  <div className="grid grid-cols-3 gap-2">
-                    <input value={expiryMonth} onChange={(e) => setExpiryMonth(e.target.value)} className="border border-border bg-background px-3 py-2 text-sm" placeholder="MM" />
-                    <input value={expiryYear} onChange={(e) => setExpiryYear(e.target.value)} className="border border-border bg-background px-3 py-2 text-sm" placeholder="YYYY" />
-                    <input value={cvv} onChange={(e) => setCvv(e.target.value)} className="border border-border bg-background px-3 py-2 text-sm" placeholder="CVV" />
-                  </div>
-                </div>
-              </div>
-
               {/* Checkout button */}
               <button
-                disabled={availableItems.length === 0 || isCheckingOut}
+                disabled={availableItems.length === 0 || unavailableItems.length > 0}
                 onClick={handleCheckout}
                 className="w-full mt-4 bg-gold text-background py-3.5 text-xs font-bold tracking-[0.2em] hover:bg-gold-soft transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
               >
-                {isCheckingOut ? (
-                  <><Loader2 className="size-4 animate-spin" /> PROCESSING</>
-                ) : (
-                  <>
-                    PROCEED TO CHECKOUT
-                    <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-                  </>
-                )}
+                PROCEED TO CHECKOUT
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
               </button>
-
-              {checkoutMessage && (
-                <p className="mt-3 text-sm text-green-600">{checkoutMessage}</p>
-              )}
 
               {/* Trust signals */}
               <div className="mt-5 pt-4 border-t border-border flex items-center justify-center gap-6 text-muted-foreground">
