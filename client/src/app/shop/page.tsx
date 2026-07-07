@@ -1,14 +1,18 @@
 'use client';
+/* eslint-disable react-hooks/set-state-in-effect */
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
 import Header from "@/components/header";
-import { collections, type Product } from "@/lib/collections";
+import ProductCard from "@/components/ProductCard";
+import { ApiProduct, fetchProductsApi } from "@/services/products";
 
 function ShopContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [products, setProducts] = useState<ApiProduct[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [productError, setProductError] = useState<string | null>(null);
 
   // Retrieve current filters directly from searchParams
   const selectedBrand = searchParams.get("brand") || "all";
@@ -59,34 +63,44 @@ function ShopContent() {
     router.replace(`/shop?${params.toString()}`);
   };
 
-  // Aggregate all products from collections to key duplicates by name
-  const allProductsMap: { [name: string]: Product & { collectionSlug: string } } = {};
-  collections.forEach((col) => {
-    col.products.forEach((p) => {
-      allProductsMap[p.name] = {
-        ...p,
-        collectionSlug: col.slug
-      };
-    });
-  });
+  useEffect(() => {
+    let cancelled = false;
 
-  const allProducts = Object.values(allProductsMap);
+    setIsLoadingProducts(true);
+    setProductError(null);
+
+    fetchProductsApi("?limit=48")
+      .then((data) => {
+        if (!cancelled) setProducts(data.products);
+      })
+      .catch((error: Error) => {
+        if (!cancelled) setProductError(error.message);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingProducts(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Apply filters to product listing
-  const filteredProducts = allProducts.filter((product) => {
+  const filteredProducts = products.filter((product) => {
     // Brand Filter
     if (selectedBrand !== "all") {
       const formattedBrand = selectedBrand.toLowerCase().replace("-", " ");
-      const isBrandMatch = product.name.toLowerCase().includes(formattedBrand) || 
-                           product.collectionSlug.toLowerCase().includes(formattedBrand);
+      const isBrandMatch = product.name.toLowerCase().includes(formattedBrand) ||
+                           product.brand?.toLowerCase().includes(formattedBrand);
       if (!isBrandMatch) return false;
     }
 
     // Shape Filter
     if (activeShape !== "all") {
       const formattedShape = activeShape.toLowerCase().replace("-", " ");
-      const isShapeMatch = product.name.toLowerCase().includes(formattedShape) || 
-                           product.collectionSlug.toLowerCase().includes(formattedShape) ||
+      const variantText = product.variants.map((variant) => `${variant.color || ""} ${variant.size || ""} ${variant.lensType || ""} ${variant.material || ""}`).join(" ").toLowerCase();
+      const isShapeMatch = product.name.toLowerCase().includes(formattedShape) ||
+                           variantText.includes(formattedShape) ||
                            (activeShape === "cat-eye" && product.name.toLowerCase().includes("cat-eye")) ||
                            (activeShape === "semi-rimless" && product.name.toLowerCase().includes("rimless"));
       if (!isShapeMatch) return false;
@@ -94,10 +108,11 @@ function ShopContent() {
 
     // Type Filter
     if (selectedType !== "all") {
-      if (selectedType === "sunglasses" && !product.collectionSlug.includes("sunglasses") && !product.name.toLowerCase().includes("sunglass")) {
+      const haystack = `${product.name} ${product.description || ""}`.toLowerCase();
+      if (selectedType === "sunglasses" && !haystack.includes("sunglass") && !haystack.includes("aviator")) {
         return false;
       }
-      if (selectedType === "optical-frames" && !product.collectionSlug.includes("optical") && !product.name.toLowerCase().includes("frame") && !product.name.toLowerCase().includes("eyeglass")) {
+      if (selectedType === "optical-frames" && !haystack.includes("optical") && !haystack.includes("frame") && !haystack.includes("eyeglass")) {
         return false;
       }
     }
@@ -207,21 +222,21 @@ function ShopContent() {
             </p>
           </div>
 
-          {filteredProducts.length > 0 ? (
+          {isLoadingProducts ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((item) => (
+                <div key={item} className="h-[380px] border border-border bg-card animate-pulse" />
+              ))}
+            </div>
+          ) : productError ? (
+            <div className="text-center py-20 border border-border border-dashed">
+              <h3 className="text-xl font-serif text-white mb-2">Products could not load</h3>
+              <p className="text-muted-foreground text-sm font-sans">{productError}</p>
+            </div>
+          ) : filteredProducts.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((p) => (
-                <div key={p.name} className="border border-border p-4 hover:border-gold transition-colors duration-300">
-                  <div className="aspect-square overflow-hidden mb-4 relative w-full h-[260px] bg-black/20">
-                    <Image src={p.img} alt={p.name} className="w-full h-full object-cover" loading="lazy" fill />
-                  </div>
-                  <h3 className="text-lg font-serif mb-3 text-white">{p.name}</h3>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gold text-lg">{p.price}</span>
-                    <button className="border border-gold text-gold px-4 py-1.5 text-xs font-bold tracking-[0.15em] hover:bg-gold hover:text-background transition-colors duration-300">
-                      ADD
-                    </button>
-                  </div>
-                </div>
+                <ProductCard key={p.id} product={p} />
               ))}
             </div>
           ) : (

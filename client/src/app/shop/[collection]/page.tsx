@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
-import { getCollection, collections, type Product } from "@/lib/collections";
+import { getCollection, collections } from "@/lib/collections";
 import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/header";
+import CollectionProductGrid from "@/components/CollectionProductGrid";
 
 interface PageProps {
   params: Promise<{ collection: string }>;
@@ -56,22 +57,7 @@ export default async function CollectionPage({ params }: PageProps) {
               ← ALL COLLECTIONS
             </Link>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {col.products.map((p: Product) => (
-              <div key={p.name} className="border border-border p-4 hover:border-gold transition-colors">
-                <div className="aspect-square overflow-hidden mb-4 relative w-full h-[250px]">
-                  <Image src={p.img} alt={p.name} className="w-full h-full object-cover" loading="lazy" fill />
-                </div>
-                <h3 className="text-lg font-serif mb-3">{p.name}</h3>
-                <div className="flex items-center justify-between">
-                  <span className="text-gold text-lg">{p.price}</span>
-                  <button className="border border-gold text-gold px-4 py-1.5 text-xs font-bold tracking-[0.15em] hover:bg-gold hover:text-background transition-colors">
-                    ADD
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+          <CollectionProductGrid collection={col.slug} />
         </div>
       </section>
 
