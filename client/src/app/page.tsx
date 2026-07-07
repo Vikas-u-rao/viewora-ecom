@@ -77,11 +77,11 @@ export default function Home() {
       <section id="home" className="relative min-h-screen grid grid-cols-1 md:grid-cols-2 pt-20 bg-background overflow-hidden">
         {/* Left side: Eyewear Image */}
         <div className="relative w-full h-[50vh] md:h-[calc(100vh-80px)] flex items-center justify-center bg-black/20 border-r border-border/30">
-          <Image 
-            src={heroImg} 
-            alt="Hero Banner Eyewear" 
-            className="object-cover w-full h-full scale-x-[-1]" 
-            priority 
+          <Image
+            src={heroImg}
+            alt="Hero Banner Eyewear"
+            className="object-cover w-full h-full scale-x-[-1]"
+            priority
           />
           <div className="absolute inset-0 bg-gradient-to-r from-transparent to-background/30" />
         </div>
@@ -90,7 +90,7 @@ export default function Home() {
         <div className="flex flex-col justify-center px-8 md:px-16 lg:px-24 py-12 md:py-0 text-left max-w-2xl mx-auto md:mx-0">
           <p className="text-gold tracking-[0.35em] text-xs md:text-sm mb-6 font-medium">FASHION EYEWEAR</p>
           <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-normal leading-[1.1] mb-6 text-white">
-            See the World in <span className="text-gold font-bold italic drop-shadow-[0_2px_10px_rgba(197,160,89,0.35)] animate-pulse">Gold</span>
+            See the World in <span className="text-gold font-bold italic drop-shadow-[0_2px_10px_rgba(197,160,89,0.35)] animate-pulse">GOLD</span>
           </h1>
           <p className="text-base md:text-lg text-white/80 mb-10 leading-relaxed font-light font-sans">
             Luxury eyewear crafted with premium materials, designed for everyday comfort and timeless elegance.
@@ -174,8 +174,8 @@ export default function Home() {
       {/* Newsletter Section */}
       <section id="contact" className="py-24 md:py-32 px-6 lg:px-8 border-t border-border bg-background">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl mb-4">
-            Join the <span className="text-gold">Viewora</span> Community
+          <h2 className="text-3xl md:text-4xl lg:text-5xl mb-4 font-serif">
+            Join the <span className="text-gold font-bold drop-shadow-[0_0_15px_rgba(197,160,89,0.85)] animate-pulse uppercase">Viewora</span> Community
           </h2>
           <p className="text-muted-foreground mb-8 text-lg font-sans">Subscribe for exclusive offers, early access, and style updates.</p>
           <form onSubmit={(e) => { e.preventDefault(); setEmail(""); }} className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
