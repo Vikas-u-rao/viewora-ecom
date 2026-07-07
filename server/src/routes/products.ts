@@ -1,7 +1,9 @@
 import { Router } from 'express';
+import { getProducts, getProductBySlug } from '../controllers/products';
 
 const router = Router();
 
-// TODO: GET list, GET :slug, POST/PUT/DELETE (admin)
+router.get('/', getProducts);
+router.get('/:slug', getProductBySlug);
 
 export default router;

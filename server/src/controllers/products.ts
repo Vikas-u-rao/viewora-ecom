@@ -93,3 +93,61 @@ export async function getProductBySlug(req: Request, res: Response, next: NextFu
     next(error);
   }
 }
+
+export async function updateVariant(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+    const { sku, color, size, lensType, material, price, stock, imageUrls, isActive } = req.body;
+
+    const variant = await prisma.productVariant.findUnique({
+      where: { id },
+    });
+
+    if (!variant) {
+      throw new AppError('NOT_FOUND', 404, 'Variant not found');
+    }
+
+    const updatedVariant = await prisma.productVariant.update({
+      where: { id },
+      data: {
+        sku,
+        color,
+        size,
+        lensType,
+        material,
+        price,
+        stock,
+        imageUrls,
+        isActive,
+      },
+    });
+
+    res.status(200).json(updatedVariant);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function deleteVariant(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+
+    const variant = await prisma.productVariant.findUnique({
+      where: { id },
+    });
+
+    if (!variant) {
+      throw new AppError('NOT_FOUND', 404, 'Variant not found');
+    }
+
+    // Soft delete variant by setting isActive = false
+    const deletedVariant = await prisma.productVariant.update({
+      where: { id },
+      data: { isActive: false },
+    });
+
+    res.status(200).json({ message: 'Variant deleted successfully', variant: deletedVariant });
+  } catch (error) {
+    next(error);
+  }
+}
