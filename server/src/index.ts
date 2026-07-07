@@ -19,6 +19,7 @@ import orderRoutes from './routes/orders';
 import paymentRoutes from './routes/payments';
 import adminRoutes from './routes/admin';
 import contactRoutes from './routes/contact';
+import variantRoutes from './routes/variants';
 
 // Jobs
 import { startStockCleanupJob } from './jobs/stockReservationCleanup';
@@ -58,6 +59,7 @@ app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/payments', authLimiter, paymentRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/contact', contactRoutes);
+app.use('/api/v1/variants', variantRoutes);
 
 // Health check
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));

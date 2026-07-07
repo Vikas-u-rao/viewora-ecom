@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
-import { authenticate, AuthRequest } from '../middleware/auth';
+import { authenticate, optionalAuth, AuthRequest } from '../middleware/auth';
+import { initiatePayment, paymentCallback, getPaymentStatus } from '../controllers/payments';
 
 const router = Router();
 
@@ -91,5 +92,10 @@ router.post('/checkout', authenticate, async (req: AuthRequest, res, next) => {
     next(error);
   }
 });
+
+// PhonePe endpoints
+router.post('/initiate', optionalAuth, initiatePayment);
+router.post('/callback', paymentCallback);
+router.get('/status/:orderId', optionalAuth, getPaymentStatus);
 
 export default router;

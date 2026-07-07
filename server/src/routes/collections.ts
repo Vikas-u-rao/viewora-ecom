@@ -1,7 +1,8 @@
 import { Router } from 'express';
+import { getCollections } from '../controllers/collections';
 
 const router = Router();
 
-// TODO: GET list, GET :slug
+router.get('/', getCollections);
 
 export default router;

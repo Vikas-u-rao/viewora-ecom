@@ -5,6 +5,7 @@ import p4 from "@/assets/p4.jpg";
 import colSun from "@/assets/col-sunglasses.jpg";
 import colOpt from "@/assets/col-optical.jpg";
 import colLtd from "@/assets/col-limited.jpg";
+import cateyeImg from "@/assets/styles/cateye.png";
 
 import { StaticImageData } from "next/image";
 
@@ -23,7 +24,7 @@ const build = (names: string[], basePrice: number): Product[] =>
   names.map((name, i) => ({
     name,
     price: `₹${(basePrice + i * 220).toLocaleString("en-IN")}`,
-    img: imgs[i % imgs.length],
+    img: name === "Golden Cat-Eye" ? cateyeImg : imgs[i % imgs.length],
   }));
 
 export const collections: Collection[] = [

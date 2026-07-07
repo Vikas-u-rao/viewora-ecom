@@ -1,7 +1,8 @@
 import { Router } from 'express';
+import { submitContact } from '../controllers/contact';
 
 const router = Router();
 
-// TODO: POST /
+router.post('/', submitContact);
 
 export default router;

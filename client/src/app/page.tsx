@@ -80,7 +80,7 @@ export default function Home() {
           <Image 
             src={heroImg} 
             alt="Hero Banner Eyewear" 
-            className="object-cover w-full h-full" 
+            className="object-cover w-full h-full scale-x-[-1]" 
             priority 
           />
           <div className="absolute inset-0 bg-gradient-to-r from-transparent to-background/30" />
@@ -218,7 +218,7 @@ export default function Home() {
           <div>
             <h4 className="text-gold tracking-[0.2em] text-sm mb-5 font-sans font-semibold">CONTACT</h4>
             <ul className="space-y-3 text-foreground font-sans">
-              <li>support@viewora.com</li>
+              <li>support@viewora.in</li>
               <li>+1 (555) 234-5678</li>
               <li>Mon – Sat, 10am – 7pm</li>
             </ul>
