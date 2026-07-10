@@ -22,6 +22,17 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import p1 from "@/assets/p1.jpg";
+import p2 from "@/assets/p2.jpg";
+import p3 from "@/assets/p3.jpg";
+import p4 from "@/assets/p4.jpg";
+
+function getLocalImage(slug?: string) {
+  const fallbackImgs = [p1, p2, p3, p4];
+  const slugHash = Array.from(slug || "").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return fallbackImgs[slugHash % fallbackImgs.length];
+}
+
 // ── Constants ───────────────────────────────────────────────────────────────
 
 const SHIPPING_FEE = 99;
@@ -235,17 +246,13 @@ export default function CartPage() {
               >
                 {/* Image */}
                 <div className="w-20 h-20 md:w-24 md:h-24 bg-muted/30 flex items-center justify-center shrink-0 relative overflow-hidden">
-                  {item.variant?.imageUrls?.[0] ? (
-                    <Image
-                      src={item.variant.imageUrls[0]}
-                      alt={item.variant?.product?.name || 'Product'}
-                      fill
-                      className="object-cover grayscale"
-                      sizes="96px"
-                    />
-                  ) : (
-                    <Package className="size-8 text-muted-foreground" strokeWidth={1} />
-                  )}
+                  <Image
+                    src={getLocalImage(item.variant?.product?.slug)}
+                    alt={item.variant?.product?.name || 'Product'}
+                    fill
+                    className="object-cover grayscale"
+                    sizes="96px"
+                  />
                   <div className="absolute inset-0 bg-background/40 flex items-center justify-center">
                     <span className="text-[9px] tracking-wider uppercase font-bold bg-amber-500/90 text-background px-2 py-0.5">
                       Unavailable
@@ -296,17 +303,13 @@ export default function CartPage() {
                     href={item.variant?.product?.slug ? `/shop/${item.variant.product.slug}` : '#'}
                     className="w-20 h-20 md:w-28 md:h-28 bg-muted/20 flex items-center justify-center shrink-0 relative overflow-hidden hover:opacity-90 transition-opacity"
                   >
-                    {item.variant?.imageUrls?.[0] ? (
-                      <Image
-                        src={item.variant.imageUrls[0]}
-                        alt={item.variant?.product?.name || 'Product'}
-                        fill
-                        className="object-cover"
-                        sizes="112px"
-                      />
-                    ) : (
-                      <Package className="size-8 text-muted-foreground" strokeWidth={1} />
-                    )}
+                    <Image
+                      src={getLocalImage(item.variant?.product?.slug)}
+                      alt={item.variant?.product?.name || 'Product'}
+                      fill
+                      className="object-cover"
+                      sizes="112px"
+                    />
                   </Link>
 
                   {/* Product details */}
