@@ -41,8 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const data = await res.json();
           setAccessToken(data.accessToken);
           // Decode user from token payload
-          const payloadBase64 = data.accessToken.split('.')[1];
-          const payload = JSON.parse(atob(payloadBase64));
+
           // Fetch user profile
           const profileRes = await fetch(`${API_BASE}/users/me`, {
             headers: { Authorization: `Bearer ${data.accessToken}` },

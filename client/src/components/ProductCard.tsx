@@ -1,11 +1,16 @@
 "use client";
 
+
 import Image from "next/image";
 import Link from "next/link";
 import { Loader2, Package } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { ApiProduct, variantSnapshot } from "@/services/products";
+import p1 from "@/assets/p1.jpg";
+import p2 from "@/assets/p2.jpg";
+import p3 from "@/assets/p3.jpg";
+import p4 from "@/assets/p4.jpg";
 
 function formatPrice(value: string | number) {
   return new Intl.NumberFormat("en-IN", {
@@ -19,7 +24,14 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
   const { addToCart } = useCart();
   const [isAdding, setIsAdding] = useState(false);
   const variant = product.variants.find((item) => item.stock > 0) || product.variants[0];
-  const image = variant?.imageUrls?.[0] || product.defaultImageUrls?.[0];
+
+
+  // Local fallback images from assets
+  const fallbackImgs = [p1, p2, p3, p4];
+  const slugHash = Array.from(product.slug || "").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  const fallback = fallbackImgs[slugHash % fallbackImgs.length];
+
+  const image = fallback;
   const unavailable = !variant || variant.stock < 1;
 
   const handleAdd = async () => {
@@ -39,7 +51,13 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
         className="aspect-square overflow-hidden mb-4 relative block w-full h-[260px] bg-black/20"
       >
         {image ? (
-          <Image src={image} alt={product.name} className="object-cover" loading="lazy" fill sizes="(min-width: 1024px) 33vw, 50vw" />
+          <Image
+            src={image}
+            alt={product.name}
+            fill
+            className="object-cover absolute inset-0"
+            sizes="(max-width: 768px) 100vw, 33vw"
+          />
         ) : (
           <div className="flex h-full items-center justify-center">
             <Package className="size-10 text-muted-foreground" strokeWidth={1.2} />

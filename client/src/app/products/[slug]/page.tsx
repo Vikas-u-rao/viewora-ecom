@@ -11,6 +11,11 @@ import { API_BASE } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { ApiProduct, ProductVariant, variantSnapshot } from "@/services/products";
 
+import p1 from "@/assets/p1.jpg";
+import p2 from "@/assets/p2.jpg";
+import p3 from "@/assets/p3.jpg";
+import p4 from "@/assets/p4.jpg";
+
 function formatPrice(value: string | number) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -60,7 +65,9 @@ export default function ProductDetailPage() {
     [product, selectedVariantId],
   );
 
-  const image = selectedVariant?.imageUrls?.[0] || product?.defaultImageUrls?.[0];
+  const fallbackImgs = [p1, p2, p3, p4];
+  const slugHash = Array.from(product?.slug || "").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  const image = fallbackImgs[slugHash % fallbackImgs.length];
   const unavailable = !selectedVariant || selectedVariant.stock < 1;
 
   const handleAdd = async () => {
