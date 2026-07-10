@@ -67,11 +67,29 @@ app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 // Centralized error handler (must be last)
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  logger.info({ msg: `VIEWORA server running on port ${PORT}`, env: process.env.NODE_ENV });
-  // Start background jobs
-  startStockCleanupJob();
-});
+const PORT = Number(process.env.PORT || 5000);
+
+function startServer(port: number, attempts = 0) {
+  const server = app.listen(port, () => {
+    logger.info({ msg: `VIEWORA server running on port ${port}`, env: process.env.NODE_ENV });
+    // Start background jobs
+    startStockCleanupJob();
+  });
+
+  server.on('error', (err: any) => {
+    if (err?.code === 'EADDRINUSE' && attempts < 5) {
+      const nextPort = port + 1;
+      logger.warn({ msg: `Port ${port} in use, trying ${nextPort}` });
+      setTimeout(() => startServer(nextPort, attempts + 1), 200);
+      return;
+    }
+
+    logger.error({ msg: 'Failed to start server', error: err });
+    // If we can't recover, exit so nodemon can show error and await changes
+    process.exit(1);
+  });
+}
+
+startServer(PORT);
 
 export default app;
