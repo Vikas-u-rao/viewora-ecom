@@ -4,6 +4,7 @@ import Header from "@/components/header";
 import NewsletterForm from "@/components/NewsletterForm";
 
 // Import assets
+import heroImg from "@/assets/hero.jpg";
 import logoImg from "@/assets/logo.png";
 import colSun from "@/assets/col-sunglasses.jpg";
 import colOpt from "@/assets/col-optical.jpg";
@@ -70,9 +71,17 @@ export default function Home() {
 
       {/* Hero Section - Full Background Layout */}
       <section id="home" className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden bg-black">
-        {/* Dark gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-950 to-zinc-900" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(197,160,89,0.08)_0%,_transparent_70%)]" />
+        {/* Full Screen Background Image */}
+        <div className="absolute inset-0 w-full h-full">
+          <Image
+            src={heroImg}
+            alt="Hero Banner Eyewear"
+            className="object-cover w-full h-full opacity-40 scale-x-[-1]"
+            priority
+            fill
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-black/50" />
+        </div>
 
         {/* Centered Hero Text */}
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
