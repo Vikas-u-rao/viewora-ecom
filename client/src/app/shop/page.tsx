@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/header";
 import ProductCard from "@/components/ProductCard";
 import { ApiProduct, fetchProductsApi } from "@/services/products";
+import { collections } from "@/lib/collections";
 
 function ShopContent() {
   const router = useRouter();
@@ -18,6 +19,7 @@ function ShopContent() {
   const selectedBrand = searchParams.get("brand") || "all";
   const selectedShape = searchParams.get("shape") || "all";
   const generalFilter = searchParams.get("filter") || "all";
+  const selectedCollection = searchParams.get("collection") || "all";
 
   // Classify type filter from the general filter
   let selectedType = "all";
@@ -39,6 +41,7 @@ function ShopContent() {
       params.delete("brand");
       params.delete("shape");
       params.delete("filter");
+      params.delete("collection");
     } else if (type === "brand") {
       if (value && value !== "all") {
         params.set("brand", value);
@@ -57,6 +60,12 @@ function ShopContent() {
         params.set("filter", value);
       } else {
         params.delete("filter");
+      }
+    } else if (type === "collection") {
+      if (value && value !== "all") {
+        params.set("collection", value);
+      } else {
+        params.delete("collection");
       }
     }
 
@@ -87,6 +96,17 @@ function ShopContent() {
 
   // Apply filters to product listing
   const filteredProducts = products.filter((product) => {
+    // Collection Filter
+    if (selectedCollection !== "all") {
+      const col = collections.find((c) => c.slug === selectedCollection);
+      if (col) {
+        const isCollectionMatch = col.products.some((cp) =>
+          product.name.toLowerCase().includes(cp.name.toLowerCase())
+        );
+        if (!isCollectionMatch) return false;
+      }
+    }
+
     // Brand Filter
     if (selectedBrand !== "all") {
       const formattedBrand = selectedBrand.toLowerCase().replace("-", " ");
@@ -127,7 +147,7 @@ function ShopContent() {
         <aside className="w-full md:w-64 shrink-0 space-y-8">
           <div className="flex items-center justify-between border-b border-border pb-4">
             <h2 className="font-serif text-xl text-white">Filters</h2>
-            {(selectedBrand !== "all" || activeShape !== "all" || selectedType !== "all") && (
+            {(selectedBrand !== "all" || activeShape !== "all" || selectedType !== "all" || selectedCollection !== "all") && (
               <button
                 onClick={() => updateFilter("clear")}
                 className="text-xs text-gold/70 hover:text-gold uppercase tracking-wider cursor-pointer"
@@ -135,6 +155,29 @@ function ShopContent() {
                 Clear All
               </button>
             )}
+          </div>
+
+          {/* Collection Filter */}
+          <div className="space-y-3">
+            <h3 className="text-xs uppercase tracking-widest text-gold font-medium">Collection</h3>
+            <div className="flex flex-wrap gap-2 md:flex-col md:items-start md:gap-2.5">
+              {[
+                { name: "All Collections", value: "all" },
+                ...collections
+                  .filter((c) => !["premium-sunglasses", "signature-eyewear", "luxury-eyewear", "premium-eyewear"].includes(c.slug))
+                  .map((c) => ({ name: c.title, value: c.slug })),
+              ].map((c) => (
+                <button
+                  key={c.value}
+                  onClick={() => updateFilter("collection", c.value)}
+                  className={`text-sm tracking-wide transition-colors cursor-pointer ${
+                    selectedCollection === c.value ? "text-gold font-semibold" : "text-foreground/75 hover:text-white"
+                  }`}
+                >
+                  {c.name}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Type Filter */}
