@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { logger } from './lib/logger';
@@ -34,6 +35,9 @@ app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:3000',
   credentials: true,
 }));
+
+// Compress JSON responses (3-5x bandwidth reduction)
+app.use(compression());
 
 // Rate limiting — global
 app.use(rateLimit({

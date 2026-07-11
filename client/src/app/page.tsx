@@ -1,9 +1,7 @@
-'use client';
-
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/header";
+import NewsletterForm from "@/components/NewsletterForm";
 
 // Import assets
 import heroImg from "@/assets/hero.jpg";
@@ -67,8 +65,6 @@ const frameStyles = [
 ];
 
 export default function Home() {
-  const [email, setEmail] = useState("");
-
   return (
     <div className="min-h-screen bg-background text-foreground animate-fade-in duration-300">
       <Header />
@@ -186,19 +182,7 @@ export default function Home() {
             Join the <span className="text-gold font-bold drop-shadow-[0_0_15px_rgba(197,160,89,0.85)] animate-pulse uppercase">Viewora</span> Community
           </h2>
           <p className="text-muted-foreground mb-8 text-lg font-sans">Subscribe for exclusive offers, early access, and style updates.</p>
-          <form onSubmit={(e) => { e.preventDefault(); setEmail(""); }} className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="flex-1 bg-input border border-border px-5 py-3.5 text-foreground placeholder:text-muted-foreground focus:border-gold focus:outline-none font-sans"
-            />
-            <button type="submit" className="bg-gold text-background px-8 py-3.5 text-sm font-bold tracking-[0.15em] hover:bg-gold-soft transition-colors cursor-pointer">
-              SUBSCRIBE
-            </button>
-          </form>
+          <NewsletterForm />
         </div>
       </section>
 
