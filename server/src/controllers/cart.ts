@@ -180,6 +180,17 @@ export async function removeCartItem(req: AuthRequest, res: Response, next: Next
   }
 }
 
+// DELETE /api/v1/cart (bulk clear)
+export async function clearAllCartItems(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const userId = req.userId!;
+    await prisma.cartItem.deleteMany({ where: { userId } });
+    res.json({ message: 'Cart cleared successfully' });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function mergeCart(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const userId = req.userId!;

@@ -70,7 +70,7 @@ function ForgotPasswordContent() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
-            <Image src={logoImg} alt="Viewora" className="h-14 w-auto mx-auto" width={112} height={112} priority />
+            <Image src={logoImg} alt="Viewora" className="h-20 w-auto mx-auto" width={160} height={160} priority />
           </Link>
           <p className="text-gold tracking-[0.3em] text-xs mt-3">FASHION EYEWEAR</p>
         </div>

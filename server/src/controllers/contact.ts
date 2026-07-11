@@ -1,17 +1,22 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../lib/AppError';
 import { logger } from '../lib/logger';
-import nodemailer from 'nodemailer';
 
-// Helper to check if SMTP is configured
-const host = process.env.EMAIL_HOST;
-const port = parseInt(process.env.EMAIL_PORT || '587', 10);
-const user = process.env.EMAIL_USER;
-const pass = process.env.EMAIL_PASS;
+// HTML-escape user input to prevent email HTML injection
+function escapeHtml(str: string): string {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// Reuse the shared singleton transporter from the email service
+import { transporter, hasCredentials } from '../services/email';
+
 const from = process.env.EMAIL_FROM || 'noreply@viewora.in';
 const contactRecipient = process.env.CONTACT_RECIPIENT_EMAIL || 'support@viewora.in';
-
-const hasCredentials = !!(host && user && pass);
 
 // POST /api/v1/contact
 export async function submitContact(req: Request, res: Response, next: NextFunction) {
@@ -37,30 +42,28 @@ export async function submitContact(req: Request, res: Response, next: NextFunct
       message,
     });
 
-    // Try sending email if SMTP is configured
-    if (hasCredentials) {
-      try {
-        const transporter = nodemailer.createTransport({
-          host,
-          port,
-          secure: port === 465,
-          auth: { user, pass },
-        });
+    // Escape all user-supplied values before embedding in HTML to prevent injection
+    const safeName = escapeHtml(String(name).trim());
+    const safeSubject = escapeHtml(String(subject).trim());
+    const safeMessage = escapeHtml(String(message).trim());
 
+    // Try sending email if SMTP is configured
+    if (hasCredentials && transporter) {
+      try {
         await transporter.sendMail({
           from: `"VIEWORA Contact Form" <${from}>`,
           to: contactRecipient,
-          subject: `Contact Form: ${subject}`,
+          subject: `Contact Form: ${safeSubject}`,
           text: `Name: ${name}\nEmail: ${normalizedEmail}\n\nMessage:\n${message}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
               <h2>New Contact Form Submission</h2>
-              <p><strong>Name:</strong> ${name}</p>
+              <p><strong>Name:</strong> ${safeName}</p>
               <p><strong>Email:</strong> ${normalizedEmail}</p>
-              <p><strong>Subject:</strong> ${subject}</p>
+              <p><strong>Subject:</strong> ${safeSubject}</p>
               <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
               <p><strong>Message:</strong></p>
-              <p style="white-space: pre-wrap; background-color: #f9f9f9; padding: 15px; border-radius: 5px;">${message}</p>
+              <p style="white-space: pre-wrap; background-color: #f9f9f9; padding: 15px; border-radius: 5px;">${safeMessage}</p>
             </div>
           `,
         });

@@ -7,37 +7,48 @@ import { AuthRequest } from '../middleware/auth';
 import { logger } from '../lib/logger';
 import { Prisma } from '@prisma/client';
 
-const merchantId = process.env.PHONEPE_MERCHANT_ID === 'YOUR_VALUE_HERE' || !process.env.PHONEPE_MERCHANT_ID ? 'PGOMT' : process.env.PHONEPE_MERCHANT_ID;
-const saltKey = process.env.PHONEPE_SALT_KEY === 'YOUR_VALUE_HERE' || !process.env.PHONEPE_SALT_KEY ? '099eb0cd-02cf-4e2a-8aca-3e6c6aff0399' : process.env.PHONEPE_SALT_KEY;
-const saltIndex = process.env.PHONEPE_SALT_INDEX || '1';
-const phonepeEnv = process.env.PHONEPE_ENV || 'sandbox';
+import { merchantId, saltKey, saltIndex, phonepeEnv, baseUrl } from '../lib/phonepe';
 
-const baseUrl = phonepeEnv === 'production'
-  ? (process.env.PHONEPE_BASE_URL_PRODUCTION || 'https://api.phonepe.com/apis/hermes')
-  : (process.env.PHONEPE_BASE_URL_SANDBOX || 'https://api-preprod.phonepe.com/apis/pg-sandbox');
 
 // GET /api/v1/admin/orders
 export async function listAllOrders(req: AuthRequest, res: Response, next: NextFunction) {
   try {
-    const orders = await prisma.order.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true, phone: true },
-        },
-        items: {
-          include: {
-            variant: {
-              include: { product: true },
+    const page = Math.max(1, parseInt(String(req.query.page || '1'), 10));
+    const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit || '50'), 10)));
+    const skip = (page - 1) * limit;
+
+    const [orders, total] = await prisma.$transaction([
+      prisma.order.findMany({
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        include: {
+          user: {
+            select: { id: true, name: true, email: true, phone: true },
+          },
+          items: {
+            include: {
+              variant: {
+                include: { product: true },
+              },
             },
           },
+          payment: true,
+          refunds: true,
         },
-        payment: true,
-        refunds: true,
+      }),
+      prisma.order.count(),
+    ]);
+
+    res.json({
+      orders,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       },
     });
-
-    res.json({ orders });
   } catch (error) {
     next(error);
   }

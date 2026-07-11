@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getCart, addToCart, updateCartItem, removeCartItem, mergeCart } from '../controllers/cart';
+import { getCart, addToCart, updateCartItem, removeCartItem, clearAllCartItems, mergeCart } from '../controllers/cart';
 import { authenticate } from '../middleware/auth';
 import { validateBody, addToCartSchema, updateCartItemSchema } from '../middleware/validation';
 
@@ -11,5 +11,6 @@ router.post('/', authenticate, validateBody(addToCartSchema), addToCart);
 router.put('/:itemId', authenticate, validateBody(updateCartItemSchema), updateCartItem);
 router.delete('/:itemId', authenticate, removeCartItem);
 router.post('/merge', authenticate, mergeCart);
+router.delete('/', authenticate, clearAllCartItems);
 
 export default router;

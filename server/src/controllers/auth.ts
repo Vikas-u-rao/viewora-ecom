@@ -59,15 +59,15 @@ function isPasswordStrong(password: string): boolean {
   return hasUppercase && hasLowercase && hasNumber && hasSpecial;
 }
 
-// Helper to generate 6-digit OTP
+// Helper to generate 6-digit OTP (cryptographically secure)
 function generateOtp(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return crypto.randomInt(100000, 1000000).toString();
 }
 
 // POST /auth/register
 export async function register(req: Request, res: Response, next: NextFunction) {
   try {
-    const { name, email, password, phone } = req.body;
+    const { name, email, password, phone, referrerId } = req.body;
 
     if (!name || !email || !password) {
       throw new AppError('VALIDATION_ERROR', 400, 'Name, email, and password are required');
@@ -76,6 +76,7 @@ export async function register(req: Request, res: Response, next: NextFunction) 
     const normalizedEmail = String(email).trim().toLowerCase();
     const normalizedName = String(name).trim();
     const normalizedPhone = phone ? String(phone).trim() : null;
+    const normalizedReferrerId = referrerId ? String(referrerId).trim() : null;
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -104,6 +105,13 @@ export async function register(req: Request, res: Response, next: NextFunction) 
       }
     }
 
+    if (normalizedReferrerId) {
+      const referrer = await prisma.user.findUnique({ where: { id: normalizedReferrerId } });
+      if (!referrer) {
+        throw new AppError('NOT_FOUND', 404, 'Referrer not found');
+      }
+    }
+
     const passwordHash = await bcrypt.hash(password, 12);
     const otp = generateOtp();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes expiry
@@ -118,6 +126,7 @@ export async function register(req: Request, res: Response, next: NextFunction) 
         name: normalizedName,
         phone: normalizedPhone,
         passwordHash,
+        referrerId: normalizedReferrerId,
       },
       create: {
         email: normalizedEmail,
@@ -127,6 +136,7 @@ export async function register(req: Request, res: Response, next: NextFunction) 
         name: normalizedName,
         phone: normalizedPhone,
         passwordHash,
+        referrerId: normalizedReferrerId,
       },
     });
 
@@ -251,14 +261,28 @@ export async function verifyOtp(req: Request, res: Response, next: NextFunction)
         throw new AppError('ALREADY_EXISTS', 409, 'User already verified and created');
       }
 
-      // Create verified user
-      const user = await prisma.user.create({
-        data: {
-          name: verification.name,
-          email: normalizedEmail,
-          phone: verification.phone,
-          passwordHash: verification.passwordHash,
-        },
+      // Create verified user and handle referral
+      const user = await prisma.$transaction(async (tx) => {
+        const newUser = await tx.user.create({
+          data: {
+            name: verification.name!,
+            email: normalizedEmail,
+            phone: verification.phone,
+            passwordHash: verification.passwordHash!,
+          },
+        });
+
+        if (verification.referrerId) {
+          await tx.referral.create({
+            data: {
+              referrerId: verification.referrerId,
+              referredUserId: newUser.id,
+              status: 'pending',
+            },
+          });
+        }
+
+        return newUser;
       });
 
       // Invalidate the OTP

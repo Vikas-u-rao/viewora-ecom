@@ -6,19 +6,10 @@ import { AppError } from '../lib/AppError';
 import { AuthRequest } from '../middleware/auth';
 import { sendOrderConfirmationEmail } from '../services/email';
 import { logger } from '../lib/logger';
+import { Prisma } from '@prisma/client';
 
-// Load credentials
-const merchantId = process.env.PHONEPE_MERCHANT_ID === 'YOUR_VALUE_HERE' || !process.env.PHONEPE_MERCHANT_ID ? 'PGOMT' : process.env.PHONEPE_MERCHANT_ID;
-const saltKey = process.env.PHONEPE_SALT_KEY === 'YOUR_VALUE_HERE' || !process.env.PHONEPE_SALT_KEY ? '099eb0cd-02cf-4e2a-8aca-3e6c6aff0399' : process.env.PHONEPE_SALT_KEY;
-const saltIndex = process.env.PHONEPE_SALT_INDEX || '1';
-const phonepeEnv = process.env.PHONEPE_ENV || 'sandbox';
+import { merchantId, saltKey, saltIndex, baseUrl, redirectUrl, callbackUrl } from '../lib/phonepe';
 
-const baseUrl = phonepeEnv === 'production'
-  ? (process.env.PHONEPE_BASE_URL_PRODUCTION || 'https://api.phonepe.com/apis/hermes')
-  : (process.env.PHONEPE_BASE_URL_SANDBOX || 'https://api-preprod.phonepe.com/apis/pg-sandbox');
-
-const redirectUrl = process.env.PHONEPE_REDIRECT_URL || 'http://localhost:3000/payment/status';
-const callbackUrl = process.env.PHONEPE_CALLBACK_URL || 'http://localhost:5000/api/v1/payments/callback';
 
 // POST /api/v1/payments/initiate
 export async function initiatePayment(req: AuthRequest, res: Response, next: NextFunction) {
@@ -232,6 +223,84 @@ export async function paymentCallback(req: Request, res: Response, next: NextFun
               },
             },
           });
+        }
+      }
+
+      // Handle successful payment business rules (Coupon/Referral/etc.)
+      if (isSuccess) {
+        // A. Mark applied coupon as used
+        if (payment.order.appliedCouponId) {
+          await tx.coupon.update({
+            where: { id: payment.order.appliedCouponId },
+            data: {
+              status: 'used',
+              usedAt: new Date(),
+            },
+          });
+        }
+
+        // B. Generate 10% subtotal coupon if order subtotal >= 5000
+        if (payment.order.subtotal.greaterThanOrEqualTo(5000)) {
+          const couponValue = payment.order.subtotal.mul(0.10);
+          const couponCode = `VW-CPN-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+          const expiresAt = new Date();
+          expiresAt.setDate(expiresAt.getDate() + 90);
+
+          await tx.coupon.create({
+            data: {
+              code: couponCode,
+              value: couponValue,
+              userId: payment.order.userId,
+              guestEmail: payment.order.guestEmail,
+              guestPhone: payment.order.guestPhone,
+              status: 'active',
+              expiresAt,
+            },
+          });
+        }
+
+        // C. Handle referrals for first-time paid users
+        if (payment.order.userId) {
+          const paidOrdersCount = await tx.order.count({
+            where: {
+              userId: payment.order.userId,
+              paymentStatus: 'paid',
+              id: { not: payment.orderId },
+            },
+          });
+
+          if (paidOrdersCount === 0) {
+            const referral = await tx.referral.findFirst({
+              where: {
+                referredUserId: payment.order.userId,
+                status: 'pending',
+              },
+            });
+
+            if (referral) {
+              const referrerCouponCode = `VW-REF-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+              const expiresAt = new Date();
+              expiresAt.setDate(expiresAt.getDate() + 90);
+
+              const referrerCoupon = await tx.coupon.create({
+                data: {
+                  code: referrerCouponCode,
+                  value: new Prisma.Decimal(500),
+                  userId: referral.referrerId,
+                  status: 'active',
+                  expiresAt,
+                },
+              });
+
+              await tx.referral.update({
+                where: { id: referral.id },
+                data: {
+                  status: 'qualified',
+                  generatedCouponId: referrerCoupon.id,
+                },
+              });
+            }
+          }
         }
       }
 

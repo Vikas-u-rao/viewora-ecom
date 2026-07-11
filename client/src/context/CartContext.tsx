@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable */
 
 import {
   createContext,
@@ -19,6 +18,7 @@ import {
   addToCartApi,
   updateCartItemApi,
   removeCartItemApi,
+  clearCartApi,
   mergeCartApi,
 } from '@/services/cart';
 
@@ -284,12 +284,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = useCallback(async () => {
     if (accessToken) {
-      const prevItems = [...items];
       setItems([]);
       try {
-        await Promise.all(prevItems.map((item) => removeCartItemApi(accessToken, item.id)));
+        await clearCartApi(accessToken);
       } catch (err) {
-        setItems(prevItems);
+        await loadAuthCart();
         throw err;
       }
       return;
@@ -297,7 +296,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     setItems([]);
     clearGuestCart();
-  }, [accessToken, items]);
+  }, [accessToken, loadAuthCart]);
 
   // ── Render ──────────────────────────────────────────────────────────────
 

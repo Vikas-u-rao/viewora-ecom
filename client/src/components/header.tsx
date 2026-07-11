@@ -46,9 +46,9 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur border-b border-border">
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-3 flex items-center justify-between">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center">
-          <Image src={logoImg} alt="Viewora" className="h-12 md:h-14 w-auto" width={112} height={112} priority />
+          <Image src={logoImg} alt="Viewora" className="h-10 md:h-12 w-auto" width={120} height={120} priority />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 lg:gap-10">
@@ -56,14 +56,14 @@ export default function Header() {
             if (n.megaCollections) {
               return (
                 <div key={n.label} className="group relative">
-                  <Link href={n.href} className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors py-6">
+                  <Link href={n.href} className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors py-6">
                     {n.label}
                   </Link>
                   <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[64px] md:top-[68px] bg-background border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
                     <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-10">
                       <div className="text-center mb-8">
-                        <p className="text-gold tracking-[0.3em] text-xs mb-2">CURATED BRANDS</p>
-                        <h4 className="font-serif text-2xl text-white font-normal">International Collections</h4>
+                        <p className="text-gold tracking-[0.3em] text-sm mb-2">CURATED BRANDS</p>
+                        <h4 className="font-serif text-3xl text-white font-normal">International Collections</h4>
                         <div className="h-[1px] w-12 bg-gold/35 mx-auto mt-2"></div>
                       </div>
 
@@ -72,7 +72,7 @@ export default function Header() {
                           <Link
                             key={brand}
                             href={`/shop?brand=${brand.toLowerCase().replace(' ', '-')}`}
-                            className="text-sm text-foreground/80 hover:text-gold transition-all duration-200 py-1 hover:translate-x-1 inline-block"
+                            className="text-base text-foreground font-medium hover:text-gold transition-all duration-200 py-1 hover:translate-x-1 inline-block"
                           >
                             {brand}
                           </Link>
@@ -96,7 +96,7 @@ export default function Header() {
             if (n.megaShop) {
               return (
                 <div key={n.label} className="group relative">
-                  <Link href={n.href} className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors py-6">
+                  <Link href={n.href} className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors py-6">
                     {n.label}
                   </Link>
                   <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[64px] md:top-[68px] bg-background border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
@@ -104,13 +104,13 @@ export default function Header() {
                       <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                         {shopMenu.map((cat) => (
                           <div key={cat.title} className="border-l border-gold/10 pl-6 first:border-l-0 first:pl-0 text-left">
-                            <h4 className="font-serif text-gold text-lg mb-4 leading-snug">{cat.title}</h4>
+                            <h4 className="font-serif text-gold text-xl font-bold mb-4 leading-snug">{cat.title}</h4>
                             <ul className="space-y-2.5 mb-4">
                               {cat.items.map((item) => (
                                 <li key={item}>
                                   <Link
                                     href={`/shop?filter=${item.toLowerCase().replace(' ', '-')}`}
-                                    className="text-sm text-foreground/85 hover:text-gold hover:translate-x-0.5 transition-all duration-200 inline-block"
+                                    className="text-base text-foreground font-medium hover:text-gold hover:translate-x-0.5 transition-all duration-200 inline-block"
                                   >
                                     {item}
                                   </Link>
@@ -136,7 +136,7 @@ export default function Header() {
             }
 
             return (
-              <Link key={n.label} href={n.href} className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors">
+              <Link key={n.label} href={n.href} className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors">
                 {n.label}
               </Link>
             );
@@ -145,11 +145,11 @@ export default function Header() {
 
         <div className="hidden md:flex items-center gap-8 lg:gap-10">
           {user ? (
-            <Link href="/account/profile" className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors">
+            <Link href="/account/profile" className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors">
               PROFILE
             </Link>
           ) : (
-            <Link href="/login" className="text-sm tracking-[0.15em] font-medium hover:text-gold transition-colors">
+            <Link href="/login" className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors">
               LOGIN
             </Link>
           )}

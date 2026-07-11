@@ -2,7 +2,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import { FormEvent, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Loader2, Plus, Smartphone, Truck } from "lucide-react";
 import { toast } from "sonner";
@@ -10,7 +9,8 @@ import Header from "@/components/header";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { Address, AddressPayload, fetchAddressesApi, saveAddressApi } from "@/services/account";
-import { createOrderApi, orderItemsFromCart } from "@/services/orders";
+import { createOrderApi, orderItemsFromCart, initiatePaymentApi } from "@/services/orders";
+import { COUPON_STORAGE_KEY } from "@/services/coupons";
 
 const SHIPPING_FEE = 99;
 
@@ -30,9 +30,8 @@ function money(value: number) {
 }
 
 export default function CheckoutPage() {
-  const router = useRouter();
   const { user, accessToken } = useAuth();
-  const { items, subtotal, clearCart } = useCart();
+  const { items, subtotal } = useCart();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const [addressForm, setAddressForm] = useState<AddressPayload>({ ...emptyAddress });
@@ -93,27 +92,49 @@ export default function CheckoutPage() {
 
     setPlacing(true);
     try {
+      // Step 1 — save address if needed
       let addressId = selectedAddressId;
       if (user && accessToken && showNewAddress) {
         const saved = await saveAddressApi(accessToken, { ...addressForm, isDefault: addresses.length === 0 || addressForm.isDefault });
         addressId = saved.id;
       }
 
-      const data = await createOrderApi({
-        ...(user ? { addressId } : { ...payloadAddress, guestEmail: guestEmail.trim().toLowerCase(), guestPhone: phone.trim() }),
-        ...(!user && { guestPhone: phone.trim() }),
-        items: orderItemsFromCart(items),
-      }, accessToken);
+      // Read applied coupon from localStorage
+      const storedCoupon = typeof window !== 'undefined' ? localStorage.getItem(COUPON_STORAGE_KEY) : null;
+      const parsedCoupon = storedCoupon ? JSON.parse(storedCoupon) : null;
 
-      await clearCart();
-      if (!user) localStorage.setItem(`viewora_guest_order_${data.order.id}`, "1");
-      toast.success("Order placed successfully.");
-      router.push(`/order-confirmation/${data.order.id}`);
+      // Step 2 — create the order (status: pending)
+      const { order } = await createOrderApi(
+        {
+          ...(user ? { addressId } : { ...payloadAddress, guestEmail: guestEmail.trim().toLowerCase(), guestPhone: phone.trim() }),
+          ...(!user && { guestPhone: phone.trim() }),
+          items: orderItemsFromCart(items),
+          ...(parsedCoupon ? { couponCode: parsedCoupon.code } : {}),
+        },
+        accessToken
+      );
+
+      // Step 3 — initiate PhonePe payment and redirect to their payment page
+      toast.loading("Redirecting to payment…", { id: "payment-redirect" });
+      const { redirectUrl } = await initiatePaymentApi(order.id, accessToken);
+      toast.dismiss("payment-redirect");
+
+      // Store guest order marker before redirect so the confirmation page can detect it
+      if (!user) {
+        localStorage.setItem(`viewora_guest_order_${order.id}`, "1");
+      }
+
+      // Clear stored coupon after successful order
+      localStorage.removeItem(COUPON_STORAGE_KEY);
+
+      // Hard-redirect to PhonePe hosted payment page
+      window.location.href = redirectUrl;
     } catch (error) {
+      toast.dismiss("payment-redirect");
       toast.error(error instanceof Error ? error.message : "Failed to place order.");
-    } finally {
       setPlacing(false);
     }
+    // Note: don't set placing=false on success — the page navigates away
   };
 
   return (
@@ -182,8 +203,9 @@ export default function CheckoutPage() {
                 <h2 className="font-serif text-2xl text-white mb-3">Payment</h2>
                 <div className="flex items-center gap-3 text-gold">
                   <Smartphone className="size-5" />
-                  <span className="text-sm font-semibold tracking-[0.15em]">PHONEPE</span>
+                  <span className="text-sm font-semibold tracking-[0.15em]">PHONEPE — UPI / Cards / Netbanking</span>
                 </div>
+                <p className="mt-2 text-xs text-muted-foreground">You will be securely redirected to PhonePe to complete payment.</p>
               </div>
             </section>
 
@@ -204,7 +226,7 @@ export default function CheckoutPage() {
               </div>
               <button disabled={placing || unavailableItems.length > 0} className="mt-6 flex w-full items-center justify-center gap-2 bg-gold py-3.5 text-xs font-bold tracking-[0.2em] text-background disabled:opacity-50">
                 {placing && <Loader2 className="size-4 animate-spin" />}
-                PLACE ORDER
+                {placing ? "REDIRECTING TO PAYMENT…" : "PLACE ORDER & PAY"}
               </button>
             </aside>
           </form>

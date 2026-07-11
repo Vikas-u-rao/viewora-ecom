@@ -20,9 +20,11 @@ import paymentRoutes from './routes/payments';
 import adminRoutes from './routes/admin';
 import contactRoutes from './routes/contact';
 import variantRoutes from './routes/variants';
+import couponRoutes from './routes/coupons';
 
 // Jobs
 import { startStockCleanupJob } from './jobs/stockReservationCleanup';
+import { startCouponExpiryJob } from './jobs/couponExpiry';
 
 const app = express();
 
@@ -60,6 +62,7 @@ app.use('/api/v1/payments', authLimiter, paymentRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/contact', contactRoutes);
 app.use('/api/v1/variants', variantRoutes);
+app.use('/api/v1/coupons', couponRoutes);
 
 // Health check
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
@@ -74,6 +77,7 @@ function startServer(port: number, attempts = 0) {
     logger.info({ msg: `VIEWORA server running on port ${port}`, env: process.env.NODE_ENV });
     // Start background jobs
     startStockCleanupJob();
+    startCouponExpiryJob();
   });
 
   server.on('error', (err: any) => {

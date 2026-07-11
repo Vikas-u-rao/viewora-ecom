@@ -123,6 +123,15 @@ export async function removeCartItemApi(
   return handleResponse(res);
 }
 
+export async function clearCartApi(token: string): Promise<{ message: string }> {
+  const res = await fetch(`${API_BASE}/cart`, {
+    method: 'DELETE',
+    headers: authHeaders(token),
+    credentials: 'include',
+  });
+  return handleResponse(res);
+}
+
 export async function mergeCartApi(
   token: string,
   items: Array<{ variantId: string; quantity: number }>,
