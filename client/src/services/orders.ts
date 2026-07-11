@@ -57,6 +57,7 @@ export interface CreateOrderPayload {
   shippingPincode?: string;
   guestEmail?: string;
   guestPhone?: string;
+  couponCode?: string;
   items: Array<{ variantId: string; quantity: number }>;
 }
 
@@ -102,3 +103,25 @@ export async function fetchOrderApi(id: string, token?: string | null) {
   });
   return parseJson<{ order: Order }>(res);
 }
+
+export async function initiatePaymentApi(orderId: string, token?: string | null) {
+  const res = await fetch(`${API_BASE}/payments/initiate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    credentials: "include",
+    body: JSON.stringify({ orderId }),
+  });
+  return parseJson<{ success: boolean; redirectUrl: string }>(res);
+}
+
+export async function getPaymentStatusApi(orderId: string, token?: string | null) {
+  const res = await fetch(`${API_BASE}/payments/status/${orderId}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    credentials: "include",
+  });
+  return parseJson<{ paymentStatus: string; status: string }>(res);
+}
+

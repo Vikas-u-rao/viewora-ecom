@@ -73,32 +73,33 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground animate-fade-in duration-300">
       <Header />
 
-      {/* Hero Section - Split Layout */}
-      <section id="home" className="relative min-h-screen grid grid-cols-1 md:grid-cols-2 pt-20 bg-background overflow-hidden">
-        {/* Left side: Eyewear Image */}
-        <div className="relative w-full h-[50vh] md:h-[calc(100vh-80px)] flex items-center justify-center bg-black/20 border-r border-border/30">
+      {/* Hero Section - Full Background Layout */}
+      <section id="home" className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden bg-black">
+        {/* Full Screen Background Image */}
+        <div className="absolute inset-0 w-full h-full">
           <Image
             src={heroImg}
             alt="Hero Banner Eyewear"
-            className="object-cover w-full h-full scale-x-[-1]"
+            className="object-cover w-full h-full opacity-40 scale-x-[-1]"
             priority
+            fill
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-background/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-black/50" />
         </div>
 
-        {/* Right side: Hero Text */}
-        <div className="flex flex-col justify-center px-8 md:px-16 lg:px-24 py-12 md:py-0 text-left max-w-2xl mx-auto md:mx-0">
-          <p className="text-gold tracking-[0.35em] text-xs md:text-sm mb-6 font-medium">FASHION EYEWEAR</p>
-          <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-normal leading-[1.1] mb-6 text-white">
-            See the World in <span className="text-gold font-bold italic drop-shadow-[0_2px_10px_rgba(197,160,89,0.35)] animate-pulse">GOLD</span>
+        {/* Centered Hero Text */}
+        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
+          <p className="text-gold tracking-[0.4em] text-xs md:text-sm mb-6 font-semibold uppercase">FASHION EYEWEAR</p>
+          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-normal leading-[1.15] mb-8 text-white">
+            See the World in <span className="text-gold font-bold italic drop-shadow-[0_0_20px_rgba(197,160,89,0.65)] animate-pulse">GOLD</span>
           </h1>
-          <p className="text-base md:text-lg text-white/80 mb-10 leading-relaxed font-light font-sans">
+          <p className="text-base md:text-xl text-white/95 mb-12 leading-relaxed font-light max-w-2xl mx-auto font-sans">
             Luxury eyewear crafted with premium materials, designed for everyday comfort and timeless elegance.
           </p>
-          <div className="flex items-center">
-            <a href="#collections" className="bg-gold text-background px-10 py-4 text-xs font-bold tracking-[0.15em] hover:bg-gold-soft transition-all duration-300 hover:shadow-[0_0_20px_rgba(197,160,89,0.3)] hover:-translate-y-0.5 text-center">
-              SHOP COLLECTION
-            </a>
+          <div className="flex justify-center">
+            <Link href="/shop" className="bg-gold text-background px-12 py-4.5 text-xs font-bold tracking-[0.2em] hover:bg-gold-soft transition-all duration-300 hover:shadow-[0_0_30px_rgba(197,160,89,0.45)] hover:-translate-y-0.5 text-center">
+              SHOP NOW
+            </Link>
           </div>
         </div>
       </section>
@@ -162,11 +163,18 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-24 md:py-32 px-6 lg:px-8 bg-background">
-        <div className="max-w-3xl mx-auto text-center">
-          <Image src={logoImg} alt="Viewora" className="h-20 md:h-28 w-auto mx-auto mb-10" loading="lazy" width={224} height={224} />
-          <p className="text-lg md:text-xl lg:text-2xl font-serif leading-relaxed text-muted-foreground">
-            At <span className="text-gold">Viewora</span>, every frame is designed to be more than an accessory — it&apos;s a statement of style, confidence, and timeless luxury. Our eyewear blends contemporary design with premium craftsmanship, made for those who see life with clarity and class.
+      <section id="about" className="py-28 md:py-36 px-6 lg:px-8 bg-background relative overflow-hidden">
+        {/* Subtle radial gold glow behind the logo */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-gold/5 blur-3xl pointer-events-none" />
+
+        <div className="max-w-3xl mx-auto text-center relative z-10">
+          <p className="text-gold tracking-[0.4em] text-xs mb-8 uppercase font-medium">OUR PHILOSOPHY</p>
+          <div className="mb-10 inline-block">
+            <Image src={logoImg} alt="Viewora" className="h-32 md:h-40 w-auto mx-auto" loading="lazy" width={288} height={288} />
+          </div>
+          <div className="h-[1px] w-20 bg-gold/30 mx-auto mb-10" />
+          <p className="text-xl md:text-2xl lg:text-3xl font-serif leading-relaxed text-muted-foreground max-w-2xl mx-auto">
+            At <span className="text-gold font-semibold">Viewora</span>, every frame is designed to be more than an accessory — it&apos;s a statement of style, confidence, and timeless luxury. Our eyewear blends contemporary design with premium craftsmanship, made for those who see life with clarity and class.
           </p>
         </div>
       </section>
@@ -198,7 +206,7 @@ export default function Home() {
       <footer className="border-t border-border pt-16 md:pt-20 pb-8 px-6 lg:px-8 bg-background">
         <div className="max-w-[1400px] mx-auto grid md:grid-cols-3 gap-12 lg:gap-16 mb-12 md:mb-16">
           <div>
-            <Image src={logoImg} alt="Viewora" className="h-16 md:h-20 w-auto mb-6" loading="lazy" width={160} height={160} />
+            <Image src={logoImg} alt="Viewora" className="h-24 md:h-28 w-auto mb-6" loading="lazy" width={224} height={224} />
             <p className="text-muted-foreground max-w-xs leading-relaxed font-sans">
               Premium fashion eyewear crafted for elegance, comfort, and bold individuality.
             </p>

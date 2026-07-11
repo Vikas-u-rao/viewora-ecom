@@ -8,9 +8,9 @@ const user = process.env.EMAIL_USER;
 const pass = process.env.EMAIL_PASS;
 const from = process.env.EMAIL_FROM || 'noreply@viewora.in';
 
-const hasCredentials = !!(host && user && pass);
+export const hasCredentials = !!(host && user && pass);
 
-let transporter: nodemailer.Transporter | null = null;
+export let transporter: nodemailer.Transporter | null = null;
 
 if (hasCredentials) {
   transporter = nodemailer.createTransport({
@@ -142,6 +142,62 @@ export async function sendOrderConfirmationEmail(email: string, order: any) {
 function logOrderToConsole(email: string, order: any) {
   logger.info('\n' + '='.repeat(60) + 
     `\n[DEVELOPMENT FALLBACK] ORDER CONFIRMATION FOR EMAIL: ${email}\nORDER ID: ${order.id}\nAMOUNT: ₹${order.finalPayableAmount}\n` + 
+    '='.repeat(60) + '\n'
+  );
+}
+
+export async function sendCouponExpiryReminder(email: string, couponCode: string, value: number, expiresAt: Date) {
+  const subject = `Your Coupon is Expiring Soon! - VIEWORA`;
+  const formattedExpiry = expiresAt.toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #ffffff; color: #333333;">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h1 style="color: #d4af37; margin: 0; font-family: 'Playfair Display', Georgia, serif;">VIEWORA</h1>
+        <p style="font-size: 12px; letter-spacing: 2px; color: #888888; margin: 5px 0 0 0; text-transform: uppercase;">Premium Fashion Eyewear</p>
+      </div>
+      <hr style="border: 0; border-top: 1px solid #f0f0f0; margin-bottom: 20px;">
+      <h2 style="font-size: 20px; color: #333333; margin-top: 0;">Don't let your coupon go to waste!</h2>
+      <p style="font-size: 15px; line-height: 1.5; color: #555555;">Hello,</p>
+      <p style="font-size: 15px; line-height: 1.5; color: #555555;">Your coupon worth <strong>₹${value.toLocaleString('en-IN')}</strong> is expiring soon on <strong>${formattedExpiry}</strong>.</p>
+      
+      <div style="text-align: center; margin: 30px 0; padding: 15px; background-color: #fafafa; border-radius: 6px; border: 1px dashed #d4af37;">
+        <span style="font-size: 24px; font-weight: bold; letter-spacing: 2px; color: #d4af37; font-family: monospace;">${couponCode}</span>
+      </div>
+      
+      <p style="font-size: 15px; line-height: 1.5; color: #555555;">Apply this coupon code at checkout to claim your discount. Browse our collection today!</p>
+      <hr style="border: 0; border-top: 1px solid #f0f0f0; margin: 20px 0;">
+      <p style="font-size: 12px; color: #999999; text-align: center; margin: 0;">&copy; 2026 VIEWORA. All rights reserved.</p>
+    </div>
+  `;
+
+  if (transporter) {
+    try {
+      await transporter.sendMail({
+        from: `"VIEWORA Coupons" <${from}>`,
+        to: email,
+        subject,
+        html: htmlContent,
+      });
+      logger.info({ msg: `Coupon expiry email sent to ${email}`, couponCode });
+    } catch (error) {
+      logger.error({ msg: `Failed to send coupon expiry email to ${email}`, error, couponCode });
+      logCouponToConsole(email, couponCode, value, expiresAt);
+    }
+  } else {
+    logCouponToConsole(email, couponCode, value, expiresAt);
+  }
+}
+
+function logCouponToConsole(email: string, couponCode: string, value: number, expiresAt: Date) {
+  logger.info('\n' + '='.repeat(60) + 
+    `\n[DEVELOPMENT FALLBACK] COUPON EXPIRY REMINDER FOR EMAIL: ${email}\nCODE: ${couponCode}\nVALUE: ₹${value}\nEXPIRES AT: ${expiresAt.toISOString()}\n` + 
     '='.repeat(60) + '\n'
   );
 }

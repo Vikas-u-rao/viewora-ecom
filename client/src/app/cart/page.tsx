@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/header';
+import { validateCouponApi, COUPON_STORAGE_KEY } from '@/services/coupons';
 import {
   ShoppingBag,
   Minus,
@@ -52,6 +54,7 @@ function formatPrice(amount: number): string {
 
 export default function CartPage() {
   const router = useRouter();
+  const { accessToken, user } = useAuth();
   const {
     items,
     isLoading,
@@ -62,11 +65,25 @@ export default function CartPage() {
   } = useCart();
 
   const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{id: string; code: string; value: string} | null>(null);
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
 
   const availableItems = items.filter((i) => !i.productUnavailable);
   const unavailableItems = items.filter((i) => i.productUnavailable);
-  const total = subtotal + (availableItems.length > 0 ? SHIPPING_FEE : 0);
+  const discountAmount = appliedCoupon ? Number(appliedCoupon.value) : 0;
+  const total = subtotal + (availableItems.length > 0 ? SHIPPING_FEE : 0) - discountAmount;
+
+  // Restore applied coupon from localStorage on mount
+  useEffect(() => {
+    const stored = typeof window !== 'undefined' ? localStorage.getItem(COUPON_STORAGE_KEY) : null;
+    if (stored) {
+      try {
+        setAppliedCoupon(JSON.parse(stored));
+      } catch {
+        localStorage.removeItem(COUPON_STORAGE_KEY);
+      }
+    }
+  }, []);
 
   // ── Quantity change handler with loading state ──────────────────────────
 
@@ -91,15 +108,26 @@ export default function CartPage() {
     });
   };
 
-  const handleApplyCoupon = () => {
+  const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
       toast.error('Please enter a coupon code');
       return;
     }
-    toast.info('Coupon codes will be available soon — stay tuned!', {
-      description: 'This feature is coming in our next update.',
-      icon: <Tag className="size-4" />,
-    });
+    try {
+      const result = await validateCouponApi(
+        couponCode.trim().toUpperCase(),
+        accessToken,
+        undefined,
+        undefined,
+      );
+      setAppliedCoupon(result.coupon);
+      localStorage.setItem(COUPON_STORAGE_KEY, JSON.stringify(result.coupon));
+      toast.success(`Coupon applied! You saved ₹${Number(result.coupon.value).toLocaleString('en-IN')}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Invalid coupon');
+      setAppliedCoupon(null);
+      localStorage.removeItem(COUPON_STORAGE_KEY);
+    }
   };
 
   const handleCheckout = async () => {
@@ -460,8 +488,10 @@ export default function CartPage() {
                 </div>
 
                 <div className="flex justify-between text-muted-foreground">
-                  <span>Discount</span>
-                  <span className="text-foreground tabular-nums">−{formatPrice(0)}</span>
+                  <span>Discount{appliedCoupon ? <span className="ml-1.5 text-[10px] text-gold uppercase tracking-wider">({appliedCoupon.code})</span> : null}</span>
+                  <span className="text-foreground tabular-nums">
+                    {appliedCoupon ? `−${formatPrice(discountAmount)}` : formatPrice(0)}
+                  </span>
                 </div>
 
                 <div className="flex justify-between text-muted-foreground">

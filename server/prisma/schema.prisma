@@ -395,6 +395,7 @@ model OtpVerification {
   name         String?  // stored temporarily for signup
   phone        String?  // stored temporarily for signup
   passwordHash String?  @map("password_hash") // stored temporarily for signup
+  referrerId   String?  @map("referrer_id")
   createdAt    DateTime @default(now()) @map("created_at")
 
   @@map("otp_verifications")

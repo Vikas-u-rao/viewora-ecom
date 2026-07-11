@@ -18,6 +18,7 @@ export async function createOrder(req: AuthRequest, res: Response, next: NextFun
       guestEmail,
       guestPhone,
       items, // array of { variantId, quantity }
+      couponCode,
     } = req.body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -95,8 +96,53 @@ export async function createOrder(req: AuthRequest, res: Response, next: NextFun
       };
     });
 
+    // Validate Coupon
+    let discountAmount = new Prisma.Decimal(0);
+    let appliedCouponId: string | null = null;
+
+    if (couponCode) {
+      const coupon = await prisma.coupon.findUnique({
+        where: { code: String(couponCode).trim() },
+      });
+
+      if (!coupon) {
+        throw new AppError('NOT_FOUND', 404, 'Coupon not found');
+      }
+
+      if (coupon.status !== 'active') {
+        throw new AppError('VALIDATION_ERROR', 400, 'Coupon is no longer active');
+      }
+
+      if (coupon.expiresAt < new Date()) {
+        throw new AppError('VALIDATION_ERROR', 400, 'Coupon has expired');
+      }
+
+      // Check ownership
+      if (userId) {
+        if (coupon.userId && coupon.userId !== userId) {
+          throw new AppError('FORBIDDEN', 403, 'This coupon does not belong to you');
+        }
+      } else {
+        // Guest check
+        const normalizedGuestEmail = String(guestEmail).trim().toLowerCase();
+        if (coupon.guestEmail && coupon.guestEmail.toLowerCase() !== normalizedGuestEmail) {
+          throw new AppError('FORBIDDEN', 403, 'This coupon does not belong to your guest email');
+        }
+        const normalizedGuestPhone = String(guestPhone).trim();
+        if (coupon.guestPhone && coupon.guestPhone !== normalizedGuestPhone) {
+          throw new AppError('FORBIDDEN', 403, 'This coupon does not belong to your guest phone');
+        }
+      }
+
+      discountAmount = coupon.value;
+      appliedCouponId = coupon.id;
+    }
+
     const shippingFee = new Prisma.Decimal(99);
-    const finalPayableAmount = subtotal.add(shippingFee); // Coupon logic is v1.1
+    let finalPayableAmount = subtotal.sub(discountAmount).add(shippingFee);
+    if (finalPayableAmount.lessThan(0)) {
+      finalPayableAmount = new Prisma.Decimal(0);
+    }
 
     // 10-minute expiry for reservations
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
@@ -136,9 +182,10 @@ export async function createOrder(req: AuthRequest, res: Response, next: NextFun
           shippingState: String(finalShippingState).trim(),
           shippingPincode: String(finalShippingPincode).trim(),
           subtotal,
-          discountAmount: new Prisma.Decimal(0),
+          discountAmount,
           shippingFee,
           finalPayableAmount,
+          appliedCouponId,
           paymentStatus: 'pending',
           fulfillmentStatus: 'unfulfilled',
         },
@@ -254,9 +301,30 @@ export async function cancelOrder(req: AuthRequest, res: Response, next: NextFun
       throw new AppError('NOT_FOUND', 404, 'Order not found');
     }
 
-    // Access check
-    if (order.userId && order.userId !== req.userId) {
-      throw new AppError('FORBIDDEN', 403, 'Access denied to this order');
+    // Access check — covers both authenticated and guest scenarios
+    if (order.userId) {
+      // Order belongs to a registered user — must be that user
+      if (order.userId !== req.userId) {
+        throw new AppError('FORBIDDEN', 403, 'Access denied to this order');
+      }
+    } else {
+      // Guest order — block authenticated users from cancelling guest orders they don't own
+      if (req.userId) {
+        throw new AppError('FORBIDDEN', 403, 'Access denied to this order');
+      }
+      // Verify guest ownership via email/phone from the request body
+      const { guestEmail, guestPhone } = req.body;
+      if (order.guestEmail) {
+        if (!guestEmail || String(guestEmail).trim().toLowerCase() !== order.guestEmail) {
+          throw new AppError('FORBIDDEN', 403, 'Access denied to this order');
+        }
+      } else if (order.guestPhone) {
+        if (!guestPhone || String(guestPhone).trim() !== order.guestPhone) {
+          throw new AppError('FORBIDDEN', 403, 'Access denied to this order');
+        }
+      } else {
+        throw new AppError('FORBIDDEN', 403, 'Access denied to this order');
+      }
     }
 
     if (order.fulfillmentStatus === 'cancelled') {
