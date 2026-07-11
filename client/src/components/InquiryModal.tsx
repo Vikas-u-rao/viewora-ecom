@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Check } from 'lucide-react';
+import { X, Check, AlertCircle } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
+import { API_BASE } from '@/context/AuthContext';
 
 export default function InquiryModal() {
   const { isInquiryOpen, openInquiry, closeInquiry } = useUI();
@@ -18,6 +19,7 @@ export default function InquiryModal() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Transition mount states
@@ -85,8 +87,9 @@ export default function InquiryModal() {
     return newErrors;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
     const newErrors = validate();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -94,9 +97,16 @@ export default function InquiryModal() {
     }
 
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const res = await fetch(`${API_BASE}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error?.message || data?.message || 'Failed to submit inquiry');
+      }
       setIsSuccess(true);
       setFormData({
         fullName: '',
@@ -106,7 +116,11 @@ export default function InquiryModal() {
         product: '',
         message: ''
       });
-    }, 1500);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleResetSuccess = () => {
@@ -269,6 +283,13 @@ export default function InquiryModal() {
                     />
                     {errors.message && <p className="text-destructive text-xs mt-1">{errors.message}</p>}
                   </div>
+
+                  {submitError && (
+                    <div className="flex items-start gap-3 p-3 border border-destructive/30 bg-destructive/10 text-destructive text-sm">
+                      <AlertCircle className="size-4 mt-0.5 shrink-0" />
+                      <p>{submitError}</p>
+                    </div>
+                  )}
 
                   <div className="pt-2">
                     <button
