@@ -31,7 +31,11 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
   const slugHash = Array.from(product.slug || "").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
   const fallback = fallbackImgs[slugHash % fallbackImgs.length];
 
-  const image = fallback;
+  const rawUrls = product.defaultImageUrls;
+  const firstUrl = Array.isArray(rawUrls)
+    ? rawUrls[0]
+    : (typeof rawUrls === "string" ? rawUrls.split(/\s+/)[0] : null);
+  const image = firstUrl || fallback;
   const unavailable = !variant || variant.stock < 1;
 
   const handleAdd = async () => {
@@ -55,7 +59,7 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
             src={image}
             alt={product.name}
             fill
-            className="object-cover absolute inset-0"
+            className="object-contain"
             sizes="(max-width: 768px) 100vw, 33vw"
           />
         ) : (

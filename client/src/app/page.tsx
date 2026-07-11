@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/header";
 import NewsletterForm from "@/components/NewsletterForm";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 
 // Import assets
 import heroImg from "@/assets/hero.jpg";
@@ -124,7 +125,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Frame Styles Section (Replacing Best Sellers) */}
+      {/* Frame Styles Section */}
       <section id="shop" className="py-24 md:py-32 px-6 lg:px-8 border-t border-border bg-background">
         <div className="max-w-[1400px] mx-auto">
           <div className="text-center mb-14 md:mb-18">
@@ -132,29 +133,34 @@ export default function Home() {
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-normal">Shop by Frame Style</h2>
             <div className="h-[1px] w-24 bg-gold/40 mx-auto mt-4"></div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {frameStyles.map((s) => (
-              <Link
-                key={s.name}
-                href={`/shop?shape=${s.slug}`}
-                className="group relative block aspect-[3/4] overflow-hidden border border-border/50 hover:border-gold transition-colors duration-500 bg-black"
-              >
-                <Image
-                  src={s.img}
-                  alt={s.name}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition-opacity duration-300" />
-                <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col items-center text-center">
-                  <h3 className="text-xl font-serif text-white mb-2 group-hover:text-gold transition-colors">{s.name}</h3>
-                  <span className="text-xs tracking-[0.2em] text-gold uppercase opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                    EXPLORE →
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <Carousel opts={{ align: "start", loop: true }} className="px-8 md:px-12">
+            <CarouselContent>
+              {frameStyles.map((s) => (
+                <CarouselItem key={s.name} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/5">
+                  <Link
+                    href={`/shop?shape=${s.slug}`}
+                    className="group relative block aspect-[3/4] overflow-hidden border border-border/50 hover:border-gold transition-colors duration-500 bg-black"
+                  >
+                    <Image
+                      src={s.img}
+                      alt={s.name}
+                      className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition-opacity duration-300" />
+                    <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col items-center text-center">
+                      <h3 className="text-xl font-serif text-white mb-2 group-hover:text-gold transition-colors">{s.name}</h3>
+                      <span className="text-xs tracking-[0.2em] text-gold uppercase opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                        EXPLORE →
+                      </span>
+                    </div>
+                  </Link>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden md:flex -left-2 md:-left-4 bg-background/80 border-border hover:bg-background" />
+            <CarouselNext className="hidden md:flex -right-2 md:-right-4 bg-background/80 border-border hover:bg-background" />
+          </Carousel>
         </div>
       </section>
 
@@ -164,13 +170,12 @@ export default function Home() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-gold/5 blur-3xl pointer-events-none" />
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
-          <p className="text-gold tracking-[0.4em] text-xs mb-8 uppercase font-medium">OUR PHILOSOPHY</p>
           <div className="mb-10 inline-block">
             <Image src={logoImg} alt="Viewora" className="h-32 md:h-40 w-auto mx-auto" loading="lazy" width={288} height={288} />
           </div>
           <div className="h-[1px] w-20 bg-gold/30 mx-auto mb-10" />
           <p className="text-xl md:text-2xl lg:text-3xl font-serif leading-relaxed text-muted-foreground max-w-2xl mx-auto">
-            At <span className="text-gold font-semibold">Viewora</span>, every frame is designed to be more than an accessory — it&apos;s a statement of style, confidence, and timeless luxury. Our eyewear blends contemporary design with premium craftsmanship, made for those who see life with clarity and class.
+            At <span className="text-gold font-semibold">Viewora</span>, every frame is a statement of timeless style, crafted for those who see life with clarity and class.
           </p>
         </div>
       </section>
