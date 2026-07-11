@@ -65,18 +65,6 @@ const socialLinks = [
     )
   },
   {
-    name: "Pinterest",
-    username: "@viewora",
-    href: "https://pinterest.com",
-    description: "Curated luxury moodboards, frames matching, and accessories.",
-    icon: (
-      <svg className="w-8 h-8 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M12 8c-2.2 0-4 1.8-4 4 0 1.5.8 2.8 2 3.5l.8-3c-.1-.2-.2-.5-.2-.8 0-1 .6-1.7 1.4-1.7.7 0 1.1.5 1.1 1.2 0 1.5-.7 2.5-.7 3.2 0 .6.4 1 1 1 1.8 0 3.2-1.9 3.2-4.7 0-2.4-1.7-4.2-4.3-4.2z" />
-      </svg>
-    )
-  },
-  {
     name: "WhatsApp",
     username: "+1 (555) 234-5678",
     href: "https://whatsapp.com",
