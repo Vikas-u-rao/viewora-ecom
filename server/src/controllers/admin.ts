@@ -235,16 +235,33 @@ export async function initiateRefund(req: AuthRequest, res: Response, next: Next
 // GET /api/v1/admin/products
 export async function listAllProducts(req: AuthRequest, res: Response, next: NextFunction) {
   try {
-    const products = await prisma.product.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        category: true,
-        variants: true,
-        collections: { include: { collection: true } },
+    const page = Math.max(1, parseInt(String(req.query.page || '1'), 10));
+    const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit || '50'), 10)));
+    const skip = (page - 1) * limit;
+
+    const [products, total] = await prisma.$transaction([
+      prisma.product.findMany({
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        include: {
+          category: true,
+          variants: true,
+          collections: { include: { collection: true } },
+        },
+      }),
+      prisma.product.count(),
+    ]);
+
+    res.json({
+      products,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       },
     });
-
-    res.json({ products });
   } catch (error) {
     next(error);
   }

@@ -229,21 +229,38 @@ export async function listOrders(req: AuthRequest, res: Response, next: NextFunc
       throw new AppError('UNAUTHENTICATED', 401, 'Authentication required to list orders');
     }
 
-    const orders = await prisma.order.findMany({
-      where: { userId: req.userId },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        items: {
-          include: {
-            variant: {
-              include: { product: true },
+    const page = Math.max(1, parseInt(String(req.query.page || '1'), 10));
+    const limit = Math.min(50, Math.max(1, parseInt(String(req.query.limit || '10'), 10)));
+    const skip = (page - 1) * limit;
+
+    const [orders, total] = await prisma.$transaction([
+      prisma.order.findMany({
+        where: { userId: req.userId },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        include: {
+          items: {
+            include: {
+              variant: {
+                include: { product: true },
+              },
             },
           },
         },
+      }),
+      prisma.order.count({ where: { userId: req.userId } }),
+    ]);
+
+    res.json({
+      orders,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       },
     });
-
-    res.json({ orders });
   } catch (error) {
     next(error);
   }
