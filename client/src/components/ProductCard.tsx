@@ -62,7 +62,7 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
   return (
     <div className="group bg-[#0b0b0a] border border-transparent rounded-lg overflow-hidden hover:border-[#c9a35c] transition-colors duration-300 relative flex flex-col justify-between h-full">
       {/* Product image with wishlist button */}
-      <div className="relative bg-[#f0ede4] p-6 flex items-center justify-center aspect-square overflow-hidden w-full h-[260px]">
+      <div className="relative bg-[#ffffff] p-6 flex items-center justify-center aspect-square overflow-hidden w-full h-[260px]">
         <Link
           href={`/products/${product.slug}`}
           className="relative w-full h-full block"
