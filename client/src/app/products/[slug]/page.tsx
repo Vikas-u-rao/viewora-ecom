@@ -190,6 +190,7 @@ export default function ProductDetailPage() {
                     />
                   )}
                 </button>
+
                 <button
                   onClick={handleAdd}
                   disabled={unavailable || isAdding}

@@ -3,6 +3,7 @@ import { getCollection, collections } from "@/lib/collections";
 import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/header";
+import Footer from "@/components/footer";
 import CollectionProductGrid from "@/components/CollectionProductGrid";
 
 interface PageProps {
@@ -84,9 +85,7 @@ export default async function CollectionPage({ params }: PageProps) {
         </div>
       </section>
 
-      <footer className="border-t border-border py-8 px-8 text-center text-xs tracking-[0.2em] text-muted-foreground">
-        © 2026 VIEWORA — FASHION EYEWEAR. ALL RIGHTS RESERVED.
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/header";
+import Footer from "@/components/footer";
 import NewsletterForm from "@/components/NewsletterForm";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 
@@ -192,39 +193,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border pt-16 pb-8 px-6 bg-background">
-        <div className="max-w-[1400px] mx-auto grid grid-cols-3 gap-10 mb-12">
-          <div>
-            <Image src={logoImg} alt="Viewora" className="h-24 w-auto mb-6" loading="lazy" width={224} height={224} />
-            <p className="text-muted-foreground max-w-xs leading-relaxed font-sans">
-              Premium fashion eyewear crafted for elegance, comfort, and bold individuality.
-            </p>
-          </div>
-          <div>
-            <h4 className="text-gold tracking-[0.2em] text-sm mb-5 font-sans font-semibold">QUICK LINKS</h4>
-            <ul className="space-y-3 font-sans">
-              {nav.map((n) => (
-                <li key={n.label}>
-                  <Link href={n.href} className="text-foreground hover:text-gold transition-colors">
-                    {n.label.charAt(0) + n.label.slice(1).toLowerCase()}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-gold tracking-[0.2em] text-sm mb-5 font-sans font-semibold">CONTACT</h4>
-            <ul className="space-y-3 text-foreground font-sans">
-              <li>support@viewora.in</li>
-              <li>+1 (555) 234-5678</li>
-              <li>Mon – Sat, 10am – 7pm</li>
-            </ul>
-          </div>
-        </div>
-        <div className="max-w-[1400px] mx-auto border-t border-border pt-8 text-center text-xs tracking-[0.2em] text-muted-foreground font-sans">
-          © 2026 VIEWORA — FASHION EYEWEAR. ALL RIGHTS RESERVED.
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

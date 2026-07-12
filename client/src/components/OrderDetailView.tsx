@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Package } from "lucide-react";
+import { Package, Truck, CheckCircle2, Clock } from "lucide-react";
 import { Order } from "@/services/orders";
 
 function money(value: string | number) {
@@ -24,6 +24,10 @@ function PaymentBadge({ status }: { status: string }) {
 }
 
 export default function OrderDetailView({ order }: { order: Order }) {
+  const isProcessed = order.fulfillmentStatus === 'shipped' || order.fulfillmentStatus === 'delivered';
+  const isShipped = order.fulfillmentStatus === 'shipped' || order.fulfillmentStatus === 'delivered';
+  const isDelivered = order.fulfillmentStatus === 'delivered';
+
   return (
     <div className="space-y-8">
       <div className="grid gap-4 sm:grid-cols-3">
@@ -40,6 +44,85 @@ export default function OrderDetailView({ order }: { order: Order }) {
           <div className="mt-2 flex items-center gap-2">
             <span className="text-white">PhonePe</span>
             <PaymentBadge status={order.paymentStatus} />
+          </div>
+        </div>
+      </div>
+
+      {/* Shipment Tracking Timeline */}
+      <div className="border border-border p-6 bg-black/40">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h2 className="font-serif text-xl text-white">Shipment Tracking</h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Carrier: <span className="text-white font-medium">Delhivery Express</span> &middot; Tracking ID: <span className="font-mono text-white select-all">DL-{order.id.slice(0, 8).toUpperCase()}</span>
+            </p>
+          </div>
+          <a
+            href="https://www.delhivery.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="border border-[#c9a35c] text-[#c9a35c] hover:bg-[#c9a35c] hover:text-background px-4 py-2 text-xs font-bold tracking-[0.15em] transition-colors duration-300 rounded-sm"
+          >
+            TRACK SHIPMENT
+          </a>
+        </div>
+
+        {/* Stepper Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+          {/* Step 1: Placed */}
+          <div className="flex gap-3 md:flex-col md:items-center md:text-center relative">
+            <div className="flex items-center justify-center size-8 rounded-full border border-[#c9a35c] bg-[#c9a35c]/10 text-[#c9a35c] z-10">
+              <CheckCircle2 className="size-4" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-white">Order Placed</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">Payment Confirmed</p>
+            </div>
+          </div>
+
+          {/* Step 2: Processing */}
+          <div className="flex gap-3 md:flex-col md:items-center md:text-center relative">
+            <div className={`flex items-center justify-center size-8 rounded-full border z-10 ${
+              order.fulfillmentStatus === 'unfulfilled' 
+                ? 'border-[#c9a35c] bg-[#c9a35c]/10 text-[#c9a35c] animate-pulse' 
+                : 'border-[#c9a35c] bg-[#c9a35c]/10 text-[#c9a35c]'
+            }`}>
+              {order.fulfillmentStatus === 'unfulfilled' ? <Clock className="size-4" /> : <CheckCircle2 className="size-4" />}
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-white">Processing</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">Quality check & packed</p>
+            </div>
+          </div>
+
+          {/* Step 3: Shipped */}
+          <div className="flex gap-3 md:flex-col md:items-center md:text-center relative">
+            <div className={`flex items-center justify-center size-8 rounded-full border z-10 ${
+              isShipped
+                ? 'border-[#c9a35c] bg-[#c9a35c]/10 text-[#c9a35c]'
+                : 'border-border text-muted-foreground'
+            }`}>
+              <Truck className="size-4" />
+            </div>
+            <div>
+              <p className={`text-sm font-semibold ${isShipped ? 'text-white' : 'text-muted-foreground'}`}>Shipped</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">Dispatched via Delhivery</p>
+            </div>
+          </div>
+
+          {/* Step 4: Delivered */}
+          <div className="flex gap-3 md:flex-col md:items-center md:text-center relative">
+            <div className={`flex items-center justify-center size-8 rounded-full border z-10 ${
+              isDelivered
+                ? 'border-[#c9a35c] bg-[#c9a35c]/10 text-[#c9a35c]'
+                : 'border-border text-muted-foreground'
+            }`}>
+              <Package className="size-4" />
+            </div>
+            <div>
+              <p className={`text-sm font-semibold ${isDelivered ? 'text-white' : 'text-muted-foreground'}`}>Delivered</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">Handed to customer</p>
+            </div>
           </div>
         </div>
       </div>

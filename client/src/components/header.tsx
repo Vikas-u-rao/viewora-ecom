@@ -62,7 +62,7 @@ export default function Header() {
                   <Link href={n.href} className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors py-6">
                     {n.label}
                   </Link>
-                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[64px] bg-background border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
+                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[64px] z-50 bg-background border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
                     <div className="max-w-[1400px] mx-auto px-6 py-10">
                       <div className="text-center mb-8">
                         <p className="text-gold tracking-[0.3em] text-sm mb-2">CURATED BRANDS</p>
@@ -102,7 +102,7 @@ export default function Header() {
                   <Link href={n.href} className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors py-6">
                     {n.label}
                   </Link>
-                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[64px] bg-background border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
+                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[64px] z-50 bg-background border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
                     <div className="max-w-[1400px] mx-auto px-6 py-10">
                       <div className="grid grid-cols-4 gap-8">
                         {shopMenu.map((cat) => (

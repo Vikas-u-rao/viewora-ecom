@@ -60,19 +60,19 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
   };
 
   return (
-    <div className="group border border-border p-4 hover:border-gold transition-colors duration-300 relative">
+    <div className="group bg-[#0b0b0a] border border-transparent rounded-lg overflow-hidden hover:border-[#c9a35c] transition-colors duration-300 relative flex flex-col justify-between h-full">
       {/* Product image with wishlist button */}
-      <div className="relative mb-4">
+      <div className="relative bg-[#f0ede4] p-6 flex items-center justify-center aspect-square overflow-hidden w-full h-[260px]">
         <Link
           href={`/products/${product.slug}`}
-          className="aspect-square overflow-hidden relative block w-full h-[260px] bg-black/20"
+          className="relative w-full h-full block"
         >
           {image ? (
             <Image
               src={image}
               alt={product.name}
               fill
-              className="object-cover"
+              className="object-contain"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           ) : (
@@ -87,7 +87,7 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
           onClick={handleToggleWishlist}
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
           disabled={isTogglingWishlist}
-          className="absolute top-2 right-2 z-10 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border hover:border-gold transition-all duration-200 disabled:opacity-50"
+          className="absolute top-2 right-2 z-10 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border hover:border-[#e0b96f] transition-all duration-200 disabled:opacity-50"
         >
           <Heart
             className={`size-4 transition-colors duration-200 ${
@@ -97,31 +97,37 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
         </button>
       </div>
 
-      {product.brand && (
-        <p className="mb-1 text-[10px] tracking-[0.2em] uppercase text-gold">{product.brand}</p>
-      )}
-      <Link href={`/products/${product.slug}`} className="block">
-        <h3 className="text-lg font-serif mb-3 text-white line-clamp-1 hover:text-gold transition-colors">
-          {product.name}
-        </h3>
-      </Link>
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-gold text-lg tabular-nums">
-          {formatPrice(variant?.price || product.startingPrice)}
-        </span>
-        <button
-          onClick={handleAdd}
-          disabled={unavailable || isAdding}
-          className="min-w-20 border border-gold text-gold px-4 py-1.5 text-xs font-bold tracking-[0.15em] hover:bg-gold hover:text-background transition-colors duration-300 disabled:cursor-not-allowed disabled:opacity-45"
-        >
-          {isAdding ? (
-            <Loader2 className="mx-auto size-3.5 animate-spin" />
-          ) : unavailable ? (
-            "SOLD"
-          ) : (
-            "ADD"
+      {/* Info wrap */}
+      <div className="bg-[#0b0b0a] px-3 py-2.5 flex-1 flex flex-col justify-between">
+        <div>
+          {product.brand && (
+            <p className="text-[11px] text-[#c9a35c] uppercase tracking-wide mb-0.5">{product.brand}</p>
           )}
-        </button>
+          <Link href={`/products/${product.slug}`} className="block">
+            <h3 className="text-[13px] text-[#f2f2f0] font-sans mb-1 line-clamp-1 font-medium hover:text-[#e0b96f] transition-colors">
+              {product.name}
+            </h3>
+          </Link>
+        </div>
+
+        <div className="flex items-center justify-between gap-3 mt-2">
+          <span className="text-[#c9a35c] text-[13px] font-semibold tabular-nums">
+            {formatPrice(variant?.price || product.startingPrice)}
+          </span>
+          <button
+            onClick={handleAdd}
+            disabled={unavailable || isAdding}
+            className="min-w-20 border border-[#c9a35c] text-[#c9a35c] px-3 py-1 text-[11px] font-bold tracking-[0.1em] hover:bg-[#c9a35c] hover:text-background transition-colors duration-300 disabled:cursor-not-allowed disabled:opacity-45 rounded-sm"
+          >
+            {isAdding ? (
+              <Loader2 className="mx-auto size-3.5 animate-spin" />
+            ) : unavailable ? (
+              "SOLD"
+            ) : (
+              "ADD"
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
