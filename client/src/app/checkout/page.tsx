@@ -33,7 +33,7 @@ function money(value: number) {
 export default function CheckoutPage() {
   const router = useRouter();
   const { user, accessToken } = useAuth();
-  const { items, subtotal } = useCart();
+  const { items, subtotal, clearCart } = useCart();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const [addressForm, setAddressForm] = useState<AddressPayload>({ ...emptyAddress });
@@ -113,6 +113,7 @@ export default function CheckoutPage() {
       );
 
       localStorage.removeItem(COUPON_STORAGE_KEY);
+      await clearCart();
 
       if (paymentMethod === "cod") {
         router.push(`/order-confirmation/${order.id}`);
