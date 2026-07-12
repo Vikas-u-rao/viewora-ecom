@@ -45,6 +45,11 @@ export interface Order {
     status: string;
     merchantTransactionId: string;
   } | null;
+  earnedCoupon?: {
+    code: string;
+    value: string;
+    expiresAt: string;
+  } | null;
 }
 
 export interface CreateOrderPayload {

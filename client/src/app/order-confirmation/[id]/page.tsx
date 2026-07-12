@@ -75,6 +75,19 @@ export default function OrderConfirmationPage() {
           <div className="flex justify-center py-16"><Loader2 className="size-7 animate-spin text-gold" /></div>
         ) : order ? (
           <>
+            {/* Earned Coupon Banner */}
+            {order.earnedCoupon && (
+              <div className="mb-8 border border-gold/30 bg-gold/5 p-6 text-center rounded-sm max-w-[600px] mx-auto">
+                <span className="text-xs uppercase tracking-[0.2em] text-gold font-bold mb-1 block">Special Reward Earned</span>
+                <h3 className="font-serif text-2xl text-white mb-2">You earned a 10% Discount Coupon!</h3>
+                <p className="text-sm text-muted-foreground mb-4">Since your order subtotal was ₹5,000 or more, here is a discount coupon for your next purchase:</p>
+                <div className="inline-flex items-center gap-3 bg-background border border-gold/40 px-6 py-2.5 rounded-sm">
+                  <span className="font-mono text-lg font-bold tracking-wider text-gold select-all">{order.earnedCoupon.code}</span>
+                </div>
+                <p className="text-xs text-muted-foreground/60 mt-3">Valid for 90 days (Value: 10% of subtotal). Keep this code safe!</p>
+              </div>
+            )}
+
             <OrderDetailView order={order} />
 
             <div className="mt-8 flex items-center justify-center gap-4">

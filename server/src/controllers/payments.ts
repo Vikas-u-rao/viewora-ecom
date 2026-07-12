@@ -255,6 +255,7 @@ export async function paymentCallback(req: Request, res: Response, next: NextFun
               guestPhone: payment.order.guestPhone,
               status: 'active',
               expiresAt,
+              sourceOrderId: payment.orderId,
             },
           });
         }

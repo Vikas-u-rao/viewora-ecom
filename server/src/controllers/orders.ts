@@ -282,6 +282,7 @@ export async function getOrderDetails(req: AuthRequest, res: Response, next: Nex
           },
         },
         payment: true,
+        earnedCoupon: true,
       },
     });
 
