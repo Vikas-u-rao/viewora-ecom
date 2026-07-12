@@ -241,9 +241,11 @@ async function main() {
       }
 
       let imageUrls = item.imageUrls;
-      const brandLower = (item.brand || '').toLowerCase().trim();
-      if (brandImages[brandLower]) {
-        imageUrls = [brandImages[brandLower]];
+      if (!imageUrls || imageUrls.length === 0 || !imageUrls[0]) {
+        const brandLower = (item.brand || '').toLowerCase().trim();
+        if (brandImages[brandLower]) {
+          imageUrls = [brandImages[brandLower]];
+        }
       }
 
       const createdProduct = await prisma.product.create({
