@@ -7,7 +7,7 @@ const socialLinks = [
   {
     name: "Instagram",
     username: "@viewora.eyewear",
-    href: "https://instagram.com",
+    href: "https://www.instagram.com/viewora.india/",
     description: "Daily style inspiration and exclusive product reveals.",
     icon: (
       <svg className="w-8 h-8 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

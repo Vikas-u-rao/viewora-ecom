@@ -172,7 +172,7 @@ export default function Home() {
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
           <div className="mb-10 inline-block">
-            <Image src={logoImg} alt="Viewora" className="h-32 w-auto mx-auto" loading="lazy" width={288} height={288} />
+            <Image src={logoImg} alt="Viewora" className="h-32 w-auto mx-auto" style={{ width: "auto", height: "auto" }} loading="lazy" width={288} height={288} />
           </div>
           <div className="h-[1px] w-20 bg-gold/30 mx-auto mb-10" />
           <p className="text-xl font-serif leading-relaxed text-muted-foreground max-w-2xl mx-auto">
