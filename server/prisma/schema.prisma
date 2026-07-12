@@ -402,3 +402,11 @@ model OtpVerification {
   @@map("otp_verifications")
 }
 
+model Subscriber {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  isActive     Boolean  @default(true) @map("is_active")
+  subscribedAt DateTime @default(now()) @map("subscribed_at")
+
+  @@map("subscribers")
+}

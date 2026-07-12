@@ -51,7 +51,7 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur border-b border-border">
       <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center">
-          <Image src={logoImg} alt="Viewora" className="h-10 w-auto" width={120} height={120} priority />
+          <Image src={logoImg} alt="Viewora" className="h-10 w-auto" style={{ width: "auto", height: "auto" }} width={120} height={120} priority />
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
@@ -156,7 +156,7 @@ export default function Header() {
             <SheetContent side="right" className="w-72 bg-background border-l border-border p-6">
               <div className="flex flex-col h-full">
                 <div className="flex items-center justify-between mb-8">
-                  <Image src={logoImg} alt="Viewora" className="h-8 w-auto" width={80} height={80} />
+                  <Image src={logoImg} alt="Viewora" className="h-8 w-auto" style={{ width: "auto", height: "auto" }} width={80} height={80} />
                 </div>
                 <nav className="flex flex-col gap-1">
                   {nav.map((n) => (

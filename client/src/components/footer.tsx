@@ -56,7 +56,7 @@ export default function Footer() {
   ];
 
   const socialLinks = [
-    { icon: <Instagram size={20} />, href: "https://instagram.com" },
+    { icon: <Instagram size={20} />, href: "https://www.instagram.com/viewora.india/" },
     { icon: <Facebook size={20} />, href: "https://facebook.com" },
     { icon: <Twitter size={20} />, href: "https://twitter.com" },
     { icon: <Youtube size={20} />, href: "https://youtube.com" }
