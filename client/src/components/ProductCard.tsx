@@ -9,8 +9,8 @@ import { useCart } from "@/context/CartContext";
 import { ApiProduct, variantSnapshot } from "@/services/products";
 import p1 from "@/assets/p1.jpg";
 import p2 from "@/assets/p2.jpg";
-import p3 from "@/assets/p3.jpg";
-import p4 from "@/assets/p4.jpg";
+import p3 from "@/assets/p3.png";
+import p4 from "@/assets/p4.png";
 
 function formatPrice(value: string | number) {
   return new Intl.NumberFormat("en-IN", {
@@ -25,8 +25,6 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
   const [isAdding, setIsAdding] = useState(false);
   const variant = product.variants.find((item) => item.stock > 0) || product.variants[0];
 
-
-  // Local fallback images from assets
   const fallbackImgs = [p1, p2, p3, p4];
   const slugHash = Array.from(product.slug || "").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
   const fallback = fallbackImgs[slugHash % fallbackImgs.length];

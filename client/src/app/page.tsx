@@ -86,11 +86,11 @@ export default function Home() {
 
         {/* Centered Hero Text */}
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <p className="text-gold tracking-[0.4em] text-xs md:text-sm mb-6 font-semibold uppercase">FASHION EYEWEAR</p>
-          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-normal leading-[1.15] mb-8 text-white">
+          <p className="text-gold tracking-[0.4em] text-xs mb-6 font-semibold uppercase">FASHION EYEWEAR</p>
+          <h1 className="font-serif text-5xl lg:text-6xl font-normal leading-[1.15] mb-8 text-white">
             See the World in <span className="text-gold font-bold italic drop-shadow-[0_0_20px_rgba(197,160,89,0.65)] animate-pulse">GOLD</span>
           </h1>
-          <p className="text-base md:text-xl text-white/95 mb-12 leading-relaxed font-light max-w-2xl mx-auto font-sans">
+          <p className="text-base lg:text-lg text-white/95 mb-12 leading-relaxed font-light max-w-2xl mx-auto font-sans">
             Luxury eyewear crafted with premium materials, designed for everyday comfort and timeless elegance.
           </p>
           <div className="flex justify-center">
@@ -102,14 +102,14 @@ export default function Home() {
       </section>
 
       {/* Collections Section */}
-      <section id="collections" className="py-24 md:py-32 px-6 lg:px-8 bg-background">
+      <section id="collections" className="py-20 px-6 bg-background">
         <div className="max-w-[1400px] mx-auto">
-          <div className="text-center mb-14 md:mb-18">
+          <div className="text-center mb-12">
             <p className="text-gold tracking-[0.3em] text-xs mb-4">OUR COLLECTIONS</p>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-normal">Crafted for Every Look</h2>
+            <h2 className="text-4xl lg:text-5xl font-normal">Crafted for Every Look</h2>
             <div className="h-[1px] w-24 bg-gold/40 mx-auto mt-4"></div>
           </div>
-          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid md:grid-cols-3 gap-6">
             {collections.map((c) => (
               <Link key={c.title} href={`/shop/${c.slug}`} className="group relative overflow-hidden aspect-[4/5] block border border-border/40">
                 <Image src={c.img} alt={c.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" width={800} height={900} />
@@ -126,17 +126,17 @@ export default function Home() {
       </section>
 
       {/* Frame Styles Section */}
-      <section id="shop" className="py-24 md:py-32 px-6 lg:px-8 border-t border-border bg-background">
+      <section id="shop" className="py-20 px-6 border-t border-border bg-background">
         <div className="max-w-[1400px] mx-auto">
-          <div className="text-center mb-14 md:mb-18">
+          <div className="text-center mb-12">
             <p className="text-gold tracking-[0.3em] text-xs mb-4">CURATED DESIGNS</p>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-normal">Shop by Frame Style</h2>
+            <h2 className="text-4xl lg:text-5xl font-normal">Shop by Frame Style</h2>
             <div className="h-[1px] w-24 bg-gold/40 mx-auto mt-4"></div>
           </div>
-          <Carousel opts={{ align: "start", loop: true }} className="px-8 md:px-12">
+          <Carousel opts={{ align: "start", loop: true }} className="px-4 md:px-8">
             <CarouselContent>
               {frameStyles.map((s) => (
-                <CarouselItem key={s.name} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/5">
+                <CarouselItem key={s.name} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
                   <Link
                     href={`/shop?shape=${s.slug}`}
                     className="group relative block aspect-[3/4] overflow-hidden border border-border/50 hover:border-gold transition-colors duration-500 bg-black"
@@ -165,7 +165,7 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-28 md:py-36 px-6 lg:px-8 bg-background relative overflow-hidden">
+      <section id="about" className="py-24 px-6 bg-background relative overflow-hidden">
         {/* Subtle radial gold glow behind the logo */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-gold/5 blur-3xl pointer-events-none" />
 
@@ -174,16 +174,16 @@ export default function Home() {
             <Image src={logoImg} alt="Viewora" className="h-32 md:h-40 w-auto mx-auto" loading="lazy" width={288} height={288} />
           </div>
           <div className="h-[1px] w-20 bg-gold/30 mx-auto mb-10" />
-          <p className="text-xl md:text-2xl lg:text-3xl font-serif leading-relaxed text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl lg:text-2xl font-serif leading-relaxed text-muted-foreground max-w-2xl mx-auto">
             At <span className="text-gold font-semibold">Viewora</span>, every frame is a statement of timeless style, crafted for those who see life with clarity and class.
           </p>
         </div>
       </section>
 
       {/* Newsletter Section */}
-      <section id="contact" className="py-24 md:py-32 px-6 lg:px-8 border-t border-border bg-background">
+      <section id="contact" className="py-20 px-6 border-t border-border bg-background">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl mb-4 font-serif">
+          <h2 className="text-3xl lg:text-4xl mb-4 font-serif">
             Join the <span className="text-gold font-bold drop-shadow-[0_0_15px_rgba(197,160,89,0.85)] animate-pulse uppercase">Viewora</span> Community
           </h2>
           <p className="text-muted-foreground mb-8 text-lg font-sans">Subscribe for exclusive offers, early access, and style updates.</p>
@@ -192,10 +192,10 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border pt-16 md:pt-20 pb-8 px-6 lg:px-8 bg-background">
-        <div className="max-w-[1400px] mx-auto grid md:grid-cols-3 gap-12 lg:gap-16 mb-12 md:mb-16">
+      <footer className="border-t border-border pt-16 pb-8 px-6 bg-background">
+        <div className="max-w-[1400px] mx-auto grid sm:grid-cols-2 md:grid-cols-3 gap-10 mb-12">
           <div>
-            <Image src={logoImg} alt="Viewora" className="h-24 md:h-28 w-auto mb-6" loading="lazy" width={224} height={224} />
+            <Image src={logoImg} alt="Viewora" className="h-24 w-auto mb-6" loading="lazy" width={224} height={224} />
             <p className="text-muted-foreground max-w-xs leading-relaxed font-sans">
               Premium fashion eyewear crafted for elegance, comfort, and bold individuality.
             </p>

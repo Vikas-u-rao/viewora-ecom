@@ -140,7 +140,7 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
-      <main className="mx-auto max-w-[1200px] px-6 lg:px-8 pt-28 pb-16">
+      <main className="mx-auto max-w-[1200px] px-6 pt-28 pb-16">
         <h1 className="font-serif text-4xl text-white mb-8">Checkout</h1>
 
         {items.length === 0 ? (
