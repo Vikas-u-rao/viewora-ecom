@@ -8,21 +8,39 @@ function money(value: string | number) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(value));
 }
 
+function PaymentBadge({ status }: { status: string }) {
+  const colorMap: Record<string, string> = {
+    paid: "bg-green-500/20 text-green-400 border-green-500/30",
+    pending: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+    failed: "bg-red-500/20 text-red-400 border-red-500/30",
+    refunded: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  };
+  const cls = colorMap[status] || "bg-muted/20 text-muted-foreground border-border";
+  return (
+    <span className={`inline-block px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase border ${cls}`}>
+      {status}
+    </span>
+  );
+}
+
 export default function OrderDetailView({ order }: { order: Order }) {
   return (
     <div className="space-y-8">
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="border border-border p-4">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Order ID</p>
-          <p className="mt-2 font-medium text-white">{order.id}</p>
+          <p className="mt-2 font-medium text-white font-mono text-sm">{order.id.slice(0, 16).toUpperCase()}</p>
         </div>
         <div className="border border-border p-4">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Order Status</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Fulfillment</p>
           <p className="mt-2 capitalize text-white">{order.fulfillmentStatus.replace("_", " ")}</p>
         </div>
         <div className="border border-border p-4">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Payment Method</p>
-          <p className="mt-2 text-white">PhonePe</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Payment</p>
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-white">PhonePe</span>
+            <PaymentBadge status={order.paymentStatus} />
+          </div>
         </div>
       </div>
 
@@ -35,7 +53,7 @@ export default function OrderDetailView({ order }: { order: Order }) {
                 {image ? (
                   <Image src={image} alt={item.variant.product.name} fill className="object-cover" sizes="80px" />
                 ) : (
-                  <div className="flex h-full items-center justify-center"><Package className="size-7 text-muted-foreground" /></div>
+                  <div className="flex h-full items-center justify-center"><Package className="size-10 text-muted-foreground" strokeWidth={1.2} /></div>
                 )}
               </div>
               <div className="flex flex-1 flex-col justify-between gap-2 sm:flex-row">

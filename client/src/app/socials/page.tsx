@@ -85,8 +85,8 @@ export default function SocialsPage() {
       <main className="flex-1 py-24 px-6 max-w-5xl mx-auto w-full">
         <div className="text-center mb-16">
           <p className="text-gold tracking-[0.35em] text-xs mb-4 font-medium uppercase">CONNECT WITH US</p>
-          <h1 className="font-serif text-4xl lg:text-5xl text-white font-normal mb-6">Our Social Circle</h1>
-          <p className="text-muted-foreground text-base lg:text-lg max-w-xl mx-auto leading-relaxed font-sans">
+          <h1 className="font-serif text-4xl text-white font-normal mb-6">Our Social Circle</h1>
+          <p className="text-muted-foreground text-base max-w-xl mx-auto leading-relaxed font-sans">
             Step into the luxury world of Viewora. Follow our channels for exclusive style guidelines, early releases, and behind-the-scene stories.
           </p>
           <div className="h-[1px] w-24 bg-gold/40 mx-auto mt-6"></div>

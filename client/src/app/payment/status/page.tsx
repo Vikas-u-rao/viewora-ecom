@@ -1,6 +1,7 @@
 "use client";
+/* eslint-disable react-hooks/set-state-in-effect */
 
-import { useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, XCircle, Loader2, RefreshCw } from "lucide-react";
@@ -11,7 +12,7 @@ import { getPaymentStatusApi } from "@/services/orders";
 
 type StatusState = "loading" | "success" | "failed" | "pending";
 
-export default function PaymentStatusPage() {
+function PaymentStatusContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { accessToken } = useAuth();
@@ -146,5 +147,21 @@ export default function PaymentStatusPage() {
 
       </main>
     </div>
+  );
+}
+
+export default function PaymentStatusPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background text-foreground">
+        <Header />
+        <main className="mx-auto max-w-[600px] px-6 pt-36 pb-16 text-center">
+          <Loader2 className="mx-auto size-16 animate-spin text-gold" />
+          <p className="mt-6 text-muted-foreground">Loading payment status…</p>
+        </main>
+      </div>
+    }>
+      <PaymentStatusContent />
+    </Suspense>
   );
 }

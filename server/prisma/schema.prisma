@@ -115,6 +115,7 @@ model Address {
   guestEmail String? @map("guest_email")
   label      String?
   name       String
+  phone      String?
   line1      String
   line2      String?
   city       String

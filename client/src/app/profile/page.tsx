@@ -324,7 +324,7 @@ export default function ProfilePage() {
 
       <main className="flex-1 max-w-[1200px] w-full mx-auto px-6 pt-28 pb-16">
         <div className="mb-8">
-          <h1 className="font-serif text-3xl lg:text-4xl text-foreground mb-1.5">My Account</h1>
+          <h1 className="font-serif text-3xl text-foreground mb-1.5">My Account</h1>
           <p className="text-muted-foreground text-sm">Manage your profile, shipping addresses, and sessions.</p>
         </div>
 
@@ -481,7 +481,7 @@ export default function ProfilePage() {
                     </button>
                   </div>
                 ) : (
-                  <div className="grid sm:grid-cols-2 gap-4">
+<div className="grid sm:grid-cols-2 gap-4">
                     {addresses.map((address) => (
                       <div
                         key={address.id}

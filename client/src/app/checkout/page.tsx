@@ -1,9 +1,9 @@
 "use client";
-/* eslint-disable react-hooks/set-state-in-effect */
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { Loader2, Plus, Smartphone, Truck } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Loader2, Plus, Smartphone, Truck, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import Header from "@/components/header";
 import { useAuth } from "@/context/AuthContext";
@@ -17,6 +17,7 @@ const SHIPPING_FEE = 99;
 const emptyAddress: AddressPayload = {
   label: "Home",
   name: "",
+  phone: "",
   line1: "",
   line2: "",
   city: "",
@@ -30,25 +31,29 @@ function money(value: number) {
 }
 
 export default function CheckoutPage() {
+  const router = useRouter();
   const { user, accessToken } = useAuth();
   const { items, subtotal } = useCart();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const [addressForm, setAddressForm] = useState<AddressPayload>({ ...emptyAddress });
   const [showNewAddress, setShowNewAddress] = useState(false);
-  const [guestEmail, setGuestEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"phonepe" | "cod">("phonepe");
   const [placing, setPlacing] = useState(false);
 
   const availableItems = items.filter((item) => !item.productUnavailable && item.variant);
   const unavailableItems = items.filter((item) => item.productUnavailable);
   const total = subtotal + (availableItems.length > 0 ? SHIPPING_FEE : 0);
 
+  // Auth guard
   useEffect(() => {
-    if (!accessToken) {
-      setShowNewAddress(true);
-      return;
+    if (!user && !accessToken) {
+      router.replace("/login");
     }
+  }, [user, accessToken, router]);
+
+  useEffect(() => {
+    if (!accessToken) return;
     fetchAddressesApi(accessToken)
       .then((data) => {
         setAddresses(data);
@@ -69,20 +74,16 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async (event: FormEvent) => {
     event.preventDefault();
+    if (!user || !accessToken) {
+      toast.error("Please log in to place an order.");
+      return;
+    }
     if (availableItems.length === 0) {
       toast.error("Your cart is empty.");
       return;
     }
     if (unavailableItems.length > 0) {
       toast.error("Remove unavailable items before checkout.");
-      return;
-    }
-    if (!phone.trim()) {
-      toast.error("Phone number is required.");
-      return;
-    }
-    if (!user && !guestEmail.trim()) {
-      toast.error("Email address is required for guest checkout.");
       return;
     }
     if (showNewAddress && (!payloadAddress.shippingName || !payloadAddress.shippingLine1 || !payloadAddress.shippingCity || !payloadAddress.shippingState || !payloadAddress.shippingPincode)) {
@@ -92,50 +93,52 @@ export default function CheckoutPage() {
 
     setPlacing(true);
     try {
-      // Step 1 — save address if needed
       let addressId = selectedAddressId;
-      if (user && accessToken && showNewAddress) {
+      if (showNewAddress) {
         const saved = await saveAddressApi(accessToken, { ...addressForm, isDefault: addresses.length === 0 || addressForm.isDefault });
         addressId = saved.id;
       }
 
-      // Read applied coupon from localStorage
       const storedCoupon = typeof window !== 'undefined' ? localStorage.getItem(COUPON_STORAGE_KEY) : null;
       const parsedCoupon = storedCoupon ? JSON.parse(storedCoupon) : null;
 
-      // Step 2 — create the order (status: pending)
       const { order } = await createOrderApi(
         {
-          ...(user ? { addressId } : { ...payloadAddress, guestEmail: guestEmail.trim().toLowerCase(), guestPhone: phone.trim() }),
-          ...(!user && { guestPhone: phone.trim() }),
+          addressId,
+          paymentMethod,
           items: orderItemsFromCart(items),
           ...(parsedCoupon ? { couponCode: parsedCoupon.code } : {}),
         },
         accessToken
       );
 
-      // Step 3 — initiate PhonePe payment and redirect to their payment page
-      toast.loading("Redirecting to payment…", { id: "payment-redirect" });
-      const { redirectUrl } = await initiatePaymentApi(order.id, accessToken);
-      toast.dismiss("payment-redirect");
-
-      // Store guest order marker before redirect so the confirmation page can detect it
-      if (!user) {
-        localStorage.setItem(`viewora_guest_order_${order.id}`, "1");
-      }
-
-      // Clear stored coupon after successful order
       localStorage.removeItem(COUPON_STORAGE_KEY);
 
-      // Hard-redirect to PhonePe hosted payment page
-      window.location.href = redirectUrl;
+      if (paymentMethod === "cod") {
+        router.push(`/order-confirmation/${order.id}`);
+      } else {
+        toast.loading("Redirecting to payment…", { id: "payment-redirect" });
+        const { redirectUrl } = await initiatePaymentApi(order.id, accessToken);
+        toast.dismiss("payment-redirect");
+        window.location.href = redirectUrl;
+      }
     } catch (error) {
       toast.dismiss("payment-redirect");
       toast.error(error instanceof Error ? error.message : "Failed to place order.");
       setPlacing(false);
     }
-    // Note: don't set placing=false on success — the page navigates away
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <Header />
+        <main className="flex items-center justify-center px-6 pt-28 pb-16">
+          <Loader2 className="size-8 animate-spin text-gold" />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -154,10 +157,10 @@ export default function CheckoutPage() {
               <div className="border border-border bg-card p-5">
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="font-serif text-2xl text-white">Shipping Address</h2>
-                  {user && <button type="button" onClick={() => setShowNewAddress((value) => !value)} className="text-gold"><Plus className="size-4" /></button>}
+                  <button type="button" onClick={() => setShowNewAddress((value) => !value)} className="text-gold"><Plus className="size-4" /></button>
                 </div>
 
-                {user && addresses.length > 0 && !showNewAddress && (
+                {addresses.length > 0 && !showNewAddress && (
                   <div className="grid gap-3 sm:grid-cols-2">
                     {addresses.map((address) => (
                       <button
@@ -167,7 +170,7 @@ export default function CheckoutPage() {
                         className={`border p-4 text-left ${selectedAddressId === address.id ? "border-gold bg-gold/10" : "border-border"}`}
                       >
                         <span className="block font-medium text-white">{address.name}</span>
-                        <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">{address.line1}, {address.city}, {address.state} - {address.pincode}</span>
+                        <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">{address.line1}, {address.city}, {address.state} - {address.pincode}{address.phone ? ` | ${address.phone}` : ""}</span>
                       </button>
                     ))}
                   </div>
@@ -175,11 +178,11 @@ export default function CheckoutPage() {
 
                 {showNewAddress && (
                   <div className="grid gap-3 sm:grid-cols-2">
-                    {(["name", "line1", "line2", "city", "state", "pincode"] as const).map((field) => (
+                    {(["name", "phone", "line1", "line2", "city", "state", "pincode"] as const).map((field) => (
                       <input
                         key={field}
                         required={field !== "line2"}
-                        placeholder={field === "line1" ? "Address line 1" : field === "line2" ? "Address line 2" : field[0].toUpperCase() + field.slice(1)}
+                        placeholder={field === "line1" ? "Address line 1" : field === "line2" ? "Address line 2" : field === "phone" ? "Phone number" : field[0].toUpperCase() + field.slice(1)}
                         value={String(addressForm[field] || "")}
                         onChange={(event) => setAddressForm((prev) => ({ ...prev, [field]: event.target.value }))}
                         className="border border-border bg-input px-3 py-2.5 text-sm outline-none focus:border-gold"
@@ -190,22 +193,31 @@ export default function CheckoutPage() {
               </div>
 
               <div className="border border-border bg-card p-5">
-                <h2 className="font-serif text-2xl text-white mb-4">Contact</h2>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {!user && (
-                    <input type="email" required placeholder="Email address" value={guestEmail} onChange={(event) => setGuestEmail(event.target.value)} className="border border-border bg-input px-3 py-2.5 text-sm outline-none focus:border-gold" />
-                  )}
-                  <input type="tel" required placeholder="Phone number" value={phone} onChange={(event) => setPhone(event.target.value)} className="border border-border bg-input px-3 py-2.5 text-sm outline-none focus:border-gold" />
+                <h2 className="font-serif text-2xl text-white mb-4">Payment Method</h2>
+                <div className="space-y-3">
+                  <label className={`flex items-center gap-3 p-4 border cursor-pointer transition-colors ${paymentMethod === "phonepe" ? "border-gold bg-gold/10" : "border-border hover:border-gold/50"}`}>
+                    <input type="radio" name="paymentMethod" value="phonepe" checked={paymentMethod === "phonepe"} onChange={() => setPaymentMethod("phonepe")} className="sr-only" />
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === "phonepe" ? "border-gold" : "border-muted-foreground"}`}>
+                      {paymentMethod === "phonepe" && <div className="w-2 h-2 rounded-full bg-gold" />}
+                    </div>
+                    <Smartphone className="size-5 text-gold" />
+                    <div>
+                      <span className="text-sm font-semibold tracking-[0.15em] text-white">PhonePe</span>
+                      <p className="text-xs text-muted-foreground">UPI / Cards / Netbanking</p>
+                    </div>
+                  </label>
+                  <label className={`flex items-center gap-3 p-4 border cursor-pointer transition-colors ${paymentMethod === "cod" ? "border-gold bg-gold/10" : "border-border hover:border-gold/50"}`}>
+                    <input type="radio" name="paymentMethod" value="cod" checked={paymentMethod === "cod"} onChange={() => setPaymentMethod("cod")} className="sr-only" />
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === "cod" ? "border-gold" : "border-muted-foreground"}`}>
+                      {paymentMethod === "cod" && <div className="w-2 h-2 rounded-full bg-gold" />}
+                    </div>
+                    <Wallet className="size-5 text-gold" />
+                    <div>
+                      <span className="text-sm font-semibold tracking-[0.15em] text-white">Cash on Delivery</span>
+                      <p className="text-xs text-muted-foreground">Pay when your order arrives</p>
+                    </div>
+                  </label>
                 </div>
-              </div>
-
-              <div className="border border-gold bg-gold/10 p-5">
-                <h2 className="font-serif text-2xl text-white mb-3">Payment</h2>
-                <div className="flex items-center gap-3 text-gold">
-                  <Smartphone className="size-5" />
-                  <span className="text-sm font-semibold tracking-[0.15em]">PHONEPE — UPI / Cards / Netbanking</span>
-                </div>
-                <p className="mt-2 text-xs text-muted-foreground">You will be securely redirected to PhonePe to complete payment.</p>
               </div>
             </section>
 
@@ -226,7 +238,7 @@ export default function CheckoutPage() {
               </div>
               <button disabled={placing || unavailableItems.length > 0} className="mt-6 flex w-full items-center justify-center gap-2 bg-gold py-3.5 text-xs font-bold tracking-[0.2em] text-background disabled:opacity-50">
                 {placing && <Loader2 className="size-4 animate-spin" />}
-                {placing ? "REDIRECTING TO PAYMENT…" : "PLACE ORDER & PAY"}
+                {placing ? "PLACING ORDER…" : paymentMethod === "cod" ? "PLACE ORDER (COD)" : "PLACE ORDER & PAY"}
               </button>
             </aside>
           </form>

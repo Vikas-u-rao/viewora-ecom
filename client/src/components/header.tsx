@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingCart, Menu } from "lucide-react";
+import { ShoppingBag, Menu, User, Heart } from "lucide-react";
 import logoImg from "@/assets/logo.png";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { Sheet, SheetTrigger, SheetContent, SheetClose } from "@/components/ui/sheet";
 
 const nav = [
@@ -44,6 +45,7 @@ const shopMenu = [
 export default function Header() {
   const { user } = useAuth();
   const { cartCount } = useCart();
+  const { wishlistCount } = useWishlist();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur border-b border-border">
@@ -52,7 +54,7 @@ export default function Header() {
           <Image src={logoImg} alt="Viewora" className="h-10 w-auto" width={120} height={120} priority />
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8 lg:gap-10">
+        <nav className="hidden md:flex items-center gap-6">
           {nav.map((n) => {
             if (n.megaCollections) {
               return (
@@ -60,15 +62,15 @@ export default function Header() {
                   <Link href={n.href} className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors py-6">
                     {n.label}
                   </Link>
-                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[64px] md:top-[68px] bg-background border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
-                    <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-10">
+                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[64px] bg-background border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
+                    <div className="max-w-[1400px] mx-auto px-6 py-10">
                       <div className="text-center mb-8">
                         <p className="text-gold tracking-[0.3em] text-sm mb-2">CURATED BRANDS</p>
                         <h4 className="font-serif text-3xl text-white font-normal">International Collections</h4>
                         <div className="h-[1px] w-12 bg-gold/35 mx-auto mt-2"></div>
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-6 max-w-4xl mx-auto py-4">
+                      <div className="grid grid-cols-4 gap-x-8 gap-y-6 max-w-4xl mx-auto py-4">
                         {internationalBrands.map((brand) => (
                           <Link
                             key={brand}
@@ -100,9 +102,9 @@ export default function Header() {
                   <Link href={n.href} className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors py-6">
                     {n.label}
                   </Link>
-                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[64px] md:top-[68px] bg-background border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
-                    <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-10">
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[64px] bg-background border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
+                    <div className="max-w-[1400px] mx-auto px-6 py-10">
+                      <div className="grid grid-cols-4 gap-8">
                         {shopMenu.map((cat) => (
                           <div key={cat.title} className="border-l border-gold/10 pl-6 first:border-l-0 first:pl-0 text-left">
                             <h4 className="font-serif text-gold text-xl font-bold mb-4 leading-snug">{cat.title}</h4>
@@ -144,28 +146,7 @@ export default function Header() {
           })}
         </nav>
 
-        <div className="flex items-center gap-4 md:gap-8 lg:gap-10">
-          <Link href="/cart" className="relative hover:text-gold transition-colors" aria-label={`Cart with ${cartCount} items`}>
-            <ShoppingCart size={20} strokeWidth={1.5} />
-            {cartCount > 0 && (
-              <span className="absolute -right-2.5 -top-2.5 min-w-5 h-5 rounded-full bg-gold px-1 text-[10px] font-bold leading-5 text-background text-center tabular-nums">
-                {cartCount > 99 ? "99+" : cartCount}
-              </span>
-            )}
-          </Link>
-
-          <div className="hidden md:flex items-center gap-8 lg:gap-10">
-            {user ? (
-              <Link href="/account/profile" className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors">
-                PROFILE
-              </Link>
-            ) : (
-              <Link href="/login" className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors">
-                LOGIN
-              </Link>
-            )}
-          </div>
-
+        <div className="flex items-center gap-4">
           <Sheet>
             <SheetTrigger asChild>
               <button className="block md:hidden text-foreground hover:text-gold transition-colors" aria-label="Open menu">
@@ -200,6 +181,25 @@ export default function Header() {
               </div>
             </SheetContent>
           </Sheet>
+          <Link href={user ? "/account/profile" : "/login"} className="hover:text-gold transition-colors" aria-label={user ? "Profile" : "Login"}>
+            <User size={28} strokeWidth={1.5} />
+          </Link>
+          <Link href="/wishlist" className="relative hover:text-gold transition-colors" aria-label={`Wishlist with ${wishlistCount} items`}>
+            <Heart size={28} strokeWidth={1.5} />
+            {wishlistCount > 0 && (
+              <span className="absolute -right-2.5 -top-2.5 min-w-5 h-5 rounded-full bg-gold px-1 text-[10px] font-bold leading-5 text-background text-center tabular-nums">
+                {wishlistCount > 99 ? "99+" : wishlistCount}
+              </span>
+            )}
+          </Link>
+          <Link href="/cart" className="relative hover:text-gold transition-colors" aria-label={`Cart with ${cartCount} items`}>
+            <ShoppingBag size={28} strokeWidth={1.5} />
+            {cartCount > 0 && (
+              <span className="absolute -right-2.5 -top-2.5 min-w-5 h-5 rounded-full bg-gold px-1 text-[10px] font-bold leading-5 text-background text-center tabular-nums">
+                {cartCount > 99 ? "99+" : cartCount}
+              </span>
+            )}
+          </Link>
         </div>
       </div>
     </header>

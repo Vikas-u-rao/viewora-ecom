@@ -11,6 +11,7 @@ import { Address, AddressPayload, deleteAddressApi, fetchAddressesApi, saveAddre
 const emptyForm: AddressPayload = {
   label: "Home",
   name: "",
+  phone: "",
   line1: "",
   line2: "",
   city: "",
@@ -53,6 +54,7 @@ export default function AccountAddressesPage() {
     setForm({
       label: address.label || "Home",
       name: address.name,
+      phone: address.phone || "",
       line1: address.line1,
       line2: address.line2 || "",
       city: address.city,
@@ -112,7 +114,7 @@ export default function AccountAddressesPage() {
 
   return (
     <AccountLayout title="Addresses">
-      <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+      <div className="grid gap-8 grid-cols-[1fr_360px]">
         <div className="space-y-4">
           {loading ? (
             <div className="flex justify-center py-16"><Loader2 className="size-7 animate-spin text-gold" /></div>
@@ -134,6 +136,7 @@ export default function AccountAddressesPage() {
                 {address.line1}{address.line2 ? `, ${address.line2}` : ""}<br />
                 {address.city}, {address.state} - {address.pincode}
               </p>
+              {address.phone && <p className="mt-1 text-sm text-muted-foreground">📞 {address.phone}</p>}
               <div className="mt-5 flex flex-wrap gap-3 border-t border-border pt-4">
                 {!address.isDefault && (
                   <button onClick={() => setDefault(address)} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-gold">
@@ -156,11 +159,11 @@ export default function AccountAddressesPage() {
             <h2 className="font-serif text-xl text-white">{editingId ? "Edit Address" : "Add Address"}</h2>
             <button type="button" onClick={startAdd} className="text-gold"><Plus className="size-4" /></button>
           </div>
-          {(["label", "name", "line1", "line2", "city", "state", "pincode"] as const).map((field) => (
+          {(["label", "name", "phone", "line1", "line2", "city", "state", "pincode"] as const).map((field) => (
             <input
               key={field}
-              required={!["label", "line2"].includes(field)}
-              placeholder={field === "line1" ? "Address line 1" : field === "line2" ? "Address line 2" : field[0].toUpperCase() + field.slice(1)}
+              required={!["label", "line2", "phone"].includes(field)}
+              placeholder={field === "line1" ? "Address line 1" : field === "line2" ? "Address line 2" : field === "phone" ? "Phone number" : field[0].toUpperCase() + field.slice(1)}
               value={String(form[field] || "")}
               onChange={(event) => setForm((prev) => ({ ...prev, [field]: event.target.value }))}
               className="w-full border border-border bg-input px-3 py-2.5 text-sm outline-none focus:border-gold"

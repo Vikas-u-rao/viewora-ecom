@@ -1,27 +1,31 @@
 'use client';
 /* eslint-disable react-hooks/set-state-in-effect */
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
 import Header from "@/components/header";
 import ProductCard from "@/components/ProductCard";
 import { ApiProduct, fetchProductsApi } from "@/services/products";
 import { collections } from "@/lib/collections";
 
+const ITEMS_PER_PAGE = 12;
+
 function ShopContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [products, setProducts] = useState<ApiProduct[]>([]);
+  const [allProducts, setAllProducts] = useState<ApiProduct[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [productError, setProductError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState("newest");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Retrieve current filters directly from searchParams
   const selectedBrand = searchParams.get("brand") || "all";
   const selectedShape = searchParams.get("shape") || "all";
   const generalFilter = searchParams.get("filter") || "all";
   const selectedCollection = searchParams.get("collection") || "all";
 
-  // Classify type filter from the general filter
   let selectedType = "all";
   let activeShape = selectedShape;
 
@@ -33,8 +37,7 @@ function ShopContent() {
     }
   }
 
-  // Update URL Search Parameters
-  const updateFilter = (type: "brand" | "shape" | "type" | "clear", value?: string) => {
+  const updateFilter = (type: "brand" | "shape" | "type" | "collection" | "clear", value?: string) => {
     const params = new URLSearchParams(searchParams.toString());
 
     if (type === "clear") {
@@ -51,7 +54,7 @@ function ShopContent() {
     } else if (type === "shape") {
       if (value && value !== "all") {
         params.set("shape", value);
-        params.delete("filter"); // Clear overlapping filters
+        params.delete("filter");
       } else {
         params.delete("shape");
       }
@@ -69,18 +72,27 @@ function ShopContent() {
       }
     }
 
+    setCurrentPage(1);
     router.replace(`/shop?${params.toString()}`);
   };
 
+  // Build API query and fetch products
   useEffect(() => {
     let cancelled = false;
 
     setIsLoadingProducts(true);
     setProductError(null);
 
-    fetchProductsApi("?limit=48")
+    let query = "?limit=48";
+    if (selectedCollection !== "all") {
+      query += `&collection=${selectedCollection}`;
+    }
+
+    fetchProductsApi(query)
       .then((data) => {
-        if (!cancelled) setProducts(data.products);
+        if (!cancelled) {
+          setAllProducts(data.products);
+        }
       })
       .catch((error: Error) => {
         if (!cancelled) setProductError(error.message);
@@ -92,62 +104,104 @@ function ShopContent() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [selectedCollection]);
 
-  // Apply filters to product listing
-  const filteredProducts = products.filter((product) => {
-    // Collection Filter
-    if (selectedCollection !== "all") {
-      const col = collections.find((c) => c.slug === selectedCollection);
-      if (col) {
-        const isCollectionMatch = col.products.some((cp) =>
-          product.name.toLowerCase().includes(cp.name.toLowerCase())
-        );
-        if (!isCollectionMatch) return false;
+  const availableBrands = useMemo(() => {
+    const brands = new Set<string>();
+    allProducts.forEach((p) => {
+      if (p.brand) {
+        brands.add(p.brand);
       }
-    }
+    });
+    return Array.from(brands).sort();
+  }, [allProducts]);
 
-    // Brand Filter
-    if (selectedBrand !== "all") {
-      const formattedBrand = selectedBrand.toLowerCase().replace("-", " ");
-      const isBrandMatch = product.name.toLowerCase().includes(formattedBrand) ||
-                           product.brand?.toLowerCase().includes(formattedBrand);
-      if (!isBrandMatch) return false;
-    }
-
-    // Shape Filter
-    if (activeShape !== "all") {
-      const formattedShape = activeShape.toLowerCase().replace("-", " ");
-      const variantText = product.variants.map((variant) => `${variant.color || ""} ${variant.size || ""} ${variant.lensType || ""} ${variant.material || ""}`).join(" ").toLowerCase();
-      const isShapeMatch = product.name.toLowerCase().includes(formattedShape) ||
-                           variantText.includes(formattedShape) ||
-                           (activeShape === "cat-eye" && product.name.toLowerCase().includes("cat-eye")) ||
-                           (activeShape === "semi-rimless" && product.name.toLowerCase().includes("rimless"));
-      if (!isShapeMatch) return false;
-    }
-
-    // Type Filter
-    if (selectedType !== "all") {
-      const haystack = `${product.name} ${product.description || ""}`.toLowerCase();
-      if (selectedType === "sunglasses" && !haystack.includes("sunglass") && !haystack.includes("aviator")) {
-        return false;
+  // Apply client-side filters
+  const filteredProducts = useMemo(() => {
+    return allProducts.filter((product) => {
+      // Brand Filter
+      if (selectedBrand !== "all") {
+        const formattedBrand = selectedBrand.toLowerCase().replace(/-/g, " ");
+        const isBrandMatch = product.name.toLowerCase().includes(formattedBrand) ||
+                             product.brand?.toLowerCase().includes(formattedBrand);
+        if (!isBrandMatch) return false;
       }
-      if (selectedType === "optical-frames" && !haystack.includes("optical") && !haystack.includes("frame") && !haystack.includes("eyeglass")) {
-        return false;
-      }
-    }
 
-    return true;
-  });
+      // Shape Filter
+      if (activeShape !== "all") {
+        const formattedShape = activeShape.toLowerCase().replace(/-/g, " ");
+        const variantText = product.variants.map((variant) => `${variant.color || ""} ${variant.size || ""} ${variant.lensType || ""} ${variant.material || ""}`).join(" ").toLowerCase();
+        const isShapeMatch = product.name.toLowerCase().includes(formattedShape) ||
+                             variantText.includes(formattedShape) ||
+                             (activeShape === "cat-eye" && product.name.toLowerCase().includes("cat-eye")) ||
+                             (activeShape === "semi-rimless" && product.name.toLowerCase().includes("rimless"));
+        if (!isShapeMatch) return false;
+      }
+
+      // Type Filter
+      if (selectedType !== "all") {
+        const categorySlug = (product as any).category?.slug || "";
+        if (selectedType === "sunglasses" && categorySlug !== "sunglasses") {
+          return false;
+        }
+        if (selectedType === "optical-frames" && !["eyeglasses", "blue-light-glasses", "reading-glasses"].includes(categorySlug)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [allProducts, selectedBrand, activeShape, selectedType]);
+
+  // Client-side sort
+  const sortedProducts = useMemo(() => {
+    const arr = [...filteredProducts];
+    switch (sortBy) {
+      case "price-asc":
+        return arr.sort((a, b) => {
+          const aPrice = Math.min(...a.variants.map((v) => Number(v.price)));
+          const bPrice = Math.min(...b.variants.map((v) => Number(v.price)));
+          return aPrice - bPrice;
+        });
+      case "price-desc":
+        return arr.sort((a, b) => {
+          const aPrice = Math.min(...a.variants.map((v) => Number(v.price)));
+          const bPrice = Math.min(...b.variants.map((v) => Number(v.price)));
+          return bPrice - aPrice;
+        });
+      case "name-asc":
+        return arr.sort((a, b) => a.name.localeCompare(b.name));
+      case "name-desc":
+        return arr.sort((a, b) => b.name.localeCompare(a.name));
+      default: // newest
+        return arr;
+    }
+  }, [filteredProducts, sortBy]);
+
+  // Paginate
+  const totalPages = Math.max(1, Math.ceil(sortedProducts.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedProducts = sortedProducts.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
+
+  const hasFilters = selectedBrand !== "all" || activeShape !== "all" || selectedType !== "all" || selectedCollection !== "all";
 
   return (
     <div className="max-w-[1400px] mx-auto px-6 py-10">
-      <div className="flex flex-col md:flex-row gap-8 md:gap-10">
+      <div className="flex flex-col gap-8 md:flex-row">
+        {/* Mobile filter toggle */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="flex md:hidden items-center gap-2 text-sm text-gold tracking-wide mb-2"
+        >
+          <SlidersHorizontal className="size-4" />
+          {sidebarOpen ? "HIDE FILTERS" : "SHOW FILTERS"}
+        </button>
+
         {/* Filters Sidebar */}
-        <aside className="w-full md:w-64 shrink-0 space-y-8">
+        <aside className={`w-full md:w-60 lg:w-72 shrink-0 space-y-8 ${sidebarOpen ? "block" : "hidden md:block"}`}>
           <div className="flex items-center justify-between border-b border-border pb-4">
             <h2 className="font-serif text-xl text-white">Filters</h2>
-            {(selectedBrand !== "all" || activeShape !== "all" || selectedType !== "all" || selectedCollection !== "all") && (
+            {hasFilters && (
               <button
                 onClick={() => updateFilter("clear")}
                 className="text-xs text-gold/70 hover:text-gold uppercase tracking-wider cursor-pointer"
@@ -160,17 +214,17 @@ function ShopContent() {
           {/* Collection Filter */}
           <div className="space-y-3">
             <h3 className="text-xs uppercase tracking-widest text-gold font-medium">Collection</h3>
-            <div className="flex flex-wrap gap-2 md:flex-col md:items-start md:gap-2.5">
+            <div className="flex flex-col gap-2.5">
               {[
                 { name: "All Collections", value: "all" },
-                ...collections
-                  .filter((c) => !["premium-sunglasses", "signature-eyewear", "luxury-eyewear", "premium-eyewear"].includes(c.slug))
-                  .map((c) => ({ name: c.title, value: c.slug })),
+                { name: "Best Sellers", value: "best-sellers" },
+                { name: "New Arrivals", value: "new-arrivals" },
+                { name: "Premium Eyewear", value: "premium-eyewear" },
               ].map((c) => (
                 <button
                   key={c.value}
                   onClick={() => updateFilter("collection", c.value)}
-                  className={`text-sm tracking-wide transition-colors cursor-pointer ${
+                  className={`text-sm tracking-wide transition-colors cursor-pointer text-left ${
                     selectedCollection === c.value ? "text-gold font-semibold" : "text-foreground/75 hover:text-white"
                   }`}
                 >
@@ -183,7 +237,7 @@ function ShopContent() {
           {/* Type Filter */}
           <div className="space-y-3">
             <h3 className="text-xs uppercase tracking-widest text-gold font-medium">Eyewear Type</h3>
-            <div className="flex flex-wrap gap-2 md:flex-col md:items-start md:gap-3">
+            <div className="flex flex-col gap-3">
               {[
                 { name: "All Types", value: "all" },
                 { name: "Sunglasses", value: "sunglasses" },
@@ -192,7 +246,7 @@ function ShopContent() {
                 <button
                   key={t.value}
                   onClick={() => updateFilter("type", t.value)}
-                  className={`text-sm tracking-wide transition-colors cursor-pointer ${
+                  className={`text-sm tracking-wide transition-colors cursor-pointer text-left ${
                     selectedType === t.value ? "text-gold font-semibold" : "text-foreground/75 hover:text-white"
                   }`}
                 >
@@ -205,7 +259,7 @@ function ShopContent() {
           {/* Shape Filter */}
           <div className="space-y-3">
             <h3 className="text-xs uppercase tracking-widest text-gold font-medium">Frame Shape</h3>
-            <div className="flex flex-wrap gap-2 md:flex-col md:items-start md:gap-2.5">
+            <div className="flex flex-col gap-2.5">
               {[
                 { name: "All Shapes", value: "all" },
                 { name: "Wayfarer", value: "wayfarer" },
@@ -219,7 +273,7 @@ function ShopContent() {
                 <button
                   key={s.value}
                   onClick={() => updateFilter("shape", s.value)}
-                  className={`text-sm tracking-wide transition-colors cursor-pointer ${
+                  className={`text-sm tracking-wide transition-colors cursor-pointer text-left ${
                     activeShape === s.value ? "text-gold font-semibold" : "text-foreground/75 hover:text-white"
                   }`}
                 >
@@ -232,41 +286,58 @@ function ShopContent() {
           {/* Brand Filter */}
           <div className="space-y-3">
             <h3 className="text-xs uppercase tracking-widest text-gold font-medium">Designer Brands</h3>
-            <div className="flex flex-wrap gap-2 md:flex-col md:items-start md:gap-2.5">
-              {[
-                { name: "All Brands", value: "all" },
-                { name: "Ray-Ban", value: "ray-ban" },
-                { name: "Oakley", value: "oakley" },
-                { name: "Gucci", value: "gucci" },
-                { name: "Prada", value: "prada" },
-                { name: "Versace", value: "versace" },
-                { name: "Mont Blanc", value: "mont-blanc" },
-                { name: "Maybach", value: "maybach" }
-              ].map((b) => (
-                <button
-                  key={b.value}
-                  onClick={() => updateFilter("brand", b.value)}
-                  className={`text-sm tracking-wide transition-colors cursor-pointer ${
-                    selectedBrand === b.value ? "text-gold font-semibold" : "text-foreground/75 hover:text-white"
-                  }`}
-                >
-                  {b.name}
-                </button>
-              ))}
+            <div className="flex flex-col gap-2.5">
+              <button
+                onClick={() => updateFilter("brand", "all")}
+                className={`text-sm tracking-wide transition-colors cursor-pointer text-left ${
+                  selectedBrand === "all" ? "text-gold font-semibold" : "text-foreground/75 hover:text-white"
+                }`}
+              >
+                All Brands
+              </button>
+              {availableBrands.map((brandName) => {
+                const brandValue = brandName.toLowerCase().replace(/ /g, "-");
+                return (
+                  <button
+                    key={brandName}
+                    onClick={() => updateFilter("brand", brandValue)}
+                    className={`text-sm tracking-wide transition-colors cursor-pointer text-left ${
+                      selectedBrand === brandValue ? "text-gold font-semibold" : "text-foreground/75 hover:text-white"
+                    }`}
+                  >
+                    {brandName}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </aside>
 
         {/* Product Grid */}
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-8 border-b border-border pb-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-8 border-b border-border pb-4">
             <p className="text-sm text-muted-foreground tracking-wide font-sans">
-              Showing <span className="text-white font-medium">{filteredProducts.length}</span> pieces
+              Showing <span className="text-white font-medium">{sortedProducts.length}</span> piece{sortedProducts.length !== 1 ? "s" : ""}
             </p>
+            <div className="flex items-center gap-3">
+              <label htmlFor="sort" className="text-xs uppercase tracking-widest text-muted-foreground">Sort</label>
+              <select
+                id="sort"
+                value={sortBy}
+                onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
+                className="bg-transparent border border-border text-sm text-white px-3 py-1.5 focus:outline-none focus:border-gold cursor-pointer"
+              >
+                <option value="newest" className="bg-background">Newest</option>
+                <option value="price-asc" className="bg-background">Price: Low to High</option>
+                <option value="price-desc" className="bg-background">Price: High to Low</option>
+                <option value="name-asc" className="bg-background">Name: A to Z</option>
+                <option value="name-desc" className="bg-background">Name: Z to A</option>
+              </select>
+            </div>
           </div>
 
           {isLoadingProducts ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map((item) => (
                 <div key={item} className="h-[380px] border border-border bg-card animate-pulse" />
               ))}
@@ -276,12 +347,37 @@ function ShopContent() {
               <h3 className="text-xl font-serif text-white mb-2">Products could not load</h3>
               <p className="text-muted-foreground text-sm font-sans">{productError}</p>
             </div>
-          ) : filteredProducts.length > 0 ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProducts.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </div>
+          ) : paginatedProducts.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {paginatedProducts.map((p) => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-4 mt-12">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={safePage <= 1}
+                    className="flex items-center gap-1 border border-border px-4 py-2 text-xs tracking-wider text-muted-foreground hover:text-white hover:border-gold transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    <ChevronLeft className="size-3.5" /> PREV
+                  </button>
+                  <span className="text-sm text-muted-foreground tabular-nums">
+                    {safePage} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={safePage >= totalPages}
+                    className="flex items-center gap-1 border border-border px-4 py-2 text-xs tracking-wider text-muted-foreground hover:text-white hover:border-gold transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    NEXT <ChevronRight className="size-3.5" />
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-20 border border-border border-dashed">
               <h3 className="text-xl font-serif text-white mb-2">No frames found</h3>
@@ -308,7 +404,7 @@ export default function ShopPage() {
       <main className="flex-1 pt-32">
         <div className="text-center mb-10 px-6">
           <p className="text-gold tracking-[0.3em] text-xs mb-3 font-medium">VIEWORA CATALOGUE</p>
-          <h1 className="font-serif text-4xl lg:text-5xl text-white">Handcrafted Precision</h1>
+          <h1 className="font-serif text-4xl text-white">Handcrafted Precision</h1>
           <div className="h-[1px] w-20 bg-gold/40 mx-auto mt-4"></div>
         </div>
 
@@ -322,7 +418,7 @@ export default function ShopPage() {
       </main>
 
       <footer className="border-t border-border py-8 text-center text-xs tracking-[0.2em] text-muted-foreground font-sans bg-background">
-        © 2026 VIEWORA — FASHION EYEWEAR. ALL RIGHTS RESERVED.
+        (c) 2026 VIEWORA -- FASHION EYEWEAR. ALL RIGHTS RESERVED.
       </footer>
     </div>
   );

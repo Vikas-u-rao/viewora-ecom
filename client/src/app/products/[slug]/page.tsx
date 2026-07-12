@@ -5,10 +5,11 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Loader2, Package, ShoppingCart } from "lucide-react";
+import { Heart, Loader2, Package, ShoppingCart } from "lucide-react";
 import Header from "@/components/header";
 import { API_BASE } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { ApiProduct, ProductVariant, variantSnapshot } from "@/services/products";
 
 import p1 from "@/assets/p1.jpg";
@@ -27,11 +28,13 @@ function formatPrice(value: string | number) {
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { addToCart } = useCart();
+  const { isWishlisted, toggleWishlist } = useWishlist();
   const [product, setProduct] = useState<ApiProduct | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+  const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -67,8 +70,14 @@ export default function ProductDetailPage() {
 
   const fallbackImgs = [p1, p2, p3, p4];
   const slugHash = Array.from(product?.slug || "").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  const image = fallbackImgs[slugHash % fallbackImgs.length];
+  const fallback = fallbackImgs[slugHash % fallbackImgs.length];
+  
+  const variantImage = selectedVariant?.imageUrls?.[0];
+  const firstUrl = variantImage || (Array.isArray(product?.defaultImageUrls) ? product.defaultImageUrls[0] : null);
+  const image = firstUrl || fallback;
   const unavailable = !selectedVariant || selectedVariant.stock < 1;
+
+  const wishlisted = product ? isWishlisted(product.id) : false;
 
   const handleAdd = async () => {
     if (!product || !selectedVariant || unavailable) return;
@@ -77,6 +86,16 @@ export default function ProductDetailPage() {
       await addToCart(selectedVariant.id, 1, variantSnapshot(product, selectedVariant));
     } finally {
       setIsAdding(false);
+    }
+  };
+
+  const handleToggleWishlist = async () => {
+    if (!product || isTogglingWishlist) return;
+    setIsTogglingWishlist(true);
+    try {
+      await toggleWishlist(product.id);
+    } finally {
+      setIsTogglingWishlist(false);
     }
   };
 
@@ -130,7 +149,7 @@ export default function ProductDetailPage() {
 
           <section className="flex flex-col justify-center">
             {product.brand && <p className="text-xs tracking-[0.25em] text-gold uppercase mb-3">{product.brand}</p>}
-            <h1 className="font-serif text-4xl lg:text-5xl text-white mb-4">{product.name}</h1>
+            <h1 className="font-serif text-4xl text-white mb-4">{product.name}</h1>
             <p className="text-muted-foreground leading-relaxed mb-8">{product.description || "Premium eyewear crafted for everyday clarity and presence."}</p>
 
             <div className="mb-8">
@@ -152,16 +171,34 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="flex flex-row items-center gap-4">
               <span className="font-serif text-3xl text-gold tabular-nums">{formatPrice(selectedVariant?.price || product.startingPrice)}</span>
-              <button
-                onClick={handleAdd}
-                disabled={unavailable || isAdding}
-                className="inline-flex items-center justify-center gap-2 bg-gold px-8 py-3.5 text-xs font-bold tracking-[0.2em] text-background transition-colors hover:bg-gold-soft disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                {isAdding ? <Loader2 className="size-4 animate-spin" /> : <ShoppingCart className="size-4" />}
-                {unavailable ? "UNAVAILABLE" : "ADD TO CART"}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleToggleWishlist}
+                  disabled={isTogglingWishlist}
+                  aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                  className="p-3 border border-border hover:border-gold transition-colors disabled:opacity-50"
+                >
+                  {isTogglingWishlist ? (
+                    <Loader2 className="size-5 animate-spin" />
+                  ) : (
+                    <Heart
+                      className={`size-5 transition-colors ${
+                        wishlisted ? "fill-gold text-gold" : "text-muted-foreground hover:text-gold"
+                      }`}
+                    />
+                  )}
+                </button>
+                <button
+                  onClick={handleAdd}
+                  disabled={unavailable || isAdding}
+                  className="inline-flex items-center justify-center gap-2 bg-gold px-8 py-3.5 text-xs font-bold tracking-[0.2em] text-background transition-colors hover:bg-gold-soft disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  {isAdding ? <Loader2 className="size-5 animate-spin" /> : <ShoppingCart className="size-5" />}
+                  {unavailable ? "UNAVAILABLE" : "ADD TO CART"}
+                </button>
+              </div>
             </div>
           </section>
         </div>
