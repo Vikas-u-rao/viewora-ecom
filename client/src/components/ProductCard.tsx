@@ -1,12 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { Heart, Loader2, Package } from "lucide-react";
+import { Heart, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { ApiProduct, variantSnapshot } from "@/services/products";
+import ProductImage from "@/components/ProductImage";
 import p1 from "@/assets/p1.jpg";
 import p2 from "@/assets/p2.jpg";
 import p3 from "@/assets/p3.png";
@@ -24,6 +24,7 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
   const { addToCart } = useCart();
   const { isWishlisted, toggleWishlist } = useWishlist();
   const [isAdding, setIsAdding] = useState(false);
+  const [isAdded, setIsAdded] = useState(false);
   const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
 
   const variant = product.variants.find((item) => item.stock > 0) || product.variants[0];
@@ -42,6 +43,7 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
     setIsAdding(true);
     try {
       await addToCart(variant.id, 1, variantSnapshot(product, variant));
+      setIsAdded(true);
     } finally {
       setIsAdding(false);
     }
@@ -60,26 +62,14 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
   };
 
   return (
-    <div className="group border border-border p-4 hover:border-gold transition-colors duration-300 relative">
+    <div className="group border border-border p-3 hover:border-gold/60 transition-all duration-400 relative flex flex-col">
       {/* Product image with wishlist button */}
-      <div className="relative mb-4">
+      <div className="relative mb-3">
         <Link
           href={`/products/${product.slug}`}
-          className="aspect-square overflow-hidden relative block w-full h-[260px] bg-black/20"
+          className="block w-full aspect-[4/5] overflow-hidden bg-card"
         >
-          {image ? (
-            <Image
-              src={image}
-              alt={product.name}
-              fill
-              className="object-cover"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <Package className="size-10 text-muted-foreground" strokeWidth={1.2} />
-            </div>
-          )}
+          <ProductImage src={image} alt={product.name} priority={false} />
         </Link>
 
         {/* Wishlist toggle */}
@@ -87,39 +77,60 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
           onClick={handleToggleWishlist}
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
           disabled={isTogglingWishlist}
-          className="absolute top-2 right-2 z-10 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border hover:border-gold transition-all duration-200 disabled:opacity-50"
+          className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-background/60 backdrop-blur-sm border border-border/60 hover:border-gold/60 hover:bg-background/80 transition-all duration-200 disabled:opacity-50"
         >
           <Heart
-            className={`size-4 transition-colors duration-200 ${
-              wishlisted ? "fill-gold text-gold" : "text-muted-foreground hover:text-gold"
+            className={`size-3.5 transition-colors duration-200 ${
+              wishlisted ? "fill-gold text-gold" : "text-muted-foreground/70 hover:text-gold"
             }`}
           />
         </button>
+
+        {unavailable && (
+          <div className="absolute bottom-2 left-2 z-10">
+            <span className="text-[9px] tracking-[0.15em] uppercase font-bold bg-background/80 backdrop-blur-sm border border-border/60 text-muted-foreground px-2 py-0.5">
+              Sold Out
+            </span>
+          </div>
+        )}
       </div>
 
       {product.brand && (
-        <p className="mb-1 text-[10px] tracking-[0.2em] uppercase text-gold">{product.brand}</p>
+        <p className="mb-0.5 text-[10px] tracking-[0.2em] uppercase text-gold/80">{product.brand}</p>
       )}
-      <Link href={`/products/${product.slug}`} className="block">
-        <h3 className="text-lg font-serif mb-3 text-white line-clamp-1 hover:text-gold transition-colors">
+      <Link href={`/products/${product.slug}`} className="block flex-1">
+        <h3 className="text-base font-serif mb-2 text-white/90 line-clamp-1 hover:text-gold transition-colors leading-snug">
           {product.name}
         </h3>
       </Link>
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-gold text-lg tabular-nums">
+      <div className="flex items-center justify-between gap-2 mt-auto pt-2 border-t border-border/40">
+        <span className="text-gold text-sm tabular-nums tracking-wide">
           {formatPrice(variant?.price || product.startingPrice)}
         </span>
         <button
           onClick={handleAdd}
           disabled={unavailable || isAdding}
-          className="min-w-20 border border-gold text-gold px-4 py-1.5 text-xs font-bold tracking-[0.15em] hover:bg-gold hover:text-background transition-colors duration-300 disabled:cursor-not-allowed disabled:opacity-45"
+          className="relative inline-flex items-center justify-center border border-gold/70 text-gold w-[72px] h-[30px] text-[10px] font-bold tracking-[0.15em] hover:bg-gold hover:text-background transition-colors duration-300 disabled:cursor-not-allowed disabled:opacity-40 overflow-hidden"
         >
           {isAdding ? (
-            <Loader2 className="mx-auto size-3.5 animate-spin" />
-          ) : unavailable ? (
-            "SOLD"
+            <Loader2 className="size-3.5 animate-spin" />
           ) : (
-            "ADD"
+            <span className="relative inline-flex items-center justify-center w-full h-full">
+              <span
+                className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
+                  isAdded ? "opacity-100 scale-100" : "opacity-0 scale-0"
+                }`}
+              >
+                <span className="text-base leading-none font-light">+</span>
+              </span>
+              <span
+                className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
+                  isAdded ? "opacity-0 scale-0" : "opacity-100 scale-100"
+                }`}
+              >
+                ADD
+              </span>
+            </span>
           )}
         </button>
       </div>
