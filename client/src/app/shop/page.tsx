@@ -5,6 +5,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
 import Header from "@/components/header";
+import Footer from "@/components/footer";
 import ProductCard from "@/components/ProductCard";
 import { ApiProduct, fetchProductsApi } from "@/services/products";
 import { collections } from "@/lib/collections";
@@ -138,9 +139,8 @@ function ShopContent() {
         if (!isShapeMatch) return false;
       }
 
-      // Type Filter
       if (selectedType !== "all") {
-        const categorySlug = (product as any).category?.slug || "";
+        const categorySlug = (product as unknown as { category?: { slug?: string } }).category?.slug || "";
         if (selectedType === "sunglasses" && categorySlug !== "sunglasses") {
           return false;
         }
@@ -417,9 +417,7 @@ export default function ShopPage() {
         </Suspense>
       </main>
 
-      <footer className="border-t border-border py-8 text-center text-xs tracking-[0.2em] text-muted-foreground font-sans bg-background">
-        (c) 2026 VIEWORA -- FASHION EYEWEAR. ALL RIGHTS RESERVED.
-      </footer>
+      <Footer />
     </div>
   );
 }

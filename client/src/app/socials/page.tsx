@@ -1,6 +1,7 @@
 'use client';
 
 import Header from "@/components/header";
+import Footer from "@/components/footer";
 
 const socialLinks = [
   {
@@ -121,9 +122,7 @@ export default function SocialsPage() {
         </div>
       </main>
 
-      <footer className="border-t border-border py-8 text-center text-xs tracking-[0.2em] text-muted-foreground font-sans bg-background">
-        © 2026 VIEWORA — FASHION EYEWEAR. ALL RIGHTS RESERVED.
-      </footer>
+      <Footer />
     </div>
   );
 }

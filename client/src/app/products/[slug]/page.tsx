@@ -196,7 +196,6 @@ export default function ProductDetailPage() {
                     />
                   )}
                 </button>
-
                 {/* Main Add to Cart Button */}
                 <button
                   onClick={handleAdd}

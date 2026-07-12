@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Heart, Loader2, Trash2 } from "lucide-react";
 import Header from "@/components/header";
+import Footer from "@/components/footer";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -198,9 +199,7 @@ export default function WishlistPage() {
           )}
         </div>
       </main>
-      <footer className="border-t border-border py-8 text-center text-xs tracking-[0.2em] text-muted-foreground font-sans bg-background">
-        (c) 2026 VIEWORA -- FASHION EYEWEAR. ALL RIGHTS RESERVED.
-      </footer>
+      <Footer />
     </div>
   );
 }
