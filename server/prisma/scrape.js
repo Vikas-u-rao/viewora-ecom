@@ -109,6 +109,12 @@ async function scrapeAll() {
             price = parsedPrice;
           }
         }
+
+        // Exclude products over 10k
+        if (price > 10000) {
+          console.log(`Skipping product over 10k: ${raw.prd_name} (Price: ${price})`);
+          continue;
+        }
         
         const specs = {};
         if (Array.isArray(raw.isq_det_form)) {
