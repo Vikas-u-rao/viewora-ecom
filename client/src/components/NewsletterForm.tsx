@@ -34,9 +34,10 @@ export default function NewsletterForm() {
 
       setStatus('success');
       setEmail("");
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as Error;
       setStatus('error');
-      setErrorMessage(error.message || 'Something went wrong. Please try again.');
+      setErrorMessage(err.message || 'Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
