@@ -112,7 +112,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-3 gap-6">
             {collections.map((c) => (
-              <Link key={c.title} href={`/shop/${c.slug}`} className="group relative overflow-hidden aspect-[4/5] block border border-border/40">
+              <Link key={c.title} href={`/collections/${c.slug}`} className="group relative overflow-hidden aspect-[4/5] block border border-border/40">
                 <Image src={c.img} alt={c.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" width={800} height={900} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-8">

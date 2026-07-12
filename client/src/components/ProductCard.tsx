@@ -72,7 +72,7 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
               src={image}
               alt={product.name}
               fill
-              className="object-contain"
+              className="object-contain animate-fade-in"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           ) : (
@@ -90,11 +90,19 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
           className="absolute top-2 right-2 z-10 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border hover:border-[#e0b96f] transition-all duration-200 disabled:opacity-50"
         >
           <Heart
-            className={`size-4 transition-colors duration-200 ${
-              wishlisted ? "fill-gold text-gold" : "text-muted-foreground hover:text-gold"
+            className={`size-3.5 transition-colors duration-200 ${
+              wishlisted ? "fill-gold text-gold" : "text-muted-foreground/70 hover:text-gold"
             }`}
           />
         </button>
+
+        {unavailable && (
+          <div className="absolute bottom-2 left-2 z-10">
+            <span className="text-[9px] tracking-[0.15em] uppercase font-bold bg-background/80 backdrop-blur-sm border border-border/60 text-muted-foreground px-2 py-0.5">
+              Sold Out
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Info wrap */}

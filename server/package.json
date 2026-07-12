@@ -10,6 +10,7 @@
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:studio": "npx prisma studio",
     "prisma:generate": "npx prisma generate",
+    "seed": "ts-node prisma/seed.ts",
     "test": "jest"
   },
   "dependencies": {

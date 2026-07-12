@@ -58,8 +58,8 @@ async function main() {
       description: 'Iconic teardrop metal frames engineered for comfort, classic style, and dynamic performance.',
       categoryId: sunglasses.id,
       defaultImageUrls: [
-        'https://res.cloudinary.com/demo/image/upload/v1652343212/viewora/aviator_front.jpg',
-        'https://res.cloudinary.com/demo/image/upload/v1652343212/viewora/aviator_side.jpg'
+        '/images/products/aviator_front.jpg',
+        '/images/products/aviator_side.jpg'
       ],
       startingPrice: 2450.00,
     }
@@ -76,7 +76,7 @@ async function main() {
         material: 'Stainless Steel',
         price: 2450.00,
         stock: 15,
-        imageUrls: ['https://res.cloudinary.com/demo/image/upload/v1652343212/viewora/aviator_front_black.jpg'],
+        imageUrls: ['/images/products/aviator_front_black.jpg'],
       },
       {
         productId: p1.id,
@@ -87,7 +87,7 @@ async function main() {
         material: 'Stainless Steel',
         price: 2750.00, // Premium colorway
         stock: 8,
-        imageUrls: ['https://res.cloudinary.com/demo/image/upload/v1652343212/viewora/aviator_front_gold.jpg'],
+        imageUrls: ['/images/products/aviator_front_gold.jpg'],
       }
     ]
   });
@@ -109,7 +109,7 @@ async function main() {
       description: 'Ultralightweight round frames with premium blue light blocking lenses designed for digital professionals.',
       categoryId: blueLight.id,
       defaultImageUrls: [
-        'https://res.cloudinary.com/demo/image/upload/v1652343212/viewora/round_front.jpg'
+        '/images/products/round_front.jpg'
       ],
       startingPrice: 1499.00,
     }
@@ -157,7 +157,7 @@ async function main() {
       description: 'Handcrafted acetate frames featuring custom organic sandalwood temples for a refined look.',
       categoryId: eyeglasses.id,
       defaultImageUrls: [
-        'https://res.cloudinary.com/demo/image/upload/v1652343212/viewora/rectangle_front.jpg'
+        '/images/products/rectangle_front.jpg'
       ],
       startingPrice: 3499.00,
     }

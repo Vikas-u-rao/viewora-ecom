@@ -4,7 +4,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/header';
@@ -24,17 +23,7 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
-
-import p1 from "@/assets/p1.jpg";
-import p2 from "@/assets/p2.jpg";
-import p3 from "@/assets/p3.png";
-import p4 from "@/assets/p4.png";
-
-function getLocalImage(slug?: string) {
-  const fallbackImgs = [p1, p2, p3, p4];
-  const slugHash = Array.from(slug || "").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  return fallbackImgs[slugHash % fallbackImgs.length];
-}
+import ProductImage from '@/components/ProductImage';
 
 // ── Constants ───────────────────────────────────────────────────────────────
 
@@ -292,15 +281,14 @@ export default function CartPage() {
                 className="border border-amber-500/20 bg-card/50 p-4 flex gap-4 md:gap-5 relative opacity-70"
               >
                 {/* Image */}
-                <div className="w-20 h-20 bg-muted/30 flex items-center justify-center shrink-0 relative overflow-hidden">
-                  <Image
-                    src={getLocalImage(item.variant?.product?.slug)}
+                <div className="w-20 h-20 md:w-28 md:h-28 bg-muted/30 shrink-0 relative overflow-hidden">
+                  <ProductImage
+                    src={item.variant?.imageUrls?.[0] || ''}
                     alt={item.variant?.product?.name || 'Product'}
-                    fill
-                    className="object-cover grayscale"
-                    sizes="96px"
+                    sizes="112px"
+                    className="grayscale opacity-60"
                   />
-                  <div className="absolute inset-0 bg-background/40 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-background/30 flex items-center justify-center">
                     <span className="text-[9px] tracking-wider uppercase font-bold bg-amber-500/90 text-background px-2 py-0.5">
                       Unavailable
                     </span>
@@ -347,14 +335,12 @@ export default function CartPage() {
                 >
                   {/* Product image */}
                   <Link
-                    href={item.variant?.product?.slug ? `/shop/${item.variant.product.slug}` : '#'}
-                    className="w-20 h-20 md:w-28 md:h-28 bg-muted/20 flex items-center justify-center shrink-0 relative overflow-hidden hover:opacity-90 transition-opacity"
+                    href={item.variant?.product?.slug ? `/products/${item.variant.product.slug}` : '#'}
+                    className="w-20 h-20 md:w-28 md:h-28 shrink-0 relative overflow-hidden border border-border/40 hover:border-gold/40 transition-colors"
                   >
-                    <Image
-                      src={getLocalImage(item.variant?.product?.slug)}
+                    <ProductImage
+                      src={item.variant?.imageUrls?.[0] || ''}
                       alt={item.variant?.product?.name || 'Product'}
-                      fill
-                      className="object-cover"
                       sizes="112px"
                     />
                   </Link>
@@ -371,7 +357,7 @@ export default function CartPage() {
 
                       {/* Name */}
                       <Link
-                        href={item.variant?.product?.slug ? `/shop/${item.variant.product.slug}` : '#'}
+                    href={item.variant?.product?.slug ? `/products/${item.variant.product.slug}` : '#'}
                         className="font-medium text-sm text-foreground hover:text-gold transition-colors line-clamp-1"
                       >
                         {item.variant?.product?.name || 'Product'}

@@ -2,15 +2,15 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Heart, Loader2, Package, ShoppingCart } from "lucide-react";
+import { Heart, Loader2, ShoppingCart, Plus, Check } from "lucide-react";
 import Header from "@/components/header";
 import { API_BASE } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { ApiProduct, ProductVariant, variantSnapshot } from "@/services/products";
+import ProductImage from "@/components/ProductImage";
 
 import p1 from "@/assets/p1.jpg";
 import p2 from "@/assets/p2.jpg";
@@ -27,13 +27,14 @@ function formatPrice(value: string | number) {
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { addToCart } = useCart();
+  const { addToCart, items } = useCart();
   const { isWishlisted, toggleWishlist } = useWishlist();
   const [product, setProduct] = useState<ApiProduct | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+  const [showCheck, setShowCheck] = useState(false);
   const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
 
   useEffect(() => {
@@ -71,7 +72,7 @@ export default function ProductDetailPage() {
   const fallbackImgs = [p1, p2, p3, p4];
   const slugHash = Array.from(product?.slug || "").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
   const fallback = fallbackImgs[slugHash % fallbackImgs.length];
-  
+
   const variantImage = selectedVariant?.imageUrls?.[0];
   const firstUrl = variantImage || (Array.isArray(product?.defaultImageUrls) ? product.defaultImageUrls[0] : null);
   const image = firstUrl || fallback;
@@ -79,11 +80,21 @@ export default function ProductDetailPage() {
 
   const wishlisted = product ? isWishlisted(product.id) : false;
 
+  const cartItem = selectedVariant ? items.find((i) => i.variantId === selectedVariant.id) : undefined;
+
+  useEffect(() => {
+    if (showCheck) {
+      const timer = setTimeout(() => setShowCheck(false), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [showCheck]);
+
   const handleAdd = async () => {
     if (!product || !selectedVariant || unavailable) return;
     setIsAdding(true);
     try {
       await addToCart(selectedVariant.id, 1, variantSnapshot(product, selectedVariant));
+      setShowCheck(true);
     } finally {
       setIsAdding(false);
     }
@@ -105,7 +116,7 @@ export default function ProductDetailPage() {
         <Header />
         <main className="mx-auto max-w-[1200px] px-6 pt-32">
           <div className="grid gap-8 md:grid-cols-2">
-            <div className="aspect-square animate-pulse bg-card" />
+            <div className="aspect-[4/5] animate-pulse bg-card" />
             <div className="space-y-5">
               <div className="h-8 w-2/3 animate-pulse bg-card" />
               <div className="h-4 w-full animate-pulse bg-card" />
@@ -137,18 +148,13 @@ export default function ProductDetailPage() {
       <Header />
       <main className="mx-auto max-w-[1200px] px-6 pt-28 pb-16">
         <div className="grid gap-10 md:grid-cols-[1fr_0.9fr]">
-          <div className="relative aspect-square overflow-hidden border border-border bg-card">
-            {image ? (
-              <Image src={image} alt={product.name} fill className="object-cover" priority sizes="50vw" />
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <Package className="size-16 text-muted-foreground" strokeWidth={1.2} />
-              </div>
-            )}
+          {/* Product Image */}
+          <div className="relative aspect-[4/5] overflow-hidden border border-border bg-card">
+            <ProductImage src={image} alt={product.name} priority sizes="50vw" />
           </div>
 
           <section className="flex flex-col justify-center">
-            {product.brand && <p className="text-xs tracking-[0.25em] text-gold uppercase mb-3">{product.brand}</p>}
+            {product.brand && <p className="text-xs tracking-[0.25em] text-gold/80 uppercase mb-3">{product.brand}</p>}
             <h1 className="font-serif text-4xl text-white mb-4">{product.name}</h1>
             <p className="text-muted-foreground leading-relaxed mb-8">{product.description || "Premium eyewear crafted for everyday clarity and presence."}</p>
 
@@ -160,47 +166,69 @@ export default function ProductDetailPage() {
                     key={variant.id}
                     onClick={() => setSelectedVariantId(variant.id)}
                     disabled={variant.stock < 1}
-                    className={`border p-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-45 ${
-                      selectedVariantId === variant.id ? "border-gold bg-gold/10" : "border-border hover:border-gold/60"
+                    className={`border p-3 text-left transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-45 ${
+                      selectedVariantId === variant.id ? "border-gold bg-gold/10" : "border-border hover:border-gold/50"
                     }`}
                   >
                     <span className="block text-sm text-white">{variant.color || variant.sku}</span>
-                    <span className="block text-xs text-muted-foreground">{variant.lensType || variant.material || "Standard lens"}</span>
+                    <span className="block text-xs text-muted-foreground mt-0.5">{variant.lensType || variant.material || "Standard lens"}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="flex flex-row items-center gap-4">
+            <div className="flex flex-row items-center gap-5">
               <span className="font-serif text-3xl text-gold tabular-nums">{formatPrice(selectedVariant?.price || product.startingPrice)}</span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleToggleWishlist}
                   disabled={isTogglingWishlist}
                   aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-                  className="p-3 border border-border hover:border-gold transition-colors disabled:opacity-50"
+                  className="p-3 border border-border hover:border-gold/60 hover:bg-gold/5 transition-all duration-200 disabled:opacity-50"
                 >
                   {isTogglingWishlist ? (
                     <Loader2 className="size-5 animate-spin" />
                   ) : (
                     <Heart
                       className={`size-5 transition-colors ${
-                        wishlisted ? "fill-gold text-gold" : "text-muted-foreground hover:text-gold"
+                        wishlisted ? "fill-gold text-gold" : "text-muted-foreground/70 hover:text-gold"
                       }`}
                     />
                   )}
                 </button>
-
+                {/* Main Add to Cart Button */}
                 <button
                   onClick={handleAdd}
                   disabled={unavailable || isAdding}
-                  className="inline-flex items-center justify-center gap-2 bg-gold px-8 py-3.5 text-xs font-bold tracking-[0.2em] text-background transition-colors hover:bg-gold-soft disabled:cursor-not-allowed disabled:opacity-45"
+                  className="relative inline-flex items-center justify-center gap-2 bg-gold px-8 py-3.5 text-xs font-bold tracking-[0.2em] text-background transition-all duration-300 hover:bg-gold-soft disabled:cursor-not-allowed disabled:opacity-45 overflow-hidden min-w-[160px]"
                 >
-                  {isAdding ? <Loader2 className="size-5 animate-spin" /> : <ShoppingCart className="size-5" />}
-                  {unavailable ? "UNAVAILABLE" : "ADD TO CART"}
+                  <span className={`inline-flex items-center gap-2 transition-all duration-300 ${showCheck ? "opacity-0 scale-0 w-0 overflow-hidden" : "opacity-100 scale-100"}`}>
+                    <ShoppingCart className="size-4" />
+                    {unavailable ? "UNAVAILABLE" : "ADD TO CART"}
+                  </span>
+                  <span className={`absolute inset-0 flex items-center justify-center gap-2 transition-all duration-300 ${showCheck ? "opacity-100 scale-100" : "opacity-0 scale-0"}`}>
+                    <Check className="size-5 stroke-[2.5]" />
+                    <span>ADDED</span>
+                  </span>
                 </button>
               </div>
             </div>
+
+            {/* Quick actions row */}
+            {cartItem && (
+              <div className="mt-6 pt-4 border-t border-border/40">
+                <p className="text-xs text-muted-foreground tracking-wide">
+                  {cartItem.quantity} in cart
+                  <button
+                    onClick={() => addToCart(selectedVariant!.id, 1, variantSnapshot(product, selectedVariant!))}
+                    className="ml-3 inline-flex items-center gap-1 text-gold hover:text-gold-soft transition-colors text-xs"
+                  >
+                    <Plus className="size-3 stroke-[2.5]" />
+                    Add more
+                  </button>
+                </p>
+              </div>
+            )}
           </section>
         </div>
       </main>
