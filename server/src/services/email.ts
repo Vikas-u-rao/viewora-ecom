@@ -201,3 +201,73 @@ function logCouponToConsole(email: string, couponCode: string, value: number, ex
     '='.repeat(60) + '\n'
   );
 }
+
+export async function sendSubscriptionConfirmationEmail(email: string) {
+  const subject = "Welcome to Viewora Community ✨";
+
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #ffffff; color: #333333;">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h1 style="color: #d4af37; margin: 0; font-family: 'Playfair Display', Georgia, serif;">VIEWORA</h1>
+        <p style="font-size: 12px; letter-spacing: 2px; color: #888888; margin: 5px 0 0 0; text-transform: uppercase;">Premium Fashion Eyewear</p>
+      </div>
+      <hr style="border: 0; border-top: 1px solid #f0f0f0; margin-bottom: 20px;">
+      <h2 style="font-size: 20px; color: #333333; margin-top: 0;">${subject}</h2>
+      <p style="font-size: 15px; line-height: 1.5; color: #555555;">Hello,</p>
+      <p style="font-size: 15px; line-height: 1.5; color: #555555;">Thank you for subscribing to the Viewora community!</p>
+      
+      <p style="font-size: 15px; line-height: 1.5; color: #555555;">You will now receive:</p>
+      <ul style="font-size: 15px; line-height: 1.5; color: #555555; list-style-type: none; padding-left: 0;">
+        <li>✓ Latest new arrivals</li>
+        <li>✓ Exclusive eyewear collections</li>
+        <li>✓ Premium brand updates</li>
+        <li>✓ Special offers and discounts</li>
+      </ul>
+
+      <p style="font-size: 15px; line-height: 1.5; color: #555555;">Join our exclusive Viewora Community and unlock the best benefits.</p>
+
+      <p style="font-size: 15px; line-height: 1.5; color: #555555;">For just ₹99, become a community member and get access to:</p>
+      <ul style="font-size: 15px; line-height: 1.5; color: #555555; list-style-type: none; padding-left: 0;">
+        <li>✓ Special member-only discounts</li>
+        <li>✓ Early access to new collections</li>
+        <li>✓ Exclusive deals and offers</li>
+      </ul>
+
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="https://viewora.in/community/join" style="display: inline-block; padding: 15px 30px; background-color: #000000; color: #d4af37; text-decoration: none; font-size: 16px; font-weight: bold; border: 1px solid #d4af37; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px;">Join Community for ₹99</a>
+      </div>
+
+      <p style="font-size: 15px; line-height: 1.5; color: #555555;">Thank you for being part of Viewora.</p>
+      <p style="font-size: 15px; line-height: 1.5; color: #555555;">Enjoy premium eyewear experiences.</p>
+      
+      <p style="font-size: 15px; line-height: 1.5; color: #555555; margin-top: 30px;">Regards,<br>Viewora Team</p>
+
+      <hr style="border: 0; border-top: 1px solid #f0f0f0; margin: 20px 0;">
+      <p style="font-size: 12px; color: #999999; text-align: center; margin: 0;">&copy; 2026 VIEWORA. All rights reserved.</p>
+    </div>
+  `;
+
+  if (transporter) {
+    try {
+      await transporter.sendMail({
+        from: `"VIEWORA Community" <${from}>`,
+        to: email,
+        subject,
+        html: htmlContent,
+      });
+      logger.info({ msg: `Subscription email sent to ${email}` });
+    } catch (error) {
+      logger.error({ msg: `Failed to send subscription email to ${email}`, error });
+      logSubscriptionToConsole(email);
+    }
+  } else {
+    logSubscriptionToConsole(email);
+  }
+}
+
+function logSubscriptionToConsole(email: string) {
+  logger.info('\n' + '='.repeat(60) + 
+    `\n[DEVELOPMENT FALLBACK] SUBSCRIPTION CONFIRMATION FOR EMAIL: ${email}\n` + 
+    '='.repeat(60) + '\n'
+  );
+}
