@@ -139,9 +139,8 @@ function ShopContent() {
         if (!isShapeMatch) return false;
       }
 
-      // Type Filter
       if (selectedType !== "all") {
-        const categorySlug = (product as any).category?.slug || "";
+        const categorySlug = (product as unknown as { category?: { slug?: string } }).category?.slug || "";
         if (selectedType === "sunglasses" && categorySlug !== "sunglasses") {
           return false;
         }
