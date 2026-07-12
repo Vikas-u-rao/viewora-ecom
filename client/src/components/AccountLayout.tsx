@@ -22,9 +22,9 @@ export default function AccountLayout({ title, children }: { title: string; chil
       <div className="min-h-screen bg-background text-foreground">
         <Header />
         <main className="mx-auto max-w-[1200px] px-6 pt-28 pb-16">
-          <h1 className="font-serif text-3xl lg:text-4xl text-white mb-8">{title}</h1>
+          <h1 className="font-serif text-3xl text-white mb-8">{title}</h1>
           <div className="grid gap-8 md:grid-cols-[230px_1fr]">
-            <aside className="flex md:flex-col gap-2 overflow-x-auto border-b border-border pb-4 md:border-b-0 md:border-r md:pb-0 md:pr-4">
+            <aside className="flex flex-row md:flex-col gap-2 overflow-x-auto border-b md:border-b-0 md:border-r border-border pb-4 md:pb-0 md:pr-4">
               {links.map((item) => {
                 const Icon = item.icon;
                 const active = pathname === item.href || pathname.startsWith(`${item.href}/`);

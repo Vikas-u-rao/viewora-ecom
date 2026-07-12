@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable react-hooks/set-state-in-effect */
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -149,8 +150,8 @@ export default function CartPage() {
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <Header />
         <main className="flex-1 max-w-[1400px] w-full mx-auto px-6 pt-28 pb-16">
-          <h1 className="font-serif text-3xl lg:text-4xl mb-8">Shopping Cart</h1>
-          <div className="grid lg:grid-cols-[1fr_380px] gap-6 lg:gap-8">
+          <h1 className="font-serif text-3xl mb-8">Shopping Cart</h1>
+          <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
             {/* Skeleton items */}
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
@@ -195,7 +196,7 @@ export default function CartPage() {
               <div className="absolute inset-3 rounded-full border border-gold/10" />
               <ShoppingBag className="size-12 text-gold/60" strokeWidth={1} />
             </div>
-            <h1 className="font-serif text-3xl lg:text-4xl text-foreground mb-3">
+            <h1 className="font-serif text-3xl text-foreground mb-3">
               Your Cart is Empty
             </h1>
             <p className="text-muted-foreground text-sm leading-relaxed mb-8 max-w-sm mx-auto">
@@ -233,6 +234,24 @@ export default function CartPage() {
 
   // ── Cart with items ───────────────────────────────────────────────────
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center px-6 pt-28 pb-16">
+          <div className="text-center max-w-md">
+            <ShoppingBag className="mx-auto mb-6 size-16 text-muted-foreground" strokeWidth={1.2} />
+            <h1 className="font-serif text-3xl text-white mb-3">Log in to view your cart</h1>
+            <p className="text-muted-foreground mb-8">Sign in to see items you&apos;ve added and proceed to checkout.</p>
+            <Link href="/login" className="inline-flex bg-gold px-8 py-3 text-xs font-bold tracking-[0.2em] text-background hover:bg-gold-soft transition-colors">
+              LOG IN
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
@@ -240,7 +259,7 @@ export default function CartPage() {
       <main className="flex-1 max-w-[1400px] w-full mx-auto px-6 pt-28 pb-16">
         {/* Page header */}
         <div className="flex items-baseline justify-between mb-8">
-          <h1 className="font-serif text-3xl lg:text-4xl text-foreground">
+          <h1 className="font-serif text-3xl text-foreground">
             Shopping Cart
           </h1>
           <span className="text-muted-foreground text-sm">
@@ -248,7 +267,7 @@ export default function CartPage() {
           </span>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_380px] gap-6 lg:gap-8 items-start">
+        <div className="grid gap-8 lg:grid-cols-[1fr_380px] items-start">
           {/* ── Cart Items Column ───────────────────────────────────────── */}
           <div className="space-y-4">
             {/* Unavailable items warning */}
@@ -270,10 +289,10 @@ export default function CartPage() {
             {unavailableItems.map((item) => (
               <div
                 key={item.id}
-                className="border border-amber-500/20 bg-card/50 p-4 md:p-5 flex gap-4 md:gap-5 relative opacity-70"
+                className="border border-amber-500/20 bg-card/50 p-4 flex gap-4 md:gap-5 relative opacity-70"
               >
                 {/* Image */}
-                <div className="w-20 h-20 md:w-24 md:h-24 bg-muted/30 flex items-center justify-center shrink-0 relative overflow-hidden">
+                <div className="w-20 h-20 bg-muted/30 flex items-center justify-center shrink-0 relative overflow-hidden">
                   <Image
                     src={getLocalImage(item.variant?.product?.slug)}
                     alt={item.variant?.product?.name || 'Product'}
@@ -324,7 +343,7 @@ export default function CartPage() {
               return (
                 <div
                   key={item.id}
-                  className="border border-border bg-card p-4 md:p-5 flex gap-4 md:gap-5 transition-all hover:border-border/80 group"
+                  className="border border-border bg-card p-4 flex gap-4 md:gap-5 transition-all hover:border-border/80 group"
                 >
                   {/* Product image */}
                   <Link
@@ -476,7 +495,7 @@ export default function CartPage() {
             </div>
 
             {/* Summary */}
-            <div className="border border-border bg-card p-5 md:p-6">
+            <div className="border border-border bg-card p-5">
               <h2 className="font-serif text-xl text-foreground mb-5 pb-3 border-b border-border">
                 Order Summary
               </h2>

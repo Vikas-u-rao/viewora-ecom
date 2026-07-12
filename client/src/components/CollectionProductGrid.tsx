@@ -38,7 +38,7 @@ export default function CollectionProductGrid({ collection }: { collection: stri
 
   if (loading) {
     return (
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[1, 2, 3, 4].map((item) => (
           <div key={item} className="h-[360px] border border-border bg-card animate-pulse" />
         ))}
@@ -56,7 +56,7 @@ export default function CollectionProductGrid({ collection }: { collection: stri
   }
 
   return (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {products.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}

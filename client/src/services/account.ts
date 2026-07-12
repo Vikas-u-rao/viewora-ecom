@@ -13,6 +13,7 @@ export interface Address {
   id: string;
   label?: string | null;
   name: string;
+  phone?: string | null;
   line1: string;
   line2?: string | null;
   city: string;

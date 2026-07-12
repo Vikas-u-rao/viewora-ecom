@@ -1,0 +1,1217 @@
+[
+  {
+    "name": "Rayban Metal Sunglasses",
+    "brand": "Ray-Ban",
+    "description": "Ray-Ban premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/11/564086241/TC/LD/BY/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 5800,
+    "specs": {
+      "Brand Type": "Rayban",
+      "Frame Material": "Metal",
+      "Frame Shape": "Cat Eye",
+      "Lens Feature": "UV Protection",
+      "Suitable For": "Unisex",
+      "Frame Color": "Tortoise"
+    }
+  },
+  {
+    "name": "Police Black Sunglass",
+    "brand": "POLICE",
+    "description": "POLICE premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/12/564719204/AD/SE/XM/4660951/police-black-sunglass-500x500.png"
+    ],
+    "price": 5500,
+    "specs": {
+      "Style": "Fashion",
+      "Brand": "POLICE",
+      "Frame Shape": "Cat Eye",
+      "Lens Feature": "UV Protection",
+      "Frame Type": "Rectangular",
+      "Frame Material": "Metal"
+    }
+  },
+  {
+    "name": "FILA Fancy Sunglasses",
+    "brand": "FILA",
+    "description": "FILA premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/12/564460237/QW/KI/RD/4660951/fila-fancy-sunglasses-500x500.png"
+    ],
+    "price": 3800,
+    "specs": {
+      "Style": "Street Style",
+      "Brand": "FILA",
+      "Frame Shape": "Round",
+      "Lens Feature": "UV Protection",
+      "Frame Type": "Aviator",
+      "Frame Material": "Metal"
+    }
+  },
+  {
+    "name": "Polaroid Unisex Sunglasses",
+    "brand": "Polaroid",
+    "description": "Polaroid premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2022/12/HK/EH/EG/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 4500,
+    "specs": {
+      "Brand": "Polaroid",
+      "Lens Type": "Zero Power",
+      "Frame Shape": "Round",
+      "Frame Type": "Full Rim",
+      "Frame Material": "Metal",
+      "Gender": "Unisex"
+    }
+  },
+  {
+    "name": "Allen Solly WAYFARER Sunglasses",
+    "brand": "Allen Solly",
+    "description": "Allen Solly premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/11/560128551/YW/VI/HB/4660951/allen-solly-sun-glasses-500x500.png"
+    ],
+    "price": 7500,
+    "specs": {
+      "Frame Shape": "Oversized",
+      "Lens Feature": "Colored Lens",
+      "Frame Material": "Acetate",
+      "Brand": "Allen Solly",
+      "Frame Type": "Wayfarer",
+      "Gender": "Unisex"
+    }
+  },
+  {
+    "name": "Allen Solly SunBlockers",
+    "brand": "Allen Solly",
+    "description": "Allen Solly premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/11/560128672/UT/HQ/SM/4660951/allen-solly-sun-glasses-500x500.png"
+    ],
+    "price": 7500,
+    "specs": {
+      "Brand Name": "Allen Solly",
+      "Frame Shape": "Wayfarer",
+      "Frame Material": "Polycarbonate",
+      "Lens Technology": "UV Protection",
+      "Lenses Material": "Glass G15",
+      "Brand": "Allen Solly"
+    }
+  },
+  {
+    "name": "Tommy Hilfiger Sunglasses",
+    "brand": "Tommy Hilfiger",
+    "description": "Tommy Hilfiger premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/12/564489200/DH/XP/OW/4660951/tommy-hilfiger-th7206-500x500.png"
+    ],
+    "price": 7100,
+    "specs": {
+      "Brand Type": "Luxury",
+      "Brand Name": "Tommy Hilfiger",
+      "Frame Shape": "Square",
+      "Frame Material": "Acetate",
+      "Frame Type": "Full Rim",
+      "Gender": "Female"
+    }
+  },
+  {
+    "name": "Ray-Ban Scuderia Ferrari Sunglasses",
+    "brand": "Ray-Ban",
+    "description": "Ray-Ban premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/PDFImage/2026/3/594408292/EV/KJ/EM/4660951/ray-ban-scuderia-ferrari-sunglasses-500x500.png"
+    ],
+    "price": 11500,
+    "specs": {
+      "Brand Type": "Premium",
+      "Brand Name": "Ray-Ban",
+      "Frame Shape": "Wayfarer",
+      "Frame Material": "Mixed Material",
+      "Lens Technology": "Polarized",
+      "Lens Feature": "Polarized"
+    }
+  },
+  {
+    "name": "Burberry Sunglasses Eyewear",
+    "brand": "Burberry",
+    "description": "Burberry premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2026/7/621312163/NJ/LC/YQ/4660951/burberry-sunglasses-eyewear-500x500.png"
+    ],
+    "price": 15600,
+    "specs": {
+      "Brand Type": "Designer",
+      "Frame Material": "Acetate",
+      "Frame Shape": "Wayfarer",
+      "Lens Feature": "UV Protection",
+      "Suitable For": "Unisex",
+      "Lens Material": "Polycarbonate"
+    }
+  },
+  {
+    "name": "Ray Ban Original Sunglasses",
+    "brand": "Ray-Ban",
+    "description": "Ray-Ban premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/11/564086174/LV/AX/SS/4660951/product-jpeg-500x500.jpeg"
+    ],
+    "price": 8090,
+    "specs": {
+      "Brand Name": "Ray-Ban",
+      "Frame Shape": "Oversized",
+      "Lens Feature": "Colored Lens",
+      "Lens Technology": "UV Protection",
+      "Suitable For": "Unisex",
+      "Ideal For": "Unisex"
+    }
+  },
+  {
+    "name": "Arnette Luxottica Sunglasses",
+    "brand": "Ray Ban",
+    "description": "Ray Ban premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/10/555699179/LY/UW/VM/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 2400,
+    "specs": {
+      "Brand Type": "Luxury",
+      "Brand": "Ray Ban",
+      "Frame Shape": "Wayfarer",
+      "Frame Material": "Acetate",
+      "Frame Type": "Oval",
+      "Gender": "Unisex"
+    }
+  },
+  {
+    "name": "Hugo Boss Sunglasses",
+    "brand": "Hugo Boss",
+    "description": "Hugo Boss premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/10/553180100/QD/LJ/ZY/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 8500,
+    "specs": {
+      "Brand Name": "Hugo Boss",
+      "Frame Material": "Plastic",
+      "Frame Shape": "Wayfarer",
+      "Gender": "Male",
+      "Product Type": "Sunglasses, Eyeglasses",
+      "Size": "Medium"
+    }
+  },
+  {
+    "name": "Allen Solly Aviators Sunglasses",
+    "brand": "Peter England",
+    "description": "Peter England premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/11/560337949/GI/VU/QC/4660951/allen-solly-aviators-500x500.png"
+    ],
+    "price": 7500,
+    "specs": {
+      "Lens Feature": "UV Protection",
+      "Frame Color": "Golden",
+      "Brand": "Peter England",
+      "Lens Shape": "Aviator",
+      "Frame Finish": "Matte",
+      "Country of Origin": "Made in India"
+    }
+  },
+  {
+    "name": "Carrera Bold Sunglasses",
+    "brand": "Unbranded",
+    "description": "Casual Wear",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/10/552853407/FA/SY/FQ/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 5800,
+    "specs": {
+      "Brand Name": "Unbranded",
+      "Frame Material": "Acetate",
+      "Gender": "Unisex",
+      "Occasion": "Casual Wear",
+      "Frame Color": "Brown",
+      "Weight": "30gm"
+    }
+  },
+  {
+    "name": "Maui Jim Breakwall Sunglasses",
+    "brand": "Maui Jim",
+    "description": "Maui Jim premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2026/1/575029554/GJ/HQ/PZ/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 12000,
+    "specs": {
+      "Brand Name": "Maui Jim",
+      "Frame Shape": "Rectangle",
+      "Lens Technology": "Polarized",
+      "Frame Material": "Polycarbonate",
+      "Ideal For": "Unisex",
+      "Frame Color": "Brown"
+    }
+  },
+  {
+    "name": "GUCCI Premium Sunglasses",
+    "brand": "GUCCI",
+    "description": "GUCCI premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/10/552176718/WA/BQ/BH/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 22500,
+    "specs": {
+      "Country of Origin": "Made in India",
+      "Brand": "GUCCI",
+      "Quality": "Premium",
+      "Color": "Blue",
+      "Type": "Slim",
+      "Packaging Type": "Box"
+    }
+  },
+  {
+    "name": "Oakley Holl Brook Frame",
+    "brand": "Oakley",
+    "description": "Oakley premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/MP/QO/MY-4660951/oakley-holbrook-500x500.jpg"
+    ],
+    "price": 8290,
+    "specs": {
+      "Frame Material": "Fiber",
+      "Lenses Material": "Polycarbonate,As per requirement",
+      "Style": "Rectangular",
+      "Gender": "Male, Unisex",
+      "Brand": "Oakley",
+      "Country of Origin": "Made in India"
+    }
+  },
+  {
+    "name": "Burberry Female Sunglasses",
+    "brand": "Burberry",
+    "description": "Burberry premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2026/1/577701004/BM/JC/QU/4660951/burberry-sunglasses-female-500x500.png"
+    ],
+    "price": 20500,
+    "specs": {
+      "Suitable For": "Women",
+      "Frame Shape": "Cat Eye",
+      "Lens Feature": "Gradient",
+      "Style": "Designer",
+      "Frame Material": "Acetate",
+      "Lens Material": "Polycarbonate"
+    }
+  },
+  {
+    "name": "Polaroid Clipon Sunglasses",
+    "brand": "Polaroid",
+    "description": "Polaroid premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/10/552637132/KP/CR/SJ/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 3500,
+    "specs": {
+      "Lens Feature": "Polarized",
+      "Suitable For": "Unisex",
+      "Gender": "Male",
+      "Frame Color": "Black",
+      "Frame Type": "Full Rim",
+      "Frame Material": "Metal"
+    }
+  },
+  {
+    "name": "Ferrari Sports Sunglasses",
+    "brand": "Ferrari",
+    "description": "Ferrari premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/12/565293815/WQ/TP/PA/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 8500,
+    "specs": {
+      "Sport Type": "Cycling",
+      "Lens Feature": "UV Protection",
+      "Frame Material": "Polycarbonate",
+      "Color": "Red",
+      "Lenses Material": "Poly carbonate",
+      "Style": "wrap around"
+    }
+  },
+  {
+    "name": "Carrera Elite Edition Sunglasses",
+    "brand": "Carrera",
+    "description": "Carrera premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/11/558526163/CR/XJ/GK/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 8800,
+    "specs": {
+      "Lens Feature": "UV Protection",
+      "Brand Name": "Carrera",
+      "Suitable For": "Unisex",
+      "Frame Material": "Polycarbonate",
+      "Lens Technology": "Polarized",
+      "Gender": "Unisex"
+    }
+  },
+  {
+    "name": "Carrera  Sport'S Edition Sunglasses",
+    "brand": "Carrera",
+    "description": "Carrera premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/11/558525945/HN/ZO/EJ/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 9500,
+    "specs": {
+      "Sport Type": "Running",
+      "Lens Feature": "Polarized",
+      "Frame Material": "Polycarbonate",
+      "Color": "Blue",
+      "Gender": "Male",
+      "Lenses Material": "Poly UV 400"
+    }
+  },
+  {
+    "name": "Polaroid Polarized Round Unisex Sunglasses",
+    "brand": "Polaroid",
+    "description": "Polaroid premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2021/9/NP/MA/WN/4660951/61bkbmbc-ol-ul1500--500x500.jpg"
+    ],
+    "price": 3499,
+    "specs": {
+      "Frame Material": "Acetate",
+      "Lens Type": "Zero Power",
+      "Gender": "Unisex",
+      "Frame Shape": "Round",
+      "Lens Material": "Polycarbonate",
+      "Material": "Metal"
+    }
+  },
+  {
+    "name": "IDEE Polarized  Sunglasses",
+    "brand": "IDEE",
+    "description": "Casual Wear",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/10/555447539/FR/TR/KC/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 1600,
+    "specs": {
+      "Brand Name": "IDEE",
+      "Frame Material": "Metal",
+      "Gender": "Unisex",
+      "Occasion": "Casual Wear",
+      "Frame Color": "Brown",
+      "Weight": "15 gm"
+    }
+  },
+  {
+    "name": "Polaroid Clipon Sunglasses",
+    "brand": "Polaroid",
+    "description": "Polaroid premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2026/1/572846401/AE/RI/BD/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 5500,
+    "specs": {
+      "Lens Feature": "Polarized",
+      "Suitable For": "Unisex",
+      "Frame Shape": "Hexagon",
+      "Lens Color": "Grey",
+      "Frame Color": "Gunmetal",
+      "Usage": "Sports, Daily Wear, Driving, Beach, Fishing, Travel"
+    }
+  },
+  {
+    "name": "Maybach Premium Eyewear Sunglasses",
+    "brand": "Maybach",
+    "description": "Maybach premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2024/6/425531735/KP/DF/GN/4660951/maybach-eyewear-premium-250x250.jpg"
+    ],
+    "price": 1999,
+    "specs": {}
+  },
+  {
+    "name": "Mont Blanc Rimless Eye Frames Sunglasses",
+    "brand": "Mont",
+    "description": "Mont premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/12/564376215/KF/EM/OE/4660951/mont-blanc-rimless-eye-frames-250x250.png"
+    ],
+    "price": 1999,
+    "specs": {}
+  },
+  {
+    "name": "Jacob Marin Ladies Eyewear Eyeglass Frame",
+    "brand": "Jacob Marin",
+    "description": "Jacob Marin premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "Best Sellers",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/11/562565116/LW/OX/EZ/4660951/ph-ladies-eyewear-500x500.png"
+    ],
+    "price": 2890,
+    "specs": {
+      "Acetate Type": "Bio Acetate",
+      "Frame Material": "Metal",
+      "Frame Shape": "Wayfarer",
+      "Frame Type": "Full Rim",
+      "Brand": "Jacob Marin",
+      "Gender": "Female"
+    }
+  },
+  {
+    "name": "GERMAN PHILLIPE Wooden Sunglasses",
+    "brand": "GERMAN PHILLIPE",
+    "description": "GERMAN PHILLIPE premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Best Sellers",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2026/4/603542111/VC/MP/CL/4660951/geramn-phillipe-wooden-sunglasses-premium-4-500x500.png"
+    ],
+    "price": 4800,
+    "specs": {
+      "Brand": "GERMAN PHILLIPE",
+      "Frame Shape": "Wayfarer",
+      "Lens Features": "UV Protection",
+      "Frame Material": "Wooden",
+      "Ideal For": "Unisex",
+      "Frame Color": "Brown"
+    }
+  },
+  {
+    "name": "Female IGO Premium Acetate Eyeglass Frames",
+    "brand": "IGO indo german optics",
+    "description": "IGO indo german optics premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "Best Sellers",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2023/6/314910564/EW/CX/RR/4660951/dsc-6378-500x500.jpg"
+    ],
+    "price": 2990,
+    "specs": {
+      "Style": "Oval",
+      "Gender": "Female",
+      "Brand": "IGO indo german optics",
+      "Frame Material": "Acetate",
+      "Lenses Material": "Demo Lens",
+      "Color": "Grey"
+    }
+  },
+  {
+    "name": "Jacob Marin Round Unisex Eyeglass Frame",
+    "brand": "Jacob Marin",
+    "description": "Jacob Marin premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "Best Sellers",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/12/569492188/PP/IF/LD/4660951/jacob-marin-round-unisex-sunglasses-500x500.png"
+    ],
+    "price": 3499,
+    "specs": {
+      "Material": "Acetate",
+      "Frame Material": "TR90",
+      "Brand Name": "Jacob Marin",
+      "Ideal For": "Unisex",
+      "Lens Type": "Zero Power",
+      "Frame Type": "Half Rim / Supra"
+    }
+  },
+  {
+    "name": "Blue IGO Premium Acetate Eyeglass Frame",
+    "brand": "IGO indo german optics",
+    "description": "IGO indo german optics premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "Best Sellers",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2023/6/314906932/ZI/TH/BB/4660951/dsc-6445-500x500.jpg"
+    ],
+    "price": 3090,
+    "specs": {
+      "Material": "Acetate",
+      "Lenses Material": "Demo Lens",
+      "Gender": "Female",
+      "Color": "Blue",
+      "Brand": "IGO indo german optics"
+    }
+  },
+  {
+    "name": "IGO9000 series IGO Acetate Eyeglass Frames",
+    "brand": "Igo",
+    "description": "Igo premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "Best Sellers",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2023/6/314909272/YP/OR/TY/4660951/dsc-6389-500x500.jpg"
+    ],
+    "price": 3090,
+    "specs": {
+      "Shape": "Square",
+      "Frame Material": "Sheet (Acetate)",
+      "Gender": "Unisex",
+      "Color": "Grey",
+      "Brand": "Igo",
+      "Size": "52"
+    }
+  },
+  {
+    "name": "Maybach Premium Eyewear Sunglasses",
+    "brand": "Maybach",
+    "description": "Maybach premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Best Sellers",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2024/6/425531735/KP/DF/GN/4660951/maybach-eyewear-premium-250x250.jpg"
+    ],
+    "price": 1999,
+    "specs": {}
+  },
+  {
+    "name": "Mont Blanc Rimless Eye Frames Sunglasses",
+    "brand": "Mont",
+    "description": "Mont premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Best Sellers",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/12/564376215/KF/EM/OE/4660951/mont-blanc-rimless-eye-frames-250x250.png"
+    ],
+    "price": 1999,
+    "specs": {}
+  },
+  {
+    "name": "Maybach Premium Eyewear Sunglasses",
+    "brand": "Maybach",
+    "description": "Maybach premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2024/6/425531735/KP/DF/GN/4660951/maybach-eyewear-premium-500x500.jpg"
+    ],
+    "price": 82250,
+    "specs": {
+      "Frame Material": "Metal",
+      "Style": "Rectangular",
+      "Lenses Material": "Demo Lens",
+      "Gender": "Unisex",
+      "Color": "Golden",
+      "Size": "54 size"
+    }
+  },
+  {
+    "name": "Mont Blanc Rimless Eye Frames Sunglasses",
+    "brand": "Mont",
+    "description": "Mont premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/12/564376215/KF/EM/OE/4660951/mont-blanc-rimless-eye-frames-500x500.png"
+    ],
+    "price": 19000,
+    "specs": {
+      "Suitable For": "Unisex",
+      "Lens Feature": "Polarized",
+      "Material": "Stainless Steel (SS)",
+      "Frame Type": "Rimless",
+      "Color": "Golden",
+      "Type": "Rimless"
+    }
+  },
+  {
+    "name": "Versace Premium Sunglasses",
+    "brand": "Versace",
+    "description": "Versace premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/12/566460482/HQ/CR/QT/4660951/versace-premium-sunglasses-500x500.png"
+    ],
+    "price": 26000,
+    "specs": {
+      "Brand": "Versace",
+      "Brand Name": "Versace",
+      "Frame Shape": "Rectangle",
+      "Frame Material": "Metal",
+      "Lens Features": "UV Protection",
+      "Lens Technology": "UV Protection"
+    }
+  },
+  {
+    "name": "Cutler Gross Sunglasses",
+    "brand": "Cutler",
+    "description": "Cutler premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/12/565327622/PK/EB/MC/4660951/cutler-and-gross-eyeglass-frame-500x500.png"
+    ],
+    "price": 20000,
+    "specs": {
+      "Acetate Type": "Cellulose Acetate",
+      "Frame Material": "Acetate",
+      "Frame Materials": "Acetate",
+      "Frame Shape": "Rectangle",
+      "Lenses Material": "Demo Lens",
+      "Gender": "Unisex"
+    }
+  },
+  {
+    "name": "Cutler and Gross Eyeframe Sunglasses",
+    "brand": "Cutler & Gross London",
+    "description": "Cutler & Gross London premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/8/539782414/YR/II/ZZ/4660951/cutler-and-gross-eyeframe-500x500.jpeg"
+    ],
+    "price": 43000,
+    "specs": {
+      "Brand Name": "Cutler & Gross London",
+      "Frame Shape": "Hexagonal",
+      "Frame Type": "Full Rim",
+      "Frame Material": "Acetate",
+      "Ideal For": "Unisex",
+      "Gender": "Unisex"
+    }
+  },
+  {
+    "name": "Cutler Gross Luxury Sunglasses",
+    "brand": "Cutler",
+    "description": "Cutler premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/11/562741824/MM/PJ/KK/4660951/cutler-gross-luxury-sunglasses-500x500.jpg"
+    ],
+    "price": 47000,
+    "specs": {
+      "Brand Type": "Designer",
+      "Frame Material": "Acetate",
+      "Frame Shape": "Cat Eye",
+      "Size": "Large",
+      "Gender": "Male",
+      "Box Contain": "Premium Box with cloth case outer packing kit"
+    }
+  },
+  {
+    "name": "Burberry Premium Sunglasses",
+    "brand": "Burberry",
+    "description": "Burberry premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/12/564460132/EF/QG/GJ/4660951/burberry-premium-sunglasses-500x500.png"
+    ],
+    "price": 19500,
+    "specs": {
+      "Brand Type": "Designer",
+      "Brand Name": "Burberry",
+      "Frame Shape": "Hexagonal",
+      "Size": "Medium",
+      "Gender": "Male",
+      "Lens Feature": "UV Protection"
+    }
+  },
+  {
+    "name": "Balmain Paris Sunglasses",
+    "brand": "Balmain Paris",
+    "description": "Balmain Paris premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/11/560378132/SU/UD/GR/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 40000,
+    "specs": {
+      "Style": "Fashion",
+      "Frame Shape": "Oversized",
+      "Lens Feature": "UV Protection",
+      "Suitable For": "Unisex",
+      "Frame Color": "Black",
+      "Brand Name": "Balmain Paris"
+    }
+  },
+  {
+    "name": "Tony Burch Sunglasses",
+    "brand": "Tony Broch",
+    "description": "Tony Broch premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/12/564721265/EN/NX/JW/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 12500,
+    "specs": {
+      "Brand Name": "Tony Broch",
+      "Frame Material": "Acetate",
+      "Gender": "Female",
+      "Frame Color": "Brown",
+      "Weight": "18-20gm",
+      "From London": "100% original glasses"
+    }
+  },
+  {
+    "name": "Burberry Eyewear Sunglasses",
+    "brand": "Burberry",
+    "description": "Burberry premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/12/564748072/FF/AO/PL/4660951/burberry-eyewear-glasses-500x500.png"
+    ],
+    "price": 8500,
+    "specs": {
+      "Brand Type": "Premium",
+      "Material": "Acetate",
+      "Frame Type": "Full Rim",
+      "Ideal For": "Women",
+      "Frame Shape": "Cat Eye",
+      "Frame Material": "Sheet (Acetate)"
+    }
+  },
+  {
+    "name": "Burberry Unisex Sunglasses",
+    "brand": "Burberry",
+    "description": "Burberry premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/12/564748120/LH/QJ/VJ/4660951/burberry-designer-sunglasses-unisex-500x500.png"
+    ],
+    "price": 14500,
+    "specs": {
+      "Lens Type": "Single Vision",
+      "Frame Shape": "Square",
+      "Frame Material": "Plastic",
+      "Size": "Medium",
+      "Gender": "Male",
+      "Frame Type": "Wayfarer"
+    }
+  },
+  {
+    "name": "Maybach Premium Eyewear Sunglasses",
+    "brand": "Maybach",
+    "description": "Maybach premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2024/6/425531735/KP/DF/GN/4660951/maybach-eyewear-premium-250x250.jpg"
+    ],
+    "price": 1999,
+    "specs": {}
+  },
+  {
+    "name": "Mont Blanc Rimless Eye Frames Sunglasses",
+    "brand": "Mont",
+    "description": "Mont premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "Premium Eyewear",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/12/564376215/KF/EM/OE/4660951/mont-blanc-rimless-eye-frames-250x250.png"
+    ],
+    "price": 1999,
+    "specs": {}
+  },
+  {
+    "name": "Tommy Hilfiger Eyeglasses",
+    "brand": "Tommy",
+    "description": "Tommy premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/12/565283772/FX/JH/MM/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 5500,
+    "specs": {
+      "Frame Material": "Sheet (Acetate)",
+      "Frame Type": "Full Rim",
+      "Ideal For": "Unisex",
+      "Gender": "Unisex",
+      "Frame Color": "Black",
+      "Frame Shape": "Rectangle"
+    }
+  },
+  {
+    "name": "Rayban Unisex Eyewear",
+    "brand": "Ray-Ban",
+    "description": "Ray-Ban premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/10/553533658/JU/EU/MG/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 5500,
+    "specs": {
+      "Frame Type": "Full Rim",
+      "Frame Material": "Sheet (Acetate)",
+      "Lens Width": "50mm",
+      "Eyewear Type": "Spectacle Frame",
+      "Lens Features": "Dummy",
+      "Frame Shape": "Rectangle"
+    }
+  },
+  {
+    "name": "Jimmy Choo Sunglasses",
+    "brand": "Jimmy",
+    "description": "Jimmy premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2022/11/NZ/ZC/IU/4660951/jimmy-choo-sunglasses-500x500.jpg"
+    ],
+    "price": 12000,
+    "specs": {
+      "Frame Material": "Acetate",
+      "Frame Shape": "Oversized",
+      "Suitable For": "Women",
+      "Lens Material": "CR39",
+      "Frame Type": "Full Rim",
+      "Gender": "Female"
+    }
+  },
+  {
+    "name": "Montblanc Eyewear Sunglasses",
+    "brand": "Mont Blanc",
+    "description": "Mont Blanc premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2026/4/603787311/MW/MR/DH/4660951/mb-catalog-jaiswal-opticals-500x500.png"
+    ],
+    "price": 16000,
+    "specs": {
+      "Brand": "Mont Blanc",
+      "Frame Shape": "Wayfarer",
+      "Lens Features": "UV Protection",
+      "Frame Material": "Acetate",
+      "Ideal For": "Men",
+      "Frame Color": "Black"
+    }
+  },
+  {
+    "name": "Polo Ralph Eyewear",
+    "brand": "Polo eyewear",
+    "description": "Polo eyewear premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2026/2/584086029/SX/YS/EE/4660951/polo-ralph-eyewear-500x500.jpg"
+    ],
+    "price": 8000,
+    "specs": {
+      "Material": "TR-90",
+      "Frame Material": "Metal",
+      "Ideal For": "Unisex",
+      "Product Type": "Spectacle frame",
+      "Frame Type": "Full Rim",
+      "Brand": "Polo eyewear"
+    }
+  },
+  {
+    "name": "Oakley Eyeglasses Frames",
+    "brand": "Oakley",
+    "description": "Oakley premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2024/10/459185824/OD/DE/TW/4660951/oakley-eyeglasses-500x500.jpeg"
+    ],
+    "price": 7500,
+    "specs": {
+      "Material": "Acetate",
+      "Frame Material": "Stainless Steel (SS)",
+      "Ideal For": "Unisex",
+      "Frame Type": "Full Rim",
+      "Gender": "Unisex",
+      "Shape": "Square"
+    }
+  },
+  {
+    "name": "Rodenstock Original Eyeglasses",
+    "brand": "Roden stock eyewear",
+    "description": "Roden stock eyewear premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/10/553831549/BS/GC/KB/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 12500,
+    "specs": {
+      "Frame Material": "Titanium",
+      "Frame Type": "Semi-Rimmed",
+      "Gender": "Unisex",
+      "Frame Shape": "Rectangle",
+      "Frame Color": "Black",
+      "Brand": "Roden stock eyewear"
+    }
+  },
+  {
+    "name": "Rayban Eyeglass Frame",
+    "brand": "Ray-Ban",
+    "description": "Ray-Ban premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/10/552508522/QS/TO/TX/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 6600,
+    "specs": {
+      "Material": "Acetate",
+      "Suitable For": "Unisex",
+      "Ideal For": "Unisex",
+      "Frame Type": "Full Rim",
+      "Frame Material": "Metal",
+      "Gender": "Unisex"
+    }
+  },
+  {
+    "name": "Vogue Ladies Eyewear",
+    "brand": "Vogue",
+    "description": "Vogue premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2024/4/411314330/RF/PP/GU/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 4500,
+    "specs": {
+      "Suitable For": "Women",
+      "Frame Material": "Polycarbonate",
+      "Frame Type": "Full Rim",
+      "Frame Shape": "Cat Eye",
+      "Gender": "Female",
+      "Frame Color": "mixed col"
+    }
+  },
+  {
+    "name": "Vogue Ladies Eyewear",
+    "brand": "Vogue",
+    "description": "Vogue premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/10/553522435/FQ/SO/RL/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 3500,
+    "specs": {
+      "Suitable For": "Women",
+      "Frame Material": "Polycarbonate",
+      "Frame Shape": "Oversized",
+      "Frame Type": "Full Rim",
+      "Gender": "Female",
+      "Frame Color": "Brown"
+    }
+  },
+  {
+    "name": "Oakley Sport Sunglasses",
+    "brand": "Oakley Sunglasses",
+    "description": "Oakley Sunglasses premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/10/552508554/YP/DY/HG/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 7500,
+    "specs": {
+      "Frame Material": "Plastic (Polycarbonate)",
+      "Frame Shape": "Rectangle",
+      "Gender": "Unisex",
+      "Frame Type": "Full Rim",
+      "Frame Color": "Black",
+      "Brand": "Oakley Sunglasses"
+    }
+  },
+  {
+    "name": "Rayban Half Frame",
+    "brand": "Ray-Ban",
+    "description": "Ray-Ban premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/10/553578044/OM/TW/QV/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 4500,
+    "specs": {
+      "Frame Material": "Metal",
+      "Rim Position": "Bottom Rim",
+      "Lenses Material": "Demo Lens",
+      "Gender": "Unisex",
+      "Country of Origin": "Made in India",
+      "Frame Shape": "Oval"
+    }
+  },
+  {
+    "name": "Burberry Eyeglasses & Sunglasses",
+    "brand": "Burberry",
+    "description": "Burberry premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2026/4/603088869/WB/HA/CF/4660951/jo-burberry-eyewear-5-500x500.jpeg"
+    ],
+    "price": 18500,
+    "specs": {
+      "Suitable For": "Women",
+      "Frame Shape": "Butterfly",
+      "Lens Feature": "UV Protection",
+      "Style": "Designer",
+      "Frame Color": "Black",
+      "Lens Color": "Black"
+    }
+  },
+  {
+    "name": "Jimmy Choo Eyewear",
+    "brand": "Jimmy Choo",
+    "description": "Jimmy Choo premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/10/553970312/UA/TO/JL/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 15500,
+    "specs": {
+      "Frame Type": "Full Rim",
+      "Shape": "Cat eye pattern",
+      "Color": "Golden",
+      "Model Name/Number": "JC series by Luxottica",
+      "Brand": "Jimmy Choo",
+      "Country of Origin": "Made in India"
+    }
+  },
+  {
+    "name": "Calvin Klein Eyewear",
+    "brand": "Calvin Klien",
+    "description": "Casual Wear",
+    "category": "eyeglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/12/565283701/RA/RZ/LF/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 5500,
+    "specs": {
+      "Brand Name": "Calvin Klien",
+      "Ideal For": "Unisex",
+      "Frame Type": "Full Rim",
+      "Frame Shape": "Rectangle",
+      "Gender": "Unisex",
+      "Occasion": "Casual Wear"
+    }
+  },
+  {
+    "name": "Vogue Ladies Metal Eyewear",
+    "brand": "Vogue",
+    "description": "Vogue premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/10/553529959/FP/XI/BQ/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 4500,
+    "specs": {
+      "Frame Material": "Metal",
+      "Frame Type": "Full Rim",
+      "Frame Color": "Brown",
+      "Gender": "Female",
+      "Country of Origin": "Made in India"
+    }
+  },
+  {
+    "name": "Lacoste Original Eyewear",
+    "brand": "Lacoste eyewear",
+    "description": "Lacoste eyewear premium eyewear frame. High quality and elegant design.",
+    "category": "eyeglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/ANDROID/Default/2025/10/553911499/RL/SN/KM/4660951/product-jpeg-500x500.jpg"
+    ],
+    "price": 5555,
+    "specs": {
+      "Eyewear Type": "Reading Glasses",
+      "Frame Material": "Acetate",
+      "Lens Material": "CR39",
+      "Frame Type": "Full Rim",
+      "Brand": "Lacoste eyewear",
+      "Gender": "Unisex"
+    }
+  },
+  {
+    "name": "Maybach Premium Eyewear Sunglasses",
+    "brand": "Maybach",
+    "description": "Maybach premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2024/6/425531735/KP/DF/GN/4660951/maybach-eyewear-premium-250x250.jpg"
+    ],
+    "price": 1999,
+    "specs": {}
+  },
+  {
+    "name": "Mont Blanc Rimless Eye Frames Sunglasses",
+    "brand": "Mont",
+    "description": "Mont premium eyewear frame. High quality and elegant design.",
+    "category": "sunglasses",
+    "collection": "New Arrivals",
+    "imageUrls": [
+      "https://5.imimg.com/data5/SELLER/Default/2025/12/564376215/KF/EM/OE/4660951/mont-blanc-rimless-eye-frames-250x250.png"
+    ],
+    "price": 1999,
+    "specs": {}
+  }
+]

@@ -1,4 +1,4 @@
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { AuthRequest } from '../middleware/auth';
@@ -13,12 +13,17 @@ export async function getWishlist(req: AuthRequest, res: Response, next: NextFun
         product: {
           include: {
             category: true,
+            variants: {
+              where: { isActive: true },
+              orderBy: { price: 'asc' },
+            },
           },
         },
       },
+      orderBy: { id: 'desc' },
     });
 
-    res.status(200).json(wishlistItems);
+    res.status(200).json({ wishlistItems });
   } catch (error) {
     next(error);
   }
@@ -48,14 +53,14 @@ export async function addToWishlist(req: AuthRequest, res: Response, next: NextF
       where: {
         userId_productId: { userId, productId: cleanProductId },
       },
-      update: {}, // No-op if it already exists
+      update: {}, // No-op if already exists
       create: {
         userId,
         productId: cleanProductId,
       },
     });
 
-    res.status(200).json(wishlistItem);
+    res.status(200).json({ wishlistItem });
   } catch (error) {
     next(error);
   }
@@ -79,6 +84,30 @@ export async function removeFromWishlist(req: AuthRequest, res: Response, next: 
     });
 
     res.status(200).json({ message: 'Item removed from wishlist' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function checkWishlist(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const userId = req.userId!;
+    const { productId } = req.params;
+
+    if (!productId || typeof productId !== 'string' || productId.trim() === '') {
+      throw new AppError('VALIDATION_ERROR', 400, 'productId is required');
+    }
+
+    const item = await prisma.wishlistItem.findUnique({
+      where: {
+        userId_productId: { userId, productId: productId.trim() },
+      },
+    });
+
+    res.status(200).json({
+      wishlisted: !!item,
+      itemId: item?.id ?? null,
+    });
   } catch (error) {
     next(error);
   }

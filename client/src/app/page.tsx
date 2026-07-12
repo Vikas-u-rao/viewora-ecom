@@ -90,7 +90,7 @@ export default function Home() {
           <h1 className="font-serif text-5xl lg:text-6xl font-normal leading-[1.15] mb-8 text-white">
             See the World in <span className="text-gold font-bold italic drop-shadow-[0_0_20px_rgba(197,160,89,0.65)] animate-pulse">GOLD</span>
           </h1>
-          <p className="text-base lg:text-lg text-white/95 mb-12 leading-relaxed font-light max-w-2xl mx-auto font-sans">
+          <p className="text-base text-white/95 mb-12 leading-relaxed font-light max-w-2xl mx-auto font-sans">
             Luxury eyewear crafted with premium materials, designed for everyday comfort and timeless elegance.
           </p>
           <div className="flex justify-center">
@@ -106,10 +106,10 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto">
           <div className="text-center mb-12">
             <p className="text-gold tracking-[0.3em] text-xs mb-4">OUR COLLECTIONS</p>
-            <h2 className="text-4xl lg:text-5xl font-normal">Crafted for Every Look</h2>
+            <h2 className="text-4xl font-normal">Crafted for Every Look</h2>
             <div className="h-[1px] w-24 bg-gold/40 mx-auto mt-4"></div>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-3 gap-6">
             {collections.map((c) => (
               <Link key={c.title} href={`/shop/${c.slug}`} className="group relative overflow-hidden aspect-[4/5] block border border-border/40">
                 <Image src={c.img} alt={c.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" width={800} height={900} />
@@ -130,13 +130,13 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto">
           <div className="text-center mb-12">
             <p className="text-gold tracking-[0.3em] text-xs mb-4">CURATED DESIGNS</p>
-            <h2 className="text-4xl lg:text-5xl font-normal">Shop by Frame Style</h2>
+            <h2 className="text-4xl font-normal">Shop by Frame Style</h2>
             <div className="h-[1px] w-24 bg-gold/40 mx-auto mt-4"></div>
           </div>
-          <Carousel opts={{ align: "start", loop: true }} className="px-4 md:px-8">
+          <Carousel opts={{ align: "start", loop: true }} className="px-4">
             <CarouselContent>
               {frameStyles.map((s) => (
-                <CarouselItem key={s.name} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
+                <CarouselItem key={s.name} className="basis-1/5">
                   <Link
                     href={`/shop?shape=${s.slug}`}
                     className="group relative block aspect-[3/4] overflow-hidden border border-border/50 hover:border-gold transition-colors duration-500 bg-black"
@@ -158,8 +158,8 @@ export default function Home() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="hidden md:flex -left-2 md:-left-4 bg-background/80 border-border hover:bg-background" />
-            <CarouselNext className="hidden md:flex -right-2 md:-right-4 bg-background/80 border-border hover:bg-background" />
+            <CarouselPrevious className="flex -left-4 bg-background/80 border-border hover:bg-background" />
+            <CarouselNext className="flex -right-4 bg-background/80 border-border hover:bg-background" />
           </Carousel>
         </div>
       </section>
@@ -171,10 +171,10 @@ export default function Home() {
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
           <div className="mb-10 inline-block">
-            <Image src={logoImg} alt="Viewora" className="h-32 md:h-40 w-auto mx-auto" loading="lazy" width={288} height={288} />
+            <Image src={logoImg} alt="Viewora" className="h-32 w-auto mx-auto" loading="lazy" width={288} height={288} />
           </div>
           <div className="h-[1px] w-20 bg-gold/30 mx-auto mb-10" />
-          <p className="text-xl lg:text-2xl font-serif leading-relaxed text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl font-serif leading-relaxed text-muted-foreground max-w-2xl mx-auto">
             At <span className="text-gold font-semibold">Viewora</span>, every frame is a statement of timeless style, crafted for those who see life with clarity and class.
           </p>
         </div>
@@ -183,7 +183,7 @@ export default function Home() {
       {/* Newsletter Section */}
       <section id="contact" className="py-20 px-6 border-t border-border bg-background">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl lg:text-4xl mb-4 font-serif">
+          <h2 className="text-3xl mb-4 font-serif">
             Join the <span className="text-gold font-bold drop-shadow-[0_0_15px_rgba(197,160,89,0.85)] animate-pulse uppercase">Viewora</span> Community
           </h2>
           <p className="text-muted-foreground mb-8 text-lg font-sans">Subscribe for exclusive offers, early access, and style updates.</p>
@@ -193,7 +193,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-border pt-16 pb-8 px-6 bg-background">
-        <div className="max-w-[1400px] mx-auto grid sm:grid-cols-2 md:grid-cols-3 gap-10 mb-12">
+        <div className="max-w-[1400px] mx-auto grid grid-cols-3 gap-10 mb-12">
           <div>
             <Image src={logoImg} alt="Viewora" className="h-24 w-auto mb-6" loading="lazy" width={224} height={224} />
             <p className="text-muted-foreground max-w-xs leading-relaxed font-sans">

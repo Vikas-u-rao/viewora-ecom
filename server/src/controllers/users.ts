@@ -107,7 +107,7 @@ export async function getAddresses(req: AuthRequest, res: Response, next: NextFu
 export async function addAddress(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const userId = req.userId!;
-    const { label, name, line1, line2, city, state, pincode, isDefault = false } = req.body;
+    const { label, name, phone, line1, line2, city, state, pincode, isDefault = false } = req.body;
 
     // Check if it's default
     if (isDefault) {
@@ -127,6 +127,7 @@ export async function addAddress(req: AuthRequest, res: Response, next: NextFunc
         userId,
         label: label || null,
         name,
+        phone: phone || null,
         line1,
         line2: line2 || null,
         city,
@@ -147,7 +148,7 @@ export async function updateAddress(req: AuthRequest, res: Response, next: NextF
   try {
     const userId = req.userId!;
     const { id } = req.params;
-    const { label, name, line1, line2, city, state, pincode, isDefault } = req.body;
+    const { label, name, phone, line1, line2, city, state, pincode, isDefault } = req.body;
 
     // Check ownership
     const address = await prisma.address.findFirst({
@@ -171,6 +172,7 @@ export async function updateAddress(req: AuthRequest, res: Response, next: NextF
       data: {
         label: label !== undefined ? (label || null) : undefined,
         name: name !== undefined ? name : undefined,
+        phone: phone !== undefined ? (phone || null) : undefined,
         line1: line1 !== undefined ? line1 : undefined,
         line2: line2 !== undefined ? (line2 || null) : undefined,
         city: city !== undefined ? city : undefined,

@@ -57,6 +57,7 @@ export interface CreateOrderPayload {
   shippingPincode?: string;
   guestEmail?: string;
   guestPhone?: string;
+  paymentMethod?: string;
   couponCode?: string;
   items: Array<{ variantId: string; quantity: number }>;
 }
