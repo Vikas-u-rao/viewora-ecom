@@ -21,8 +21,8 @@ export default function AccountLayout({ title, children }: { title: string; chil
     <RequireAuth>
       <div className="min-h-screen bg-background text-foreground">
         <Header />
-        <main className="mx-auto max-w-[1200px] px-6 lg:px-8 pt-28 pb-16">
-          <h1 className="font-serif text-3xl md:text-4xl text-white mb-8">{title}</h1>
+        <main className="mx-auto max-w-[1200px] px-6 pt-28 pb-16">
+          <h1 className="font-serif text-3xl lg:text-4xl text-white mb-8">{title}</h1>
           <div className="grid gap-8 md:grid-cols-[230px_1fr]">
             <aside className="flex md:flex-col gap-2 overflow-x-auto border-b border-border pb-4 md:border-b-0 md:border-r md:pb-0 md:pr-4">
               {links.map((item) => {
@@ -49,7 +49,7 @@ export default function AccountLayout({ title, children }: { title: string; chil
                 LOGOUT
               </button>
             </aside>
-            <section className="min-h-[420px] border border-border bg-card p-5 md:p-8">{children}</section>
+            <section className="min-h-[420px] border border-border bg-card p-5 lg:p-6">{children}</section>
           </div>
         </main>
       </div>

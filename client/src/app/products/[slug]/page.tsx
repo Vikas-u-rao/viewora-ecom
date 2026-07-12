@@ -13,8 +13,8 @@ import { ApiProduct, ProductVariant, variantSnapshot } from "@/services/products
 
 import p1 from "@/assets/p1.jpg";
 import p2 from "@/assets/p2.jpg";
-import p3 from "@/assets/p3.jpg";
-import p4 from "@/assets/p4.jpg";
+import p3 from "@/assets/p3.png";
+import p4 from "@/assets/p4.png";
 
 function formatPrice(value: string | number) {
   return new Intl.NumberFormat("en-IN", {
@@ -116,7 +116,7 @@ export default function ProductDetailPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
-      <main className="mx-auto max-w-[1200px] px-6 lg:px-8 pt-28 pb-16">
+      <main className="mx-auto max-w-[1200px] px-6 pt-28 pb-16">
         <div className="grid gap-10 md:grid-cols-[1fr_0.9fr]">
           <div className="relative aspect-square overflow-hidden border border-border bg-card">
             {image ? (
@@ -130,7 +130,7 @@ export default function ProductDetailPage() {
 
           <section className="flex flex-col justify-center">
             {product.brand && <p className="text-xs tracking-[0.25em] text-gold uppercase mb-3">{product.brand}</p>}
-            <h1 className="font-serif text-4xl md:text-5xl text-white mb-4">{product.name}</h1>
+            <h1 className="font-serif text-4xl lg:text-5xl text-white mb-4">{product.name}</h1>
             <p className="text-muted-foreground leading-relaxed mb-8">{product.description || "Premium eyewear crafted for everyday clarity and presence."}</p>
 
             <div className="mb-8">

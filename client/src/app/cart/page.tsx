@@ -26,8 +26,8 @@ import { toast } from 'sonner';
 
 import p1 from "@/assets/p1.jpg";
 import p2 from "@/assets/p2.jpg";
-import p3 from "@/assets/p3.jpg";
-import p4 from "@/assets/p4.jpg";
+import p3 from "@/assets/p3.png";
+import p4 from "@/assets/p4.png";
 
 function getLocalImage(slug?: string) {
   const fallbackImgs = [p1, p2, p3, p4];
@@ -148,9 +148,9 @@ export default function CartPage() {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <Header />
-        <main className="flex-1 max-w-[1400px] w-full mx-auto px-6 lg:px-8 pt-28 pb-16">
-          <h1 className="font-serif text-3xl md:text-4xl mb-8">Shopping Cart</h1>
-          <div className="grid lg:grid-cols-[1fr_380px] gap-8">
+        <main className="flex-1 max-w-[1400px] w-full mx-auto px-6 pt-28 pb-16">
+          <h1 className="font-serif text-3xl lg:text-4xl mb-8">Shopping Cart</h1>
+          <div className="grid lg:grid-cols-[1fr_380px] gap-6 lg:gap-8">
             {/* Skeleton items */}
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
@@ -195,7 +195,7 @@ export default function CartPage() {
               <div className="absolute inset-3 rounded-full border border-gold/10" />
               <ShoppingBag className="size-12 text-gold/60" strokeWidth={1} />
             </div>
-            <h1 className="font-serif text-3xl md:text-4xl text-foreground mb-3">
+            <h1 className="font-serif text-3xl lg:text-4xl text-foreground mb-3">
               Your Cart is Empty
             </h1>
             <p className="text-muted-foreground text-sm leading-relaxed mb-8 max-w-sm mx-auto">
@@ -237,10 +237,10 @@ export default function CartPage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
 
-      <main className="flex-1 max-w-[1400px] w-full mx-auto px-6 lg:px-8 pt-28 pb-16">
+      <main className="flex-1 max-w-[1400px] w-full mx-auto px-6 pt-28 pb-16">
         {/* Page header */}
         <div className="flex items-baseline justify-between mb-8">
-          <h1 className="font-serif text-3xl md:text-4xl text-foreground">
+          <h1 className="font-serif text-3xl lg:text-4xl text-foreground">
             Shopping Cart
           </h1>
           <span className="text-muted-foreground text-sm">
@@ -248,7 +248,7 @@ export default function CartPage() {
           </span>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_380px] gap-8 items-start">
+        <div className="grid lg:grid-cols-[1fr_380px] gap-6 lg:gap-8 items-start">
           {/* ── Cart Items Column ───────────────────────────────────────── */}
           <div className="space-y-4">
             {/* Unavailable items warning */}

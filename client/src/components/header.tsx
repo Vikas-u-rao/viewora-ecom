@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Menu } from "lucide-react";
 import logoImg from "@/assets/logo.png";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import { Sheet, SheetTrigger, SheetContent, SheetClose } from "@/components/ui/sheet";
 
 const nav = [
   { label: "HOME", href: "/#home" },
@@ -46,9 +47,9 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur border-b border-border">
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-4 flex items-center justify-between">
+      <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center">
-          <Image src={logoImg} alt="Viewora" className="h-10 md:h-12 w-auto" width={120} height={120} priority />
+          <Image src={logoImg} alt="Viewora" className="h-10 w-auto" width={120} height={120} priority />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 lg:gap-10">
@@ -143,16 +144,7 @@ export default function Header() {
           })}
         </nav>
 
-        <div className="hidden md:flex items-center gap-8 lg:gap-10">
-          {user ? (
-            <Link href="/account/profile" className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors">
-              PROFILE
-            </Link>
-          ) : (
-            <Link href="/login" className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors">
-              LOGIN
-            </Link>
-          )}
+        <div className="flex items-center gap-4 md:gap-8 lg:gap-10">
           <Link href="/cart" className="relative hover:text-gold transition-colors" aria-label={`Cart with ${cartCount} items`}>
             <ShoppingCart size={20} strokeWidth={1.5} />
             {cartCount > 0 && (
@@ -161,6 +153,53 @@ export default function Header() {
               </span>
             )}
           </Link>
+
+          <div className="hidden md:flex items-center gap-8 lg:gap-10">
+            {user ? (
+              <Link href="/account/profile" className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors">
+                PROFILE
+              </Link>
+            ) : (
+              <Link href="/login" className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors">
+                LOGIN
+              </Link>
+            )}
+          </div>
+
+          <Sheet>
+            <SheetTrigger asChild>
+              <button className="block md:hidden text-foreground hover:text-gold transition-colors" aria-label="Open menu">
+                <Menu size={22} strokeWidth={1.5} />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-72 bg-background border-l border-border p-6">
+              <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between mb-8">
+                  <Image src={logoImg} alt="Viewora" className="h-8 w-auto" width={80} height={80} />
+                </div>
+                <nav className="flex flex-col gap-1">
+                  {nav.map((n) => (
+                    <SheetClose key={n.label} asChild>
+                      <Link
+                        href={n.href}
+                        className="text-base tracking-[0.15em] font-semibold text-foreground hover:text-gold transition-colors py-3 border-b border-border/50"
+                      >
+                        {n.label}
+                      </Link>
+                    </SheetClose>
+                  ))}
+                  <SheetClose asChild>
+                    <Link
+                      href={user ? "/account/profile" : "/login"}
+                      className="text-base tracking-[0.15em] font-semibold text-foreground hover:text-gold transition-colors py-3 border-b border-border/50"
+                    >
+                      {user ? "PROFILE" : "LOGIN"}
+                    </Link>
+                  </SheetClose>
+                </nav>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>

@@ -42,7 +42,7 @@ export default async function CollectionPage({ params }: PageProps) {
         <div className="absolute inset-0 bg-black/60" />
         <div className="relative z-10 text-center px-6 max-w-4xl">
           <p className="text-gold tracking-[0.35em] text-xs mb-5">COLLECTION</p>
-          <h1 className="font-serif text-5xl md:text-7xl font-normal leading-[1.05] mb-5 text-white">{col.title}</h1>
+          <h1 className="font-serif text-5xl lg:text-6xl font-normal leading-[1.05] mb-5 text-white">{col.title}</h1>
           <p className="text-lg text-white/80 max-w-2xl mx-auto">{col.tagline}</p>
         </div>
       </section>
@@ -64,7 +64,7 @@ export default async function CollectionPage({ params }: PageProps) {
       <section className="py-20 px-8 border-t border-border">
         <div className="max-w-[1400px] mx-auto">
           <p className="text-gold tracking-[0.3em] text-xs mb-4 text-center">EXPLORE MORE</p>
-          <h2 className="text-3xl md:text-4xl font-normal text-center mb-10">Other Collections</h2>
+          <h2 className="text-3xl lg:text-4xl font-normal text-center mb-10">Other Collections</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {collections.filter((c) => c.slug !== col.slug).slice(0, 3).map((c) => (
               <Link

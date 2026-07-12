@@ -322,9 +322,9 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
 
-      <main className="flex-1 max-w-[1200px] w-full mx-auto px-6 lg:px-8 pt-28 pb-16">
+      <main className="flex-1 max-w-[1200px] w-full mx-auto px-6 pt-28 pb-16">
         <div className="mb-8">
-          <h1 className="font-serif text-3xl md:text-4xl text-foreground mb-1.5">My Account</h1>
+          <h1 className="font-serif text-3xl lg:text-4xl text-foreground mb-1.5">My Account</h1>
           <p className="text-muted-foreground text-sm">Manage your profile, shipping addresses, and sessions.</p>
         </div>
 

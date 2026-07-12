@@ -141,8 +141,8 @@ function ShopContent() {
   });
 
   return (
-    <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-10">
-      <div className="flex flex-col md:flex-row gap-10">
+    <div className="max-w-[1400px] mx-auto px-6 py-10">
+      <div className="flex flex-col md:flex-row gap-8 md:gap-10">
         {/* Filters Sidebar */}
         <aside className="w-full md:w-64 shrink-0 space-y-8">
           <div className="flex items-center justify-between border-b border-border pb-4">
@@ -308,7 +308,7 @@ export default function ShopPage() {
       <main className="flex-1 pt-32">
         <div className="text-center mb-10 px-6">
           <p className="text-gold tracking-[0.3em] text-xs mb-3 font-medium">VIEWORA CATALOGUE</p>
-          <h1 className="font-serif text-4xl md:text-5xl text-white">Handcrafted Precision</h1>
+          <h1 className="font-serif text-4xl lg:text-5xl text-white">Handcrafted Precision</h1>
           <div className="h-[1px] w-20 bg-gold/40 mx-auto mt-4"></div>
         </div>
 

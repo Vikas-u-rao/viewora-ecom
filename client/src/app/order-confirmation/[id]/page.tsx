@@ -33,7 +33,7 @@ export default function OrderConfirmationPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
-      <main className="mx-auto max-w-[1100px] px-6 lg:px-8 pt-28 pb-16">
+      <main className="mx-auto max-w-[1100px] px-6 pt-28 pb-16">
         <div className="mb-8 text-center">
           <CheckCircle className="mx-auto mb-4 size-12 text-gold" />
           <h1 className="font-serif text-4xl text-white mb-2">Order placed successfully</h1>
