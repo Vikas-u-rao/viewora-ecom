@@ -49,13 +49,12 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur border-b border-border">
-      <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between relative h-[72px]">
-        <Link href="/" className="flex items-center z-10">
+      <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
+        <Link href="/" className="flex items-center">
           <Image src={logoImg} alt="Viewora" className="h-10 w-auto" style={{ width: "auto", height: "auto" }} width={120} height={120} priority />
         </Link>
 
-        {/* Absolutely centered nav */}
-        <nav className="hidden md:flex items-center gap-6 absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
+        <nav className="hidden md:flex items-center gap-6">
           {nav.map((n) => {
             if (n.megaCollections) {
               return (
@@ -147,7 +146,7 @@ export default function Header() {
           })}
         </nav>
 
-        <div className="flex items-center gap-4 z-10">
+        <div className="flex items-center gap-4">
           <Sheet>
             <SheetTrigger asChild>
               <button className="block md:hidden text-foreground hover:text-gold transition-colors" aria-label="Open menu">
