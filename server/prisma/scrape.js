@@ -159,7 +159,7 @@ async function scrapeAll() {
           description: specs['Usage/Application'] || specs['Occasion'] || `${brand} premium eyewear frame. High quality and elegant design.`,
           category: category,
           collection: item.defaultCollection,
-          imageUrls: [raw.img_path || raw.img_path1 || 'https://res.cloudinary.com/demo/image/upload/v1652343212/viewora/aviator_front.jpg'],
+          imageUrls: [raw.img_path || raw.img_path1 || '/images/products/aviator_front.jpg'],
           price: price,
           specs: specs
         });
