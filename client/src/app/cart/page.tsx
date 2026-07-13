@@ -129,6 +129,11 @@ export default function CartPage() {
       toast.error('Add items to checkout.');
       return;
     }
+    if (!accessToken || !user) {
+      toast.error('Please log in or sign up to proceed to checkout.');
+      router.push('/login?redirect=/checkout');
+      return;
+    }
     router.push('/checkout');
   };
 
@@ -223,23 +228,6 @@ export default function CartPage() {
 
   // ── Cart with items ───────────────────────────────────────────────────
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center px-6 pt-28 pb-16">
-          <div className="text-center max-w-md">
-            <ShoppingBag className="mx-auto mb-6 size-16 text-muted-foreground" strokeWidth={1.2} />
-            <h1 className="font-serif text-3xl text-white mb-3">Log in to view your cart</h1>
-            <p className="text-muted-foreground mb-8">Sign in to see items you&apos;ve added and proceed to checkout.</p>
-            <Link href="/login" className="inline-flex bg-gold px-8 py-3 text-xs font-bold tracking-[0.2em] text-background hover:bg-gold-soft transition-colors">
-              LOG IN
-            </Link>
-          </div>
-        </main>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">

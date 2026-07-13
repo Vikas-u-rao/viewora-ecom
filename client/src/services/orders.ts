@@ -40,10 +40,17 @@ export interface Order {
   shippingFee: string;
   finalPayableAmount: string;
   createdAt: string;
+  trackingNumber?: string | null;
+  carrier?: string | null;
   items: OrderItem[];
   payment?: {
     status: string;
     merchantTransactionId: string;
+  } | null;
+  earnedCoupon?: {
+    code: string;
+    value: string;
+    expiresAt: string;
   } | null;
 }
 

@@ -49,20 +49,20 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur border-b border-border">
-      <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="max-w-[1400px] mx-auto px-6 h-[72px] grid grid-cols-[auto_1fr_auto] items-center gap-4">
         <Link href="/" className="flex items-center">
-          <Image src={logoImg} alt="Viewora" className="h-10 w-auto" style={{ width: "auto", height: "auto" }} width={120} height={120} priority />
+          <Image src={logoImg} alt="Viewora" className="h-7 w-auto" style={{ width: "auto", height: "auto" }} width={80} height={80} priority />
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center justify-center gap-6">
           {nav.map((n) => {
             if (n.megaCollections) {
               return (
                 <div key={n.label} className="group relative">
-                  <Link href={n.href} className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors py-6">
+                  <Link href={n.href} className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors">
                     {n.label}
                   </Link>
-                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[64px] z-50 bg-background border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
+                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[72px] z-50 bg-background border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
                     <div className="max-w-[1400px] mx-auto px-6 py-10">
                       <div className="text-center mb-8">
                         <p className="text-gold tracking-[0.3em] text-sm mb-2">CURATED BRANDS</p>
@@ -99,10 +99,10 @@ export default function Header() {
             if (n.megaShop) {
               return (
                 <div key={n.label} className="group relative">
-                  <Link href={n.href} className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors py-6">
+                  <Link href={n.href} className="text-base tracking-[0.15em] font-semibold hover:text-gold transition-colors">
                     {n.label}
                   </Link>
-                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[64px] z-50 bg-background border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
+                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[72px] z-50 bg-background border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
                     <div className="max-w-[1400px] mx-auto px-6 py-10">
                       <div className="grid grid-cols-4 gap-8">
                         {shopMenu.map((cat) => (
@@ -193,7 +193,7 @@ export default function Header() {
             )}
           </Link>
           <Link href="/cart" className="relative hover:text-gold transition-colors" aria-label={`Cart with ${cartCount} items`}>
-            <ShoppingBag size={28} strokeWidth={1.5} />
+            <span className="material-symbols-outlined !text-[30px] select-none align-middle -mt-[3px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24" }}>shopping_bag</span>
             {cartCount > 0 && (
               <span className="absolute -right-2.5 -top-2.5 min-w-5 h-5 rounded-full bg-gold px-1 text-[10px] font-bold leading-5 text-background text-center tabular-nums">
                 {cartCount > 99 ? "99+" : cartCount}

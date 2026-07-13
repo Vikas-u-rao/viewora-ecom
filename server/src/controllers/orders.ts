@@ -1,4 +1,5 @@
 import { Response, NextFunction } from 'express';
+import crypto from 'crypto';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { AuthRequest } from '../middleware/auth';
@@ -19,10 +20,15 @@ export async function createOrder(req: AuthRequest, res: Response, next: NextFun
       guestPhone,
       items, // array of { variantId, quantity }
       couponCode,
+      paymentMethod,
     } = req.body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       throw new AppError('VALIDATION_ERROR', 400, 'Order items are required');
+    }
+
+    if (paymentMethod !== 'phonepe') {
+      throw new AppError('VALIDATION_ERROR', 400, 'Invalid payment method. Only online payment (PhonePe) is supported.');
     }
 
     const userId = req.userId || null;
@@ -282,6 +288,7 @@ export async function getOrderDetails(req: AuthRequest, res: Response, next: Nex
           },
         },
         payment: true,
+        earnedCoupon: true,
       },
     });
 

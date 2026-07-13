@@ -16,6 +16,7 @@ function OtpVerifyContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || '';
   const purpose = (searchParams.get('purpose') || 'signup') as 'signup' | 'forgot_password';
+  const redirect = searchParams.get('redirect') || '';
 
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
@@ -98,7 +99,7 @@ function OtpVerifyContent() {
 
       if (purpose === 'signup') {
         setSuccess('Account verified! Redirecting to login…');
-        setTimeout(() => router.push('/login'), 1800);
+        setTimeout(() => router.push(`/login${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ''}`), 1800);
       } else {
         // For forgot password, save resetToken and redirect
         const resetToken = data.resetToken;

@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, Mail, Lock, User, Phone, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { API_BASE } from '@/context/AuthContext';
 import logoImg from '@/assets/logo.png';
@@ -64,8 +64,10 @@ function StrengthBar({ password }: { password: string }) {
   );
 }
 
-export default function RegisterPage() {
+function RegisterContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') || '';
 
   const [form, setForm] = useState({
     name: '',
@@ -132,7 +134,7 @@ export default function RegisterPage() {
       }
 
       // Redirect to OTP verification
-      router.push(`/verify-otp?email=${encodeURIComponent(form.email.trim().toLowerCase())}&purpose=signup`);
+      router.push(`/verify-otp?email=${encodeURIComponent(form.email.trim().toLowerCase())}&purpose=signup${redirect ? `&redirect=${encodeURIComponent(redirect)}` : ''}`);
     } catch {
       setError('An unexpected error occurred. Please try again.');
     } finally {
@@ -329,7 +331,7 @@ export default function RegisterPage() {
 
           <p className="text-center text-sm text-muted-foreground mt-6">
             Already have an account?{' '}
-            <Link href="/login" className="text-gold hover:text-gold-soft transition-colors">
+            <Link href={redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login"} className="text-gold hover:text-gold-soft transition-colors">
               Sign in
             </Link>
           </p>
@@ -340,5 +342,17 @@ export default function RegisterPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-gold" />
+      </div>
+    }>
+      <RegisterContent />
+    </Suspense>
   );
 }

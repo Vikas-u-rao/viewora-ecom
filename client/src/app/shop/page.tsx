@@ -336,8 +336,9 @@ function ShopContent() {
             </div>
           </div>
 
+          {/* Product Grid Loading Skeleton */}
           {isLoadingProducts ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map((item) => (
                 <div key={item} className="h-[380px] border border-border bg-card animate-pulse" />
               ))}
@@ -349,7 +350,7 @@ function ShopContent() {
             </div>
           ) : paginatedProducts.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
                 {paginatedProducts.map((p) => (
                   <ProductCard key={p.id} product={p} />
                 ))}
