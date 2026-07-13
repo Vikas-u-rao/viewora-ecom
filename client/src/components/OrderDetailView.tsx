@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Package, Truck, CheckCircle2, Clock } from "lucide-react";
 import { Order } from "@/services/orders";
@@ -28,6 +29,34 @@ export default function OrderDetailView({ order }: { order: Order }) {
   const isShipped = order.fulfillmentStatus === 'shipped' || order.fulfillmentStatus === 'delivered';
   const isDelivered = order.fulfillmentStatus === 'delivered';
 
+  const [lineWidth, setLineWidth] = useState("0%");
+
+  useEffect(() => {
+    const targetWidth = order.fulfillmentStatus === 'delivered'
+      ? '75%'
+      : order.fulfillmentStatus === 'shipped'
+      ? '50%'
+      : '25%';
+    
+    const timer = setTimeout(() => {
+      setLineWidth(targetWidth);
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [order.fulfillmentStatus]);
+
+  const handleContainerClick = () => {
+    setLineWidth("0%");
+    setTimeout(() => {
+      const targetWidth = order.fulfillmentStatus === 'delivered'
+        ? '75%'
+        : order.fulfillmentStatus === 'shipped'
+        ? '50%'
+        : '25%';
+      setLineWidth(targetWidth);
+    }, 75);
+  };
+
   return (
     <div className="space-y-8">
       <div className="grid gap-4 sm:grid-cols-3">
@@ -49,16 +78,20 @@ export default function OrderDetailView({ order }: { order: Order }) {
       </div>
 
       {/* Shipment Tracking Timeline */}
-      <div className="border border-border p-6 bg-black/40">
+      <div 
+        onClick={handleContainerClick} 
+        className="border border-border p-6 bg-black/40 cursor-pointer select-none group"
+        title="Click to replay status animation"
+      >
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
             <h2 className="font-serif text-xl text-white">Shipment Tracking</h2>
             <p className="text-xs text-muted-foreground mt-1">
-              Carrier: <span className="text-white font-medium">Delhivery Express</span> &middot; Tracking ID: <span className="font-mono text-white select-all">DL-{order.id.slice(0, 8).toUpperCase()}</span>
+              Carrier: <span className="text-white font-medium">{order.carrier || "DTDC Express"}</span> &middot; Tracking ID: <span className="font-mono text-white select-all">{order.trackingNumber || `DT-${order.id.slice(0, 8).toUpperCase()}`}</span>
             </p>
           </div>
           <a
-            href="https://www.delhivery.com"
+            href="https://www.dtdc.in/"
             target="_blank"
             rel="noopener noreferrer"
             className="border border-[#c9a35c] text-[#c9a35c] hover:bg-[#c9a35c] hover:text-background px-4 py-2 text-xs font-bold tracking-[0.15em] transition-colors duration-300 rounded-sm"
@@ -69,9 +102,17 @@ export default function OrderDetailView({ order }: { order: Order }) {
 
         {/* Stepper Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+          {/* Connecting Line Track */}
+          <div className="hidden md:block absolute top-4 left-[12.5%] right-[12.5%] h-[2px] bg-border/40 -translate-y-1/2 z-0" />
+          {/* Active Progress Line */}
+          <div 
+            className="hidden md:block absolute top-4 left-[12.5%] h-[2px] bg-[#c9a35c] -translate-y-1/2 z-0 transition-all duration-700 ease-out" 
+            style={{ width: lineWidth }}
+          />
+
           {/* Step 1: Placed */}
           <div className="flex gap-3 md:flex-col md:items-center md:text-center relative">
-            <div className="flex items-center justify-center size-8 rounded-full border border-[#c9a35c] bg-[#c9a35c]/10 text-[#c9a35c] z-10">
+            <div className="relative z-10 flex items-center justify-center size-8 rounded-full border border-[#c9a35c] bg-[#1a150e] text-[#c9a35c]">
               <CheckCircle2 className="size-4" />
             </div>
             <div>
@@ -82,10 +123,10 @@ export default function OrderDetailView({ order }: { order: Order }) {
 
           {/* Step 2: Processing */}
           <div className="flex gap-3 md:flex-col md:items-center md:text-center relative">
-            <div className={`flex items-center justify-center size-8 rounded-full border z-10 ${
+            <div className={`relative z-10 flex items-center justify-center size-8 rounded-full border ${
               order.fulfillmentStatus === 'unfulfilled' 
-                ? 'border-[#c9a35c] bg-[#c9a35c]/10 text-[#c9a35c] animate-pulse' 
-                : 'border-[#c9a35c] bg-[#c9a35c]/10 text-[#c9a35c]'
+                ? 'border-[#c9a35c] bg-[#1a150e] text-[#c9a35c] animate-pulse' 
+                : 'border-[#c9a35c] bg-[#1a150e] text-[#c9a35c]'
             }`}>
               {order.fulfillmentStatus === 'unfulfilled' ? <Clock className="size-4" /> : <CheckCircle2 className="size-4" />}
             </div>
@@ -97,25 +138,25 @@ export default function OrderDetailView({ order }: { order: Order }) {
 
           {/* Step 3: Shipped */}
           <div className="flex gap-3 md:flex-col md:items-center md:text-center relative">
-            <div className={`flex items-center justify-center size-8 rounded-full border z-10 ${
+            <div className={`relative z-10 flex items-center justify-center size-8 rounded-full border ${
               isShipped
-                ? 'border-[#c9a35c] bg-[#c9a35c]/10 text-[#c9a35c]'
-                : 'border-border text-muted-foreground'
+                ? 'border-[#c9a35c] bg-[#1a150e] text-[#c9a35c]'
+                : 'border-border bg-[#0a0a0a] text-muted-foreground'
             }`}>
               <Truck className="size-4" />
             </div>
             <div>
               <p className={`text-sm font-semibold ${isShipped ? 'text-white' : 'text-muted-foreground'}`}>Shipped</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">Dispatched via Delhivery</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">Dispatched via {order.carrier || "DTDC"}</p>
             </div>
           </div>
 
           {/* Step 4: Delivered */}
           <div className="flex gap-3 md:flex-col md:items-center md:text-center relative">
-            <div className={`flex items-center justify-center size-8 rounded-full border z-10 ${
+            <div className={`relative z-10 flex items-center justify-center size-8 rounded-full border ${
               isDelivered
-                ? 'border-[#c9a35c] bg-[#c9a35c]/10 text-[#c9a35c]'
-                : 'border-border text-muted-foreground'
+                ? 'border-[#c9a35c] bg-[#1a150e] text-[#c9a35c]'
+                : 'border-border bg-[#0a0a0a] text-muted-foreground'
             }`}>
               <Package className="size-4" />
             </div>

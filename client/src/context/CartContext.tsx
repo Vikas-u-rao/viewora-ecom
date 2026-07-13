@@ -19,6 +19,7 @@ import {
   updateCartItemApi,
   removeCartItemApi,
   clearCartApi,
+  mergeCartApi,
 } from '@/services/cart';
 
 // ── Context value shape ─────────────────────────────────────────────────────
@@ -69,11 +70,40 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [accessToken]);
 
   useEffect(() => {
-    if (user && accessToken) {
-      loadAuthCart();
-    } else {
-      setItems([]);
-    }
+    const syncOrMergeCart = async () => {
+      if (user && accessToken) {
+        const stored = localStorage.getItem('viewora_guest_cart');
+        if (stored) {
+          try {
+            const guestItems: CartItem[] = JSON.parse(stored);
+            if (guestItems.length > 0) {
+              await mergeCartApi(
+                accessToken,
+                guestItems.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
+              );
+              localStorage.removeItem('viewora_guest_cart');
+              toast.success('Your guest cart was merged with your account.');
+            }
+          } catch (err) {
+            console.error('Failed to merge guest cart:', err);
+          }
+        }
+        await loadAuthCart();
+      } else {
+        const stored = localStorage.getItem('viewora_guest_cart');
+        if (stored) {
+          try {
+            setItems(JSON.parse(stored));
+          } catch {
+            setItems([]);
+          }
+        } else {
+          setItems([]);
+        }
+      }
+    };
+
+    syncOrMergeCart();
   }, [user, accessToken, loadAuthCart]);
 
   // ── Actions ─────────────────────────────────────────────────────────────
@@ -89,7 +119,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addToCart = useCallback(
     async (variantId: string, quantity: number = 1, variantSnapshot: CartVariant | null = null) => {
       if (!accessToken) {
-        toast.error('Please log in to add items to your cart.');
+        const existingIdx = items.findIndex((i) => i.variantId === variantId);
+        let newItems: CartItem[] = [];
+        if (existingIdx >= 0) {
+          newItems = items.map((item, idx) =>
+            idx === existingIdx ? { ...item, quantity: item.quantity + quantity } : item,
+          );
+        } else {
+          const newItem: CartItem = {
+            id: `guest-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            variantId,
+            quantity,
+            productUnavailable: false,
+            variant: variantSnapshot,
+          };
+          newItems = [...items, newItem];
+        }
+        setItems(newItems);
+        localStorage.setItem('viewora_guest_cart', JSON.stringify(newItems));
+        toast.success('Item added to cart.');
         return;
       }
 
@@ -128,7 +176,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const updateQuantity = useCallback(
     async (itemId: string, quantity: number) => {
       if (quantity < 1) return;
-      if (!accessToken) return;
+      if (!accessToken) {
+        const newItems = items.map((item) => (item.id === itemId ? { ...item, quantity } : item));
+        setItems(newItems);
+        localStorage.setItem('viewora_guest_cart', JSON.stringify(newItems));
+        return;
+      }
 
       const prevItems = [...items];
       setItems((prev) =>
@@ -147,7 +200,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const removeItem = useCallback(
     async (itemId: string) => {
-      if (!accessToken) return;
+      if (!accessToken) {
+        const newItems = items.filter((item) => item.id !== itemId);
+        setItems(newItems);
+        localStorage.setItem('viewora_guest_cart', JSON.stringify(newItems));
+        toast.success('Item removed');
+        return;
+      }
 
       const prevItems = [...items];
       setItems((prev) => prev.filter((item) => item.id !== itemId));
@@ -164,7 +223,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 
   const clearCart = useCallback(async () => {
-    if (!accessToken) return;
+    if (!accessToken) {
+      setItems([]);
+      localStorage.removeItem('viewora_guest_cart');
+      return;
+    }
     setItems([]);
     try {
       await clearCartApi(accessToken);

@@ -1,15 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, Mail, Lock, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useAuth, API_BASE } from '@/context/AuthContext';
 import logoImg from '@/assets/logo.png';
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') || '/';
   const { setAuth } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -63,7 +65,7 @@ export default function LoginPage() {
       setAuth(data.user, data.accessToken);
       
       setTimeout(() => {
-        router.push('/');
+        router.push(redirect);
       }, 1200);
     } catch {
       setError({ message: 'An unexpected error occurred. Please try again.' });
@@ -231,7 +233,7 @@ export default function LoginPage() {
           {/* Create account */}
           <Link
             id="login-create-account"
-            href="/register"
+            href={redirect && redirect !== '/' ? `/register?redirect=${encodeURIComponent(redirect)}` : "/register"}
             className="w-full border border-gold text-gold py-3.5 text-sm font-bold tracking-[0.15em] hover:bg-gold hover:text-background transition-colors flex items-center justify-center"
           >
             CREATE AN ACCOUNT
@@ -244,5 +246,17 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-gold" />
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }

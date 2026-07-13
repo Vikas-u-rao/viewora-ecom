@@ -27,6 +27,10 @@ export async function createOrder(req: AuthRequest, res: Response, next: NextFun
       throw new AppError('VALIDATION_ERROR', 400, 'Order items are required');
     }
 
+    if (paymentMethod !== 'phonepe') {
+      throw new AppError('VALIDATION_ERROR', 400, 'Invalid payment method. Only online payment (PhonePe) is supported.');
+    }
+
     const userId = req.userId || null;
 
     let finalShippingName = shippingName;
@@ -214,27 +218,6 @@ export async function createOrder(req: AuthRequest, res: Response, next: NextFun
           status: 'active',
         })),
       });
-
-      // For COD orders >= ₹5000, generate the reward coupon immediately
-      if (paymentMethod === 'cod' && subtotal.greaterThanOrEqualTo(5000)) {
-        const rewardValue = subtotal.mul(0.10);
-        const rewardCode = `VW-CPN-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
-        const rewardExpiry = new Date();
-        rewardExpiry.setDate(rewardExpiry.getDate() + 90);
-
-        await tx.coupon.create({
-          data: {
-            code: rewardCode,
-            value: rewardValue,
-            userId,
-            guestEmail: userId ? null : String(guestEmail).trim().toLowerCase(),
-            guestPhone: userId ? null : String(guestPhone).trim(),
-            status: 'active',
-            expiresAt: rewardExpiry,
-            sourceOrderId: newOrder.id,
-          },
-        });
-      }
 
       return newOrder;
     });

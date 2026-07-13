@@ -6,7 +6,7 @@ import Footer from "@/components/footer";
 const socialLinks = [
   {
     name: "Instagram",
-    username: "@viewora.eyewear",
+    username: "@viewora.india",
     href: "https://www.instagram.com/viewora.india/",
     description: "Daily style inspiration and exclusive product reveals.",
     icon: (

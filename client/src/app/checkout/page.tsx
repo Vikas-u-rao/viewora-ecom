@@ -38,7 +38,7 @@ export default function CheckoutPage() {
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const [addressForm, setAddressForm] = useState<AddressPayload>({ ...emptyAddress });
   const [showNewAddress, setShowNewAddress] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"phonepe" | "cod">("phonepe");
+  const [paymentMethod] = useState<"phonepe">("phonepe");
   const [placing, setPlacing] = useState(false);
 
   const availableItems = items.filter((item) => !item.productUnavailable && item.variant);
@@ -115,14 +115,10 @@ export default function CheckoutPage() {
       localStorage.removeItem(COUPON_STORAGE_KEY);
       await clearCart();
 
-      if (paymentMethod === "cod") {
-        router.push(`/order-confirmation/${order.id}`);
-      } else {
-        toast.loading("Redirecting to payment…", { id: "payment-redirect" });
-        const { redirectUrl } = await initiatePaymentApi(order.id, accessToken);
-        toast.dismiss("payment-redirect");
-        window.location.href = redirectUrl;
-      }
+      toast.loading("Redirecting to payment…", { id: "payment-redirect" });
+      const { redirectUrl } = await initiatePaymentApi(order.id, accessToken);
+      toast.dismiss("payment-redirect");
+      window.location.href = redirectUrl;
     } catch (error) {
       toast.dismiss("payment-redirect");
       toast.error(error instanceof Error ? error.message : "Failed to place order.");
@@ -196,28 +192,13 @@ export default function CheckoutPage() {
               <div className="border border-border bg-card p-5">
                 <h2 className="font-serif text-2xl text-white mb-4">Payment Method</h2>
                 <div className="space-y-3">
-                  <label className={`flex items-center gap-3 p-4 border cursor-pointer transition-colors ${paymentMethod === "phonepe" ? "border-gold bg-gold/10" : "border-border hover:border-gold/50"}`}>
-                    <input type="radio" name="paymentMethod" value="phonepe" checked={paymentMethod === "phonepe"} onChange={() => setPaymentMethod("phonepe")} className="sr-only" />
-                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === "phonepe" ? "border-gold" : "border-muted-foreground"}`}>
-                      {paymentMethod === "phonepe" && <div className="w-2 h-2 rounded-full bg-gold" />}
-                    </div>
+                  <div className="flex items-center gap-3 p-4 border border-gold bg-gold/10">
                     <Smartphone className="size-5 text-gold" />
                     <div>
                       <span className="text-sm font-semibold tracking-[0.15em] text-white">PhonePe</span>
                       <p className="text-xs text-muted-foreground">UPI / Cards / Netbanking</p>
                     </div>
-                  </label>
-                  <label className={`flex items-center gap-3 p-4 border cursor-pointer transition-colors ${paymentMethod === "cod" ? "border-gold bg-gold/10" : "border-border hover:border-gold/50"}`}>
-                    <input type="radio" name="paymentMethod" value="cod" checked={paymentMethod === "cod"} onChange={() => setPaymentMethod("cod")} className="sr-only" />
-                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === "cod" ? "border-gold" : "border-muted-foreground"}`}>
-                      {paymentMethod === "cod" && <div className="w-2 h-2 rounded-full bg-gold" />}
-                    </div>
-                    <Wallet className="size-5 text-gold" />
-                    <div>
-                      <span className="text-sm font-semibold tracking-[0.15em] text-white">Cash on Delivery</span>
-                      <p className="text-xs text-muted-foreground">Pay when your order arrives</p>
-                    </div>
-                  </label>
+                  </div>
                 </div>
               </div>
             </section>
@@ -239,7 +220,7 @@ export default function CheckoutPage() {
               </div>
               <button disabled={placing || unavailableItems.length > 0} className="mt-6 flex w-full items-center justify-center gap-2 bg-gold py-3.5 text-xs font-bold tracking-[0.2em] text-background disabled:opacity-50">
                 {placing && <Loader2 className="size-4 animate-spin" />}
-                {placing ? "PLACING ORDER…" : paymentMethod === "cod" ? "PLACE ORDER (COD)" : "PLACE ORDER & PAY"}
+                {placing ? "PLACING ORDER…" : "PLACE ORDER & PAY"}
               </button>
             </aside>
           </form>

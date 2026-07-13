@@ -40,6 +40,8 @@ export interface Order {
   shippingFee: string;
   finalPayableAmount: string;
   createdAt: string;
+  trackingNumber?: string | null;
+  carrier?: string | null;
   items: OrderItem[];
   payment?: {
     status: string;
