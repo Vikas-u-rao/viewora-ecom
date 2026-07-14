@@ -2,290 +2,121 @@
 
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { Instagram, Facebook, Twitter, Youtube } from "lucide-react";
+import {
+  Facebook,
+  Heart,
+  Instagram,
+  Linkedin,
+  Mail,
+  MapPin,
+  Phone,
+  PinIcon,
+} from "lucide-react";
 
-// Import local logo asset
-import logoImg from "@/assets/logo.png";
+const GOLD = "#D4AF37";
+const DEEP_GOLD = "#B8860B";
+const SILVER = "#C8C8C8";
+const GRAY = "#BFBFBF";
+const PINK = "#FAD6E3";
+const SERIF = "var(--font-serif), Georgia, serif";
+const SANS = "var(--font-sans), Arial, sans-serif";
 
-// Constants from the redesign project
-const GOLD = "#C9A84C";
-const GOLD_FAINT = "rgba(201,168,76,0.08)";
-const GOLD_SUBTLE = "rgba(201,168,76,0.15)";
-const GOLD_MID = "rgba(201,168,76,0.25)";
-const GOLD_STRONG = "rgba(201,168,76,0.40)";
-const TEXT_MUTED = "#7A6E60";
-const TEXT_FAINT = "#4A4035";
-const TEXT_GHOST = "#2E2820";
+const quickLinks = [
+  ["Home", "/"],
+  ["Shop Collection", "/shop"],
+  ["New Arrivals", "/shop?collection=new-arrivals"],
+  ["Best Sellers", "/shop?collection=best-sellers"],
+  ["About Us", "/#about"],
+  ["Contact Us", "/#contact"],
+];
 
-const SANS = "var(--font-sans), 'Inter', sans-serif";
-const CAPS = "'Montserrat', sans-serif";
+const careLinks = [
+  ["Shipping & Delivery", "/shipping"],
+  ["Returns & Exchange", "/returns"],
+  ["Size Guide", "/size-guide"],
+  ["FAQ's", "/faqs"],
+  ["Privacy Policy", "/privacy-policy"],
+  ["Terms & Conditions", "/terms"],
+];
 
-function capsLabel(text: string, extraStyle?: React.CSSProperties) {
+function FooterHeading({ children }: { children: React.ReactNode }) {
   return (
-    <span
-      style={{
-        fontFamily: CAPS,
-        fontSize: "14px",
-        letterSpacing: "0.22em",
-        color: GOLD,
-        fontWeight: 600,
-        ...extraStyle,
-      }}
-    >
-      {text}
-    </span>
+    <>
+      <h3 className="viewora-footer-heading">{children}</h3>
+      <div className="viewora-footer-ornament" aria-hidden="true"><span /></div>
+    </>
   );
 }
 
 export default function Footer() {
-  const quickLinks = [
-    { name: "Home", href: "/" },
-    { name: "About", href: "/#about" },
-    { name: "Collections", href: "/#collections" },
-    { name: "Shop", href: "/shop" },
-    { name: "Socials", href: "/socials" }
-  ];
-
-  const collectionLinks = [
-    { name: "Sunglasses", href: "/shop?type=sunglasses" },
-    { name: "Optical Frames", href: "/shop?type=optical-frames" },
-    { name: "Limited Edition", href: "/shop?collection=limited-edition" },
-    { name: "New Arrivals", href: "/shop?collection=new-arrivals" },
-    { name: "Best Sellers", href: "/shop?collection=best-sellers" }
-  ];
-
   const socialLinks = [
-    { icon: <Instagram size={20} />, href: "https://www.instagram.com/viewora.india/" },
-    { icon: <Facebook size={20} />, href: "https://facebook.com" },
-    { icon: <Twitter size={20} />, href: "https://twitter.com" },
-    { icon: <Youtube size={20} />, href: "https://youtube.com" }
+    { label: "Instagram", icon: Instagram, href: "https://www.instagram.com/viewora.india/" },
+    { label: "Facebook", icon: Facebook, href: "https://facebook.com" },
+    { label: "LinkedIn", icon: Linkedin, href: "https://linkedin.com" },
+    { label: "Pinterest", icon: PinIcon, href: "https://pinterest.com" },
   ];
 
   return (
-    <footer style={{ position: "relative", overflow: "hidden", marginTop: "auto" }}>
-      {/* Warm charcoal gradient — the core footer treatment */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "linear-gradient(180deg, #1A1714 0%, #13110E 45%, #0D0B09 100%)",
-        }}
-      />
-
-      {/* Ambient gold glow from top-center */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "800px",
-          height: "280px",
-          background: `radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.065) 0%, transparent 68%)`,
-          pointerEvents: "none",
-        }}
-      />
-
-      {/* Thin gold hairline separator at top */}
-      <div
-        style={{
-          position: "relative",
-          height: "1px",
-          background: `linear-gradient(90deg, transparent 0%, ${GOLD_MID} 30%, ${GOLD_STRONG} 50%, ${GOLD_MID} 70%, transparent 100%)`,
-        }}
-      />
-
-      <div style={{ position: "relative", maxWidth: "1280px", margin: "0 auto", padding: "0 40px" }}>
-        {/* Main grid */}
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-            gap: "48px",
-            padding: "72px 0 56px",
-          }}
-        >
-          {/* Brand column */}
-          <div style={{ minWidth: "260px", flex: "1 1 260px" }}>
-            <Link href="/" style={{ display: "inline-block" }}>
-              <Image src={logoImg} alt="Viewora Logo" height={44} width={180} style={{ width: "auto", height: "44px" }} />
+    <footer className="viewora-footer">
+      <style>{`
+        .viewora-footer { background: #000; color: ${SILVER}; font-family: ${SANS}; overflow: hidden; position: relative; }
+        .viewora-footer::before { background: linear-gradient(90deg, ${PINK}, ${GOLD} 48%, ${PINK}); content: ""; height: 1px; left: 0; opacity: .9; position: absolute; right: 0; top: 0; }
+        .viewora-footer-inner { margin: 0 auto; max-width: 1440px; padding: 68px 44px 0; position: relative; }
+        .viewora-footer-grid { display: grid; grid-template-columns: 1.35fr 1fr 1.1fr 1.1fr; }
+        .viewora-footer-column { min-width: 0; padding: 0 34px; }
+        .viewora-footer-column:first-child { padding-left: 0; }
+        .viewora-footer-column + .viewora-footer-column { border-left: 1px solid rgba(250, 214, 227, .62); }
+        .viewora-footer-brand { align-items: center; display: flex; flex-direction: column; padding-right: 58px; text-align: center; }
+        .viewora-mark { color: ${GOLD}; font-family: ${SERIF}; font-size: clamp(48px, 4.2vw, 71px); font-weight: 500; letter-spacing: -.16em; line-height: .75; margin-left: -.16em; }
+        .viewora-brand-name { color: ${GOLD}; font-family: ${SERIF}; font-size: 28px; letter-spacing: .43em; margin: 19px 0 8px; padding-left: .43em; }
+        .viewora-brand-subtitle { color: ${SILVER}; font-size: 10px; font-weight: 600; letter-spacing: .55em; padding-left: .55em; }
+        .viewora-brand-rule { align-items: center; color: ${PINK}; display: flex; font-size: 18px; gap: 10px; margin: 35px 0 25px; width: 100%; }
+        .viewora-brand-rule::before, .viewora-brand-rule::after { background: ${PINK}; content: ""; flex: 1; height: 1px; }
+        .viewora-tagline { color: ${PINK}; font-family: ${SERIF}; font-size: 19px; line-height: 1.55; margin: 0; text-align: left; width: 100%; }
+        .viewora-socials { display: flex; gap: 19px; margin-top: 28px; width: 100%; }
+        .viewora-social { align-items: center; border: 1px solid rgba(250, 214, 227, .78); border-radius: 999px; color: ${PINK}; display: inline-flex; height: 43px; justify-content: center; transition: all .25s ease; width: 43px; }
+        .viewora-social:hover { background: ${GOLD}; border-color: ${GOLD}; color: #000; transform: translateY(-3px); }
+        .viewora-footer-heading { color: ${GOLD}; font-family: ${SERIF}; font-size: 19px; font-weight: 500; letter-spacing: .02em; margin: 14px 0 10px; white-space: nowrap; }
+        .viewora-footer-ornament { align-items: center; color: ${PINK}; display: flex; font-size: 16px; gap: 7px; margin-bottom: 28px; width: 76px; }
+        .viewora-footer-ornament::before, .viewora-footer-ornament::after { background: ${PINK}; content: ""; flex: 1; height: 1px; }
+        .viewora-footer-ornament span::before { content: "✦"; }
+        .viewora-footer-list { display: flex; flex-direction: column; gap: 17px; list-style: none; margin: 0; padding: 0; }
+        .viewora-footer-link { color: ${GRAY}; font-size: 15px; line-height: 1.35; text-decoration: none; transition: color .2s ease; }
+        .viewora-footer-link:hover { color: ${DEEP_GOLD}; }
+        .viewora-contact-list { display: flex; flex-direction: column; gap: 24px; }
+        .viewora-contact-item { align-items: flex-start; color: ${SILVER}; display: flex; font-size: 15px; gap: 12px; line-height: 1.55; text-decoration: none; transition: color .2s ease; }
+        .viewora-contact-item:hover { color: ${GOLD}; }
+        .viewora-contact-icon { color: ${PINK}; flex: 0 0 auto; margin-top: 2px; }
+        .viewora-footer-bottom { align-items: center; border-top: 1px solid rgba(250, 214, 227, .7); display: grid; gap: 24px; grid-template-columns: 1fr auto 1fr; margin-top: 55px; min-height: 105px; }
+        .viewora-copyright, .viewora-designed { color: ${SILVER}; font-size: 14px; margin: 0; }
+        .viewora-designed { justify-self: end; }
+        .viewora-heart { color: ${PINK}; fill: ${PINK}; height: 17px; margin: 0 6px -3px; width: 17px; }
+        .viewora-payments { align-items: center; display: flex; gap: 23px; }
+        .viewora-payment { color: ${SILVER}; font-size: 17px; font-style: italic; font-weight: 800; letter-spacing: -.05em; }
+        .viewora-payment.visa { color: #8395ff; } .viewora-payment.mastercard { color: #ff8f32; } .viewora-payment.amex { background: #287bcc; border-radius: 2px; color: white; font-size: 11px; font-style: normal; letter-spacing: -.08em; padding: 4px; } .viewora-payment.paypal { color: #7ba3de; } .viewora-payment.upi { color: #dedede; }
+        @media (max-width: 1100px) { .viewora-footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 45px 0; } .viewora-footer-column { padding: 0 42px; } .viewora-footer-column:nth-child(odd) { border-left: 0; padding-left: 0; } .viewora-footer-brand { align-items: flex-start; padding-right: 42px; text-align: left; } .viewora-brand-name, .viewora-brand-subtitle { padding-left: 0; } .viewora-mark { margin-left: 0; } }
+        @media (max-width: 640px) { .viewora-footer-inner { padding: 55px 25px 0; } .viewora-footer-grid { display: flex; flex-direction: column; gap: 38px; } .viewora-footer-column, .viewora-footer-column:first-child { border-left: 0; border-top: 1px solid rgba(250, 214, 227, .38); padding: 34px 0 0; } .viewora-footer-brand { align-items: center; border-top: 0 !important; padding-top: 0; text-align: center; } .viewora-brand-rule, .viewora-tagline, .viewora-socials { justify-content: center; } .viewora-tagline { text-align: center; } .viewora-footer-column:last-child { max-width: none; } .viewora-footer-heading { margin-top: 0; } .viewora-footer-bottom { display: flex; flex-direction: column; gap: 18px; justify-content: center; margin-top: 40px; padding: 25px 0; text-align: center; } .viewora-designed { justify-self: auto; } .viewora-payments { gap: 15px; } }
+      `}</style>
+      <div className="viewora-footer-inner">
+        <div className="viewora-footer-grid">
+          <section className="viewora-footer-column viewora-footer-brand" aria-label="Viewora">
+            <Link href="/" aria-label="Viewora home" style={{ textDecoration: "none" }}>
+              <div className="viewora-mark">VO</div>
+              <div className="viewora-brand-name">VIEWORA</div>
+              <div className="viewora-brand-subtitle">FASHION EYEWEAR</div>
             </Link>
-            <p
-              style={{
-                marginTop: "18px",
-                fontFamily: SANS,
-                fontSize: "17px",
-                lineHeight: 1.75,
-                color: TEXT_MUTED,
-                maxWidth: "280px",
-              }}
-            >
-              Premium fashion eyewear crafted for elegance, comfort, and bold individuality.
-            </p>
-            <div style={{ display: "flex", gap: "12px", marginTop: "28px" }}>
-              {socialLinks.map((s, index) => (
-                <a
-                  key={index}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    width: "44px",
-                    height: "44px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    border: `1px solid ${GOLD_SUBTLE}`,
-                    borderRadius: "4px",
-                    color: TEXT_MUTED,
-                    transition: "all 0.25s",
-                  }}
-                  onMouseEnter={(e) => {
-                    const el = e.currentTarget as HTMLElement;
-                    el.style.borderColor = GOLD;
-                    el.style.color = GOLD;
-                    el.style.backgroundColor = "rgba(201,168,76,0.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    const el = e.currentTarget as HTMLElement;
-                    el.style.borderColor = GOLD_SUBTLE;
-                    el.style.color = TEXT_MUTED;
-                    el.style.backgroundColor = "transparent";
-                  }}
-                >
-                  {s.icon}
-                </a>
-              ))}
+            <div className="viewora-brand-rule" aria-hidden="true">✦</div>
+            <p className="viewora-tagline">Crafted for those who never<br />settle for ordinary.</p>
+            <div className="viewora-socials">
+              {socialLinks.map(({ label, icon: Icon, href }) => <a className="viewora-social" href={href} key={label} target="_blank" rel="noreferrer" aria-label={label}><Icon size={21} strokeWidth={2} /></a>)}
             </div>
-          </div>
+          </section>
 
-          {/* Quick Links */}
-          <div style={{ minWidth: "160px" }}>
-            <div style={{ marginBottom: "24px" }}>{capsLabel("QUICK LINKS", { color: GOLD })}</div>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "14px" }}>
-              {quickLinks.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    style={{
-                      fontFamily: SANS,
-                      fontSize: "17px",
-                      color: TEXT_MUTED,
-                      textDecoration: "none",
-                      transition: "color 0.2s",
-                      display: "inline-block"
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.color = "#FFFFFF";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.color = TEXT_MUTED;
-                    }}
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Collections */}
-          <div style={{ minWidth: "160px" }}>
-            <div style={{ marginBottom: "24px" }}>{capsLabel("COLLECTIONS", { color: GOLD })}</div>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "14px" }}>
-              {collectionLinks.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    style={{
-                      fontFamily: SANS,
-                      fontSize: "17px",
-                      color: TEXT_MUTED,
-                      textDecoration: "none",
-                      transition: "color 0.2s",
-                      display: "inline-block"
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.color = "#FFFFFF";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.color = TEXT_MUTED;
-                    }}
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div style={{ minWidth: "220px" }}>
-            <div style={{ marginBottom: "24px" }}>{capsLabel("CONTACT", { color: GOLD })}</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
-              {[
-                { label: "EMAIL", value: "support@viewora.in" },
-                { label: "PHONE", value: "+1 (800) 234 5678" },
-                { label: "HOURS", value: "Mon – Sat, 10am – 7pm" },
-              ].map((item) => (
-                <div key={item.label}>
-                  <p style={{ fontFamily: SANS, fontSize: "13px", letterSpacing: "0.18em", color: GOLD, marginBottom: "6px", fontWeight: 500 }}>
-                    {item.label}
-                  </p>
-                  <p style={{ fontFamily: SANS, fontSize: "17px", color: TEXT_MUTED }}>
-                    {item.value}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <section className="viewora-footer-column"><FooterHeading>QUICK LINKS</FooterHeading><ul className="viewora-footer-list">{quickLinks.map(([label, href]) => <li key={label}><Link className="viewora-footer-link" href={href}>{label}</Link></li>)}</ul></section>
+          <section className="viewora-footer-column"><FooterHeading>CUSTOMER CARE</FooterHeading><ul className="viewora-footer-list">{careLinks.map(([label, href]) => <li key={label}><Link className="viewora-footer-link" href={href}>{label}</Link></li>)}</ul></section>
+          <section className="viewora-footer-column"><FooterHeading>CONTACT US</FooterHeading><div className="viewora-contact-list"><a className="viewora-contact-item" href="tel:+919876543210"><Phone className="viewora-contact-icon" size={21} fill={PINK} />+91 98765 43210</a><a className="viewora-contact-item" href="mailto:support@viewora.in"><Mail className="viewora-contact-icon" size={21} fill={PINK} />support@viewora.in</a><span className="viewora-contact-item"><MapPin className="viewora-contact-icon" size={22} fill={PINK} />Bangalore, Karnataka<br />India 560001</span></div></section>
         </div>
-
-        {/* Gold gradient divider */}
-        <div
-          style={{
-            height: "1px",
-            background: `linear-gradient(90deg, transparent, ${GOLD_SUBTLE}, transparent)`,
-          }}
-        />
-
-        {/* Bottom strip */}
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "16px",
-            padding: "24px 0",
-          }}
-        >
-          <p style={{ fontFamily: SANS, fontSize: "13px", letterSpacing: "0.14em", color: TEXT_MUTED, fontWeight: 500 }}>
-            © 2026 VIEWORA — FASHION ON EYEWEAR. ALL RIGHTS RESERVED.
-          </p>
-          <div style={{ display: "flex", gap: "24px" }}>
-            {["Privacy Policy", "Terms of Service", "Returns & Refunds"].map((link) => (
-              <a
-                key={link}
-                href="#"
-                style={{
-                  fontFamily: SANS,
-                  fontSize: "13px",
-                  letterSpacing: "0.1em",
-                  color: TEXT_MUTED,
-                  textDecoration: "none",
-                  transition: "color 0.2s"
-                }}
-                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "#FFFFFF")}
-                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = TEXT_MUTED)}
-              >
-                {link}
-              </a>
-            ))}
-          </div>
-        </div>
+        <div className="viewora-footer-bottom"><p className="viewora-copyright">© 2026 Viewora. All rights reserved.</p><div className="viewora-payments" aria-label="Accepted payment methods"><span className="viewora-payment visa">VISA</span><span className="viewora-payment mastercard">●●</span><span className="viewora-payment amex">AMEX</span><span className="viewora-payment paypal">PayPal</span><span className="viewora-payment upi">UPI</span></div><p className="viewora-designed">Designed with <Heart className="viewora-heart" /> by Viewora</p></div>
       </div>
     </footer>
   );
