@@ -1,13 +1,15 @@
 'use client';
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingBag, Menu, User, Heart } from "lucide-react";
+import { ShoppingBag, Menu, User, Heart, Search, X } from "lucide-react";
 import logoImg from "@/assets/logo.png";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { Sheet, SheetTrigger, SheetContent, SheetClose } from "@/components/ui/sheet";
+import { useRouter } from "next/navigation";
 
 const nav = [
   { label: "HOME", href: "/#home" },
@@ -46,9 +48,46 @@ export default function Header() {
   const { user } = useAuth();
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
+  const router = useRouter();
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchVal, setSearchVal] = useState("");
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchVal.trim()) {
+      router.push(`/shop?search=${encodeURIComponent(searchVal.trim())}`);
+      setShowSearch(false);
+      setSearchVal("");
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur border-b border-border">
+      {showSearch && (
+        <div className="fixed inset-x-0 top-0 z-[60] bg-background/98 backdrop-blur-md border-b border-gold/20 py-6 px-6 shadow-2xl animate-fade-in">
+          <div className="max-w-[1000px] mx-auto flex items-center justify-between gap-4">
+            <form onSubmit={handleSearchSubmit} className="flex-1 flex items-center gap-3">
+              <Search className="text-gold" size={24} strokeWidth={1.5} />
+              <input
+                type="text"
+                value={searchVal}
+                onChange={(e) => setSearchVal(e.target.value)}
+                placeholder="Search Viewora eyewear..."
+                className="flex-1 bg-transparent text-xl text-white border-none outline-none placeholder:text-muted-foreground/60 focus:ring-0 focus:outline-none font-sans"
+                autoFocus
+              />
+            </form>
+            <button 
+              onClick={() => { setShowSearch(false); setSearchVal(""); }} 
+              className="text-muted-foreground hover:text-white transition-colors cursor-pointer"
+              type="button"
+            >
+              <X size={24} strokeWidth={1.5} />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-[1400px] mx-auto px-6 h-[72px] grid grid-cols-[auto_1fr_auto] items-center gap-4">
         <Link href="/" className="flex items-center">
           <Image src={logoImg} alt="Viewora" className="h-7 w-auto" style={{ width: "auto", height: "auto" }} width={80} height={80} priority />
@@ -181,6 +220,13 @@ export default function Header() {
               </div>
             </SheetContent>
           </Sheet>
+          <button 
+            onClick={() => setShowSearch(true)} 
+            className="hover:text-gold text-foreground transition-colors cursor-pointer flex items-center justify-center" 
+            aria-label="Open Search"
+          >
+            <Search size={28} strokeWidth={1.5} />
+          </button>
           <Link href={user ? "/account/profile" : "/login"} className="hover:text-gold transition-colors" aria-label={user ? "Profile" : "Login"}>
             <User size={28} strokeWidth={1.5} />
           </Link>
