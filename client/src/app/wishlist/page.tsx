@@ -30,6 +30,9 @@ function WishlistItemCard({ item, onRemove }: { item: WishlistItem; onRemove: (i
   const [isRemoving, setIsRemoving] = useState(false);
 
   const product = item.product;
+  if (!product || !product.variants) {
+    return null;
+  }
   const variant = product.variants.find((v) => v.stock > 0) || product.variants[0];
 
   const firstUrl = Array.isArray(product.defaultImageUrls) ? product.defaultImageUrls[0] : null;

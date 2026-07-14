@@ -27,6 +27,7 @@
   --color-ring: var(--ring);
   --color-gold: var(--gold);
   --color-gold-soft: var(--gold-soft);
+  --color-accent-pink: var(--accent-pink);
   --font-serif: "Playfair Display", Georgia, serif;
   --font-sans: "Inter", system-ui, sans-serif;
 }
@@ -54,6 +55,7 @@
   --ring: #C9A84C;
   --gold: #C9A84C;
   --gold-soft: rgba(201, 168, 76, 0.4);
+  --accent-pink: #FAD6E3;
 }
 
 @layer base {
