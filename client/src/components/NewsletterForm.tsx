@@ -45,14 +45,14 @@ export default function NewsletterForm() {
 
   if (status === 'success') {
     return (
-      <div className="max-w-xl mx-auto p-6 bg-card/45 border border-gold/40 text-center animate-fade-in">
-        <h3 className="text-gold font-serif text-2xl mb-2">Thank you for subscribing!</h3>
+      <div className="max-w-xl mx-auto p-6 bg-card/45 border border-accent-pink/40 text-center animate-fade-in">
+        <h3 className="text-accent-pink font-serif text-2xl mb-2">Thank you for subscribing!</h3>
         <p className="text-muted-foreground font-sans text-sm">
           Check your email for exclusive updates and our community offer.
         </p>
         <button 
           onClick={() => setStatus('idle')}
-          className="mt-4 text-xs font-bold tracking-widest text-white/90 hover:text-gold uppercase transition-colors"
+          className="mt-4 text-xs font-bold tracking-widest text-white/90 hover:text-accent-pink uppercase transition-colors"
         >
           SUBSCRIBE ANOTHER →
         </button>
@@ -72,12 +72,12 @@ export default function NewsletterForm() {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Enter your email"
           disabled={isLoading}
-          className="flex-1 bg-input border border-border px-5 py-3.5 text-foreground placeholder:text-muted-foreground focus:border-gold focus:outline-none font-sans disabled:opacity-50"
+          className="flex-1 bg-input border border-border px-5 py-3.5 text-foreground placeholder:text-muted-foreground focus:border-accent-pink focus:outline-none font-sans disabled:opacity-50"
         />
         <button 
           type="submit" 
           disabled={isLoading}
-          className="bg-gold text-background px-8 py-3.5 text-sm font-bold tracking-[0.15em] hover:bg-gold-soft transition-colors cursor-pointer disabled:opacity-70 flex items-center justify-center min-w-[160px]"
+          className="bg-accent-pink text-[#0d0b09] px-8 py-3.5 text-sm font-bold tracking-[0.15em] hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-70 flex items-center justify-center min-w-[160px]"
         >
           {isLoading ? (
             <span className="w-5 h-5 border-2 border-background/20 border-t-background rounded-full animate-spin"></span>

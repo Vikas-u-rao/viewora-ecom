@@ -184,14 +184,14 @@ export default function ProductDetailPage() {
                   onClick={handleToggleWishlist}
                   disabled={isTogglingWishlist}
                   aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-                  className="p-3 border border-border hover:border-gold/60 hover:bg-gold/5 transition-all duration-200 disabled:opacity-50"
+                  className="p-3 border border-border hover:border-accent-pink/60 hover:bg-accent-pink/5 transition-all duration-200 disabled:opacity-50"
                 >
                   {isTogglingWishlist ? (
                     <Loader2 className="size-5 animate-spin" />
                   ) : (
                     <Heart
                       className={`size-5 transition-colors ${
-                        wishlisted ? "fill-gold text-gold" : "text-muted-foreground/70 hover:text-gold"
+                        wishlisted ? "fill-accent-pink text-accent-pink" : "text-muted-foreground/70 hover:text-accent-pink"
                       }`}
                     />
                   )}

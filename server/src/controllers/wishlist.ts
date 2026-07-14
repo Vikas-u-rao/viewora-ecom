@@ -58,6 +58,17 @@ export async function addToWishlist(req: AuthRequest, res: Response, next: NextF
         userId,
         productId: cleanProductId,
       },
+      include: {
+        product: {
+          include: {
+            category: true,
+            variants: {
+              where: { isActive: true },
+              orderBy: { price: 'asc' },
+            },
+          },
+        },
+      },
     });
 
     res.status(200).json({ wishlistItem });

@@ -21,7 +21,7 @@ function formatPrice(value: string | number) {
 }
 
 export default function ProductCard({ product }: { product: ApiProduct }) {
-  const { addToCart } = useCart();
+  const { items, addToCart, updateQuantity, removeItem } = useCart();
   const { isWishlisted, toggleWishlist } = useWishlist();
   const [isAdding, setIsAdding] = useState(false);
   const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
@@ -37,8 +37,40 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
   const unavailable = !variant || variant.stock < 1;
   const wishlisted = isWishlisted(product.id);
 
-  const handleAdd = async () => {
-    if (!variant || unavailable) return;
+  const cartItem = variant ? items.find((i) => i.variantId === variant.id) : null;
+
+  const handleDecrement = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!cartItem || isAdding) return;
+    setIsAdding(true);
+    try {
+      if (cartItem.quantity > 1) {
+        await updateQuantity(cartItem.id, cartItem.quantity - 1);
+      } else {
+        await removeItem(cartItem.id);
+      }
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
+  const handleIncrement = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!cartItem || isAdding) return;
+    setIsAdding(true);
+    try {
+      await updateQuantity(cartItem.id, cartItem.quantity + 1);
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
+  const handleAdd = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!variant || unavailable || isAdding) return;
     setIsAdding(true);
     try {
       await addToCart(variant.id, 1, variantSnapshot(product, variant));
@@ -87,11 +119,11 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
           onClick={handleToggleWishlist}
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
           disabled={isTogglingWishlist}
-          className="absolute top-2 right-2 z-10 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border hover:border-[#e0b96f] transition-all duration-200 disabled:opacity-50"
+          className="absolute top-2 right-2 z-10 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border hover:border-accent-pink transition-all duration-200 disabled:opacity-50"
         >
           <Heart
             className={`size-3.5 transition-colors duration-200 ${
-              wishlisted ? "fill-gold text-gold" : "text-muted-foreground/70 hover:text-gold"
+              wishlisted ? "fill-accent-pink text-accent-pink" : "text-muted-foreground/70 hover:text-accent-pink"
             }`}
           />
         </button>
@@ -122,19 +154,41 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
           <span className="text-[#c9a35c] text-[13px] font-semibold tabular-nums">
             {formatPrice(variant?.price || product.startingPrice)}
           </span>
-          <button
-            onClick={handleAdd}
-            disabled={unavailable || isAdding}
-            className="min-w-20 border border-[#c9a35c] text-[#c9a35c] px-3 py-1 text-[11px] font-bold tracking-[0.1em] hover:bg-[#c9a35c] hover:text-background transition-colors duration-300 disabled:cursor-not-allowed disabled:opacity-45 rounded-sm"
-          >
-            {isAdding ? (
-              <Loader2 className="mx-auto size-3.5 animate-spin" />
-            ) : unavailable ? (
-              "SOLD"
-            ) : (
-              "ADD"
-            )}
-          </button>
+          {cartItem ? (
+            <div className="flex items-center gap-2 border border-[#c9a35c] px-2 py-0.5 text-[11px] font-bold rounded-sm h-[24px]">
+              <button
+                onClick={handleDecrement}
+                disabled={isAdding}
+                className="text-[#c9a35c] hover:text-white px-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Decrease quantity"
+              >
+                -
+              </button>
+              <span className="text-white min-w-[14px] text-center font-bold">{cartItem.quantity}</span>
+              <button
+                onClick={handleIncrement}
+                disabled={isAdding}
+                className="text-[#c9a35c] hover:text-white px-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Increase quantity"
+              >
+                +
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleAdd}
+              disabled={unavailable || isAdding}
+              className="min-w-20 border border-[#c9a35c] text-[#c9a35c] px-3 py-1 text-[11px] font-bold tracking-[0.1em] hover:bg-[#c9a35c] hover:text-background transition-colors duration-300 disabled:cursor-not-allowed disabled:opacity-45 rounded-sm h-[24px] flex items-center justify-center"
+            >
+              {isAdding ? (
+                <Loader2 className="mx-auto size-3.5 animate-spin" />
+              ) : unavailable ? (
+                "SOLD"
+              ) : (
+                "ADD"
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>
