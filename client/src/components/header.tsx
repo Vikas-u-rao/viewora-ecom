@@ -89,8 +89,15 @@ export default function Header() {
       )}
 
       <div className="max-w-[1400px] mx-auto px-6 h-[72px] grid grid-cols-[auto_1fr_auto] items-center gap-4">
-        <Link href="/" className="flex items-center">
-          <Image src={logoImg} alt="Viewora" className="h-7 w-auto" style={{ width: "auto", height: "auto" }} width={80} height={80} priority />
+        <Link href="/" className="flex h-full items-center" aria-label="Viewora home">
+          <Image
+            src={logoImg}
+            alt="Viewora"
+            className="h-10 w-auto max-w-[150px] object-contain"
+            width={150}
+            height={40}
+            priority
+          />
         </Link>
 
         <nav className="hidden md:flex items-center justify-center gap-6">
