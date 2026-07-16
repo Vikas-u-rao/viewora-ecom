@@ -266,3 +266,78 @@ export async function listAllProducts(req: AuthRequest, res: Response, next: Nex
     next(error);
   }
 }
+
+// GET /api/v1/admin/coupons
+export async function listAllCoupons(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const coupons = await prisma.coupon.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+      },
+    });
+    res.json({ coupons });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// POST /api/v1/admin/coupons
+export async function createCoupon(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const { code, value, expiresAt, userEmail } = req.body;
+
+    if (!code || !value || !expiresAt) {
+      throw new AppError('VALIDATION_ERROR', 400, 'Code, value, and expiresAt are required');
+    }
+
+    let userId: string | null = null;
+    if (userEmail) {
+      const user = await prisma.user.findUnique({
+        where: { email: String(userEmail).trim().toLowerCase() },
+      });
+      if (!user) {
+        throw new AppError('NOT_FOUND', 404, 'User not found with this email');
+      }
+      userId = user.id;
+    }
+
+    const coupon = await prisma.coupon.create({
+      data: {
+        code: String(code).trim().toUpperCase(),
+        value: new Prisma.Decimal(value),
+        expiresAt: new Date(expiresAt),
+        userId,
+        status: 'active',
+      },
+    });
+
+    res.status(201).json({ coupon });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// DELETE /api/v1/admin/coupons/:id
+export async function deleteCoupon(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+
+    const coupon = await prisma.coupon.findUnique({
+      where: { id },
+    });
+
+    if (!coupon) {
+      throw new AppError('NOT_FOUND', 404, 'Coupon not found');
+    }
+
+    const updatedCoupon = await prisma.coupon.update({
+      where: { id },
+      data: { status: 'expired' },
+    });
+
+    res.json({ message: 'Coupon invalidated successfully', coupon: updatedCoupon });
+  } catch (error) {
+    next(error);
+  }
+}

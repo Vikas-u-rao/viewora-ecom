@@ -26,6 +26,7 @@ function ShopContent() {
   const selectedShape = searchParams.get("shape") || "all";
   const generalFilter = searchParams.get("filter") || "all";
   const selectedCollection = searchParams.get("collection") || "all";
+  const searchQuery = searchParams.get("search") || "";
 
   let selectedType = "all";
   let activeShape = selectedShape;
@@ -46,6 +47,7 @@ function ShopContent() {
       params.delete("shape");
       params.delete("filter");
       params.delete("collection");
+      params.delete("search");
     } else if (type === "brand") {
       if (value && value !== "all") {
         params.set("brand", value);
@@ -88,6 +90,9 @@ function ShopContent() {
     if (selectedCollection !== "all") {
       query += `&collection=${selectedCollection}`;
     }
+    if (searchQuery) {
+      query += `&search=${encodeURIComponent(searchQuery)}`;
+    }
 
     fetchProductsApi(query)
       .then((data) => {
@@ -105,7 +110,7 @@ function ShopContent() {
     return () => {
       cancelled = true;
     };
-  }, [selectedCollection]);
+  }, [selectedCollection, searchQuery]);
 
   const availableBrands = useMemo(() => {
     const brands = new Set<string>();
@@ -316,9 +321,16 @@ function ShopContent() {
         {/* Product Grid */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8 border-b border-border pb-4">
-            <p className="text-sm text-muted-foreground tracking-wide font-sans">
-              Showing <span className="text-white font-medium">{sortedProducts.length}</span> piece{sortedProducts.length !== 1 ? "s" : ""}
-            </p>
+            <div className="flex flex-col gap-1">
+              <p className="text-sm text-muted-foreground tracking-wide font-sans">
+                Showing <span className="text-white font-medium">{sortedProducts.length}</span> piece{sortedProducts.length !== 1 ? "s" : ""}
+              </p>
+              {searchQuery && (
+                <p className="text-xs text-muted-foreground font-sans">
+                  Search results for: <span className="text-gold font-serif italic font-bold">&quot;{searchQuery}&quot;</span>
+                </p>
+              )}
+            </div>
             <div className="flex items-center gap-3">
               <label htmlFor="sort" className="text-xs uppercase tracking-widest text-muted-foreground">Sort</label>
               <select
