@@ -1,5 +1,5 @@
 'use client';
-/* eslint-disable react-hooks/set-state-in-effect */
+export const dynamic = "force-dynamic";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -8,7 +8,6 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import ProductCard from "@/components/ProductCard";
 import { ApiProduct, fetchProductsApi } from "@/services/products";
-import { collections } from "@/lib/collections";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -83,6 +82,7 @@ function ShopContent() {
   useEffect(() => {
     let cancelled = false;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsLoadingProducts(true);
     setProductError(null);
 

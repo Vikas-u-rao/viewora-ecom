@@ -1,5 +1,7 @@
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
-import { getCollection, collections } from "@/lib/collections";
+import { getCollection } from "@/lib/collections";
 import Link from "next/link";
 import Header from "@/components/header";
 import CollectionProductGrid from "@/components/CollectionProductGrid";

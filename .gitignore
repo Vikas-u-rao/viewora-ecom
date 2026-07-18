@@ -1,11 +1,31 @@
 node_modules/
+
+# Environment variable files — NEVER commit real secrets
 .env
 .env.local
 .env.development
 .env.production
 .env.test
+
+# Server-specific env files (real secrets live here)
+server/.env
+server/.env.local
+server/.env.development
+server/.env.production
+server/.env.test
+
+# Client env files
+client/.env
+client/.env.local
+client/.env.development
+client/.env.production
+client/.env.test
+
 dist/
 .next/
 .DS_Store
 *.log
 prisma/dev.db
+
+# Scraped data — development-only, don't ship to production
+server/prisma/scraped_products.json

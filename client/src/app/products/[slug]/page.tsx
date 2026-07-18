@@ -1,5 +1,5 @@
 "use client";
-/* eslint-disable react-hooks/set-state-in-effect */
+export const dynamic = "force-dynamic";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -12,18 +12,8 @@ import { useWishlist } from "@/context/WishlistContext";
 import { ApiProduct, ProductVariant, variantSnapshot } from "@/services/products";
 import ProductImage from "@/components/ProductImage";
 
-import p1 from "@/assets/p1.jpg";
-import p2 from "@/assets/p2.jpg";
-import p3 from "@/assets/p3.png";
-import p4 from "@/assets/p4.png";
-
-function formatPrice(value: string | number) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(Number(value));
-}
+import { formatPrice } from "@/lib/format";
+import { getFallbackImage } from "@/lib/productImage";
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -40,6 +30,7 @@ export default function ProductDetailPage() {
   useEffect(() => {
     let cancelled = false;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetch(`${API_BASE}/products/${slug}`, { cache: "no-store" })
       .then(async (res) => {
@@ -69,9 +60,7 @@ export default function ProductDetailPage() {
     [product, selectedVariantId],
   );
 
-  const fallbackImgs = [p1, p2, p3, p4];
-  const slugHash = Array.from(product?.slug || "").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  const fallback = fallbackImgs[slugHash % fallbackImgs.length];
+  const fallback = getFallbackImage(product?.slug || "");
 
   const variantImage = selectedVariant?.imageUrls?.[0];
   const firstUrl = variantImage || (Array.isArray(product?.defaultImageUrls) ? product.defaultImageUrls[0] : null);

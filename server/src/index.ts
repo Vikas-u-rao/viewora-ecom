@@ -32,8 +32,21 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
+// Support comma-separated origins: CLIENT_URL=https://viewora.in,https://staging.viewora.in
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:3000')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow non-browser requests (e.g., server-to-server, curl) and listed origins
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS: origin '${origin}' is not allowed`));
+    }
+  },
   credentials: true,
 }));
 

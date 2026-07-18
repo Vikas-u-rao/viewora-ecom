@@ -1,3 +1,7 @@
+"use client";
+export const dynamic = "force-dynamic";
+
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/header";
@@ -5,12 +9,14 @@ import Footer from "@/components/footer";
 import NewsletterForm from "@/components/NewsletterForm";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 
-// Import assets
-import heroImg from "@/assets/hero.jpg";
 import logoImg from "@/assets/logo.png";
 import colSun from "@/assets/col-sunglasses.jpg";
 import colOpt from "@/assets/col-optical.jpg";
 import colLtd from "@/assets/col-limited.jpg";
+import campaign1 from "@/assets/IMG_0976.jpg";
+import campaign2 from "@/assets/IMG_0979.jpg";
+import campaign3 from "@/assets/IMG_0985.jpg";
+import campaign4 from "@/assets/IMG_1223.jpg";
 
 // Import style images
 import wayfarerImg from "@/assets/styles/wayfarer.png";
@@ -24,13 +30,7 @@ import semirimlessImg from "@/assets/styles/semirimless.png";
 import oversizedImg from "@/assets/styles/oversized.png";
 import geometricImg from "@/assets/styles/geometric.png";
 
-const nav = [
-  { label: "HOME", href: "/#home" },
-  { label: "ABOUT", href: "/#about" },
-  { label: "COLLECTIONS", href: "/#collections" },
-  { label: "SHOP", href: "/#shop" },
-  { label: "SOCIALS", href: "/socials" },
-];
+
 
 const collections = [
   {
@@ -67,29 +67,70 @@ const frameStyles = [
 ];
 
 export default function Home() {
+  const slides = [campaign1, campaign2, campaign3, campaign4];
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    if (isPaused) return;
+    const timer = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [slides.length, isPaused]);
+
   return (
     <div className="min-h-screen bg-background text-foreground animate-fade-in duration-300">
       <Header />
 
       {/* Hero Section - Full Background Layout */}
-      <section id="home" className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden bg-black">
-        {/* Full Screen Background Image */}
+      <section
+        id="main-content"
+        className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden bg-black"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
+        {/* Full Screen Background Image Slideshow — CSS crossfade, all slides stay in DOM */}
         <div className="absolute inset-0 w-full h-full">
-          <Image
-            src={heroImg}
-            alt="Hero Banner Eyewear"
-            className="object-cover w-full h-full opacity-40 scale-x-[-1]"
-            priority
-            fill
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-black/50" />
+          {slides.map((slide, idx) => (
+            <div
+              key={idx}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === activeSlide ? "opacity-50" : "opacity-0"}`}
+            >
+              <Image
+                src={slide}
+                alt={`Viewora Campaign ${idx + 1}`}
+                className="object-cover w-full h-full"
+                priority={idx === 0}
+                loading={idx === 0 ? 'eager' : 'lazy'}
+                fill
+                sizes="100vw"
+                quality={75}
+              />
+            </div>
+          ))}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-black/60 z-[2]" />
+        </div>
+
+        {/* Slide dot indicators */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveSlide(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                i === activeSlide ? "bg-gold w-6" : "bg-white/30 w-1.5"
+              }`}
+            />
+          ))}
         </div>
 
         {/* Centered Hero Text */}
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
           <p className="text-gold tracking-[0.4em] text-xs mb-6 font-semibold uppercase">FASHION EYEWEAR</p>
           <h1 className="font-serif text-5xl lg:text-6xl font-normal leading-[1.15] mb-8 text-white">
-            See the World in <span className="text-gold font-bold italic drop-shadow-[0_0_20px_rgba(197,160,89,0.65)] animate-pulse">GOLD</span>
+            See the World in <span className="text-gold font-bold italic drop-shadow-[0_0_20px_rgba(197,160,89,0.65)] motion-safe:animate-pulse">GOLD</span>
           </h1>
           <p className="text-base text-white/95 mb-12 leading-relaxed font-light max-w-2xl mx-auto font-sans">
             Luxury eyewear crafted with premium materials, designed for everyday comfort and timeless elegance.
@@ -110,7 +151,7 @@ export default function Home() {
             <h2 className="text-4xl font-normal">Crafted for Every Look</h2>
             <div className="h-[1px] w-24 bg-gold/40 mx-auto mt-4"></div>
           </div>
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {collections.map((c) => (
               <Link key={c.title} href={`/collections/${c.slug}`} className="group relative overflow-hidden aspect-[4/5] block border border-border/40">
                 <Image src={c.img} alt={c.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" width={800} height={900} />
@@ -125,7 +166,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
       {/* Frame Styles Section */}
       <section id="shop" className="py-20 px-6 border-t border-border bg-background">
         <div className="max-w-[1400px] mx-auto">
@@ -137,7 +177,7 @@ export default function Home() {
           <Carousel opts={{ align: "start", loop: true }} className="px-4">
             <CarouselContent>
               {frameStyles.map((s) => (
-                <CarouselItem key={s.name} className="basis-1/5">
+                <CarouselItem key={s.name} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
                   <Link
                     href={`/shop?shape=${s.slug}`}
                     className="group relative block aspect-[3/4] overflow-hidden border border-border/50 hover:border-gold transition-colors duration-500 bg-black"
@@ -185,7 +225,7 @@ export default function Home() {
       <section id="contact" className="py-20 px-6 border-t border-border bg-background">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl mb-4 font-serif">
-            Join the <span className="text-gold font-bold drop-shadow-[0_0_15px_rgba(197,160,89,0.85)] animate-pulse uppercase">Viewora</span> Community
+            Join the <span className="text-gold font-bold drop-shadow-[0_0_15px_rgba(197,160,89,0.85)] motion-safe:animate-pulse uppercase">Viewora</span> Community
           </h2>
           <p className="text-muted-foreground mb-8 text-lg font-sans">Subscribe for exclusive offers, early access, and style updates.</p>
           <NewsletterForm />

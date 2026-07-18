@@ -39,10 +39,13 @@ export default function RootLayout({
       lang="en"
       className={`${playfairDisplay.variable} ${inter.variable} h-full antialiased`}
     >
-      <head>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=shopping_bag" />
-      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-gold focus:text-background focus:text-xs focus:font-bold focus:tracking-widest focus:uppercase focus:rounded"
+        >
+          Skip to main content
+        </a>
         <Providers>
           {children}
           <InquiryModal />
@@ -51,3 +54,4 @@ export default function RootLayout({
     </html>
   );
 }
+

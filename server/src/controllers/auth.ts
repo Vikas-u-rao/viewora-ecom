@@ -8,10 +8,18 @@ import { AppError } from '../lib/AppError';
 import { AuthRequest } from '../middleware/auth';
 import { sendOtpEmail } from '../services/email';
 
-// Helper to hash token for database storage
+// Helper to hash refresh token for database storage
 function hashToken(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex');
 }
+
+// Helper to hash OTP for secure storage (never store OTPs in plain text)
+function hashOtp(otp: string): string {
+  return crypto.createHash('sha256').update(otp).digest('hex');
+}
+
+// Maximum failed OTP attempts before the code is invalidated
+const MAX_OTP_ATTEMPTS = 5;
 
 // Helper to sign access token
 function signAccessToken(userId: string, role: string): string {
@@ -40,6 +48,7 @@ function signRefreshToken(userId: string): { token: string; expiresAt: Date } {
 }
 
 // Helper to set refresh cookie
+// Using 'lax' (not 'strict') so the cookie is sent after PhonePe payment redirects
 function setRefreshCookie(res: Response, token: string, expiresAt: Date) {
   res.cookie('refreshToken', token, {
     httpOnly: true,
@@ -114,14 +123,16 @@ export async function register(req: Request, res: Response, next: NextFunction) 
 
     const passwordHash = await bcrypt.hash(password, 12);
     const otp = generateOtp();
+    const otpHash = hashOtp(otp);
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes expiry
 
-    // Save pending verification info
+    // Save pending verification info (store hash, not plain OTP)
     await prisma.otpVerification.upsert({
       where: { email: normalizedEmail },
       update: {
         purpose: 'signup',
-        otp,
+        otpHash,
+        attempts: 0,
         expiresAt,
         name: normalizedName,
         phone: normalizedPhone,
@@ -131,7 +142,8 @@ export async function register(req: Request, res: Response, next: NextFunction) 
       create: {
         email: normalizedEmail,
         purpose: 'signup',
-        otp,
+        otpHash,
+        attempts: 0,
         expiresAt,
         name: normalizedName,
         phone: normalizedPhone,
@@ -242,12 +254,26 @@ export async function verifyOtp(req: Request, res: Response, next: NextFunction)
 
     // Check expiry
     if (verification.expiresAt < new Date()) {
-      throw new AppError('VALIDATION_ERROR', 400, 'OTP has expired');
+      await prisma.otpVerification.delete({ where: { email: normalizedEmail } });
+      throw new AppError('VALIDATION_ERROR', 400, 'OTP has expired. Please request a new one.');
     }
 
-    // Check OTP
-    if (verification.otp !== String(otp).trim()) {
-      throw new AppError('UNAUTHORIZED', 400, 'Invalid OTP');
+    // Check attempt limit before comparing OTP
+    if (verification.attempts >= MAX_OTP_ATTEMPTS) {
+      await prisma.otpVerification.delete({ where: { email: normalizedEmail } });
+      throw new AppError('TOO_MANY_ATTEMPTS', 429, `Too many failed attempts. Please request a new OTP.`);
+    }
+
+    // Compare hashed OTP
+    const submittedOtpHash = hashOtp(String(otp).trim());
+    if (verification.otpHash !== submittedOtpHash) {
+      // Increment attempt counter
+      await prisma.otpVerification.update({
+        where: { email: normalizedEmail },
+        data: { attempts: { increment: 1 } },
+      });
+      const remaining = MAX_OTP_ATTEMPTS - (verification.attempts + 1);
+      throw new AppError('UNAUTHORIZED', 400, `Invalid OTP. ${remaining > 0 ? `${remaining} attempt(s) remaining.` : 'No attempts remaining. Please request a new OTP.'}`);
     }
 
     if (purpose === 'signup') {
@@ -350,7 +376,8 @@ export async function resendOtp(req: Request, res: Response, next: NextFunction)
       await prisma.otpVerification.update({
         where: { email: normalizedEmail },
         data: {
-          otp,
+          otpHash: hashOtp(otp),
+          attempts: 0, // reset attempts on resend
           expiresAt,
         },
       });
@@ -366,7 +393,8 @@ export async function resendOtp(req: Request, res: Response, next: NextFunction)
         where: { email: normalizedEmail },
         update: {
           purpose: 'forgot_password',
-          otp,
+          otpHash: hashOtp(otp),
+          attempts: 0,
           expiresAt,
           name: null,
           phone: null,
@@ -375,7 +403,8 @@ export async function resendOtp(req: Request, res: Response, next: NextFunction)
         create: {
           email: normalizedEmail,
           purpose: 'forgot_password',
-          otp,
+          otpHash: hashOtp(otp),
+          attempts: 0,
           expiresAt,
         },
       });
@@ -418,7 +447,8 @@ export async function forgotPassword(req: Request, res: Response, next: NextFunc
       where: { email: normalizedEmail },
       update: {
         purpose: 'forgot_password',
-        otp,
+        otpHash: hashOtp(otp),
+        attempts: 0,
         expiresAt,
         name: null,
         phone: null,
@@ -427,7 +457,8 @@ export async function forgotPassword(req: Request, res: Response, next: NextFunc
       create: {
         email: normalizedEmail,
         purpose: 'forgot_password',
-        otp,
+        otpHash: hashOtp(otp),
+        attempts: 0,
         expiresAt,
       },
     });
@@ -531,7 +562,7 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
       res.clearCookie('refreshToken', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'lax', // consistent with setRefreshCookie
       });
       throw new AppError('UNAUTHORIZED', 401, 'Token reuse detected. Session invalidated.');
     }

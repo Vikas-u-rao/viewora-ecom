@@ -1,36 +1,20 @@
-type LovableErrorOptions = {
-  mechanism?: "manual" | "onerror" | "unhandledrejection" | "react_error_boundary";
-  handled?: boolean;
-  severity?: "error" | "warning" | "info";
-};
+/**
+ * Error reporting stub.
+ *
+ * The original Lovable-specific error reporter (window.__lovableEvents) has been
+ * removed as it has no effect in production.
+ *
+ * TODO: Replace with a real error monitoring service.
+ * Recommended: @sentry/nextjs (https://docs.sentry.io/platforms/javascript/guides/nextjs/)
+ *
+ *   npm install @sentry/nextjs
+ *   npx @sentry/wizard@latest -i nextjs
+ */
 
-type LovableEvents = {
-  captureException?: (
-    error: unknown,
-    context?: Record<string, unknown>,
-    options?: LovableErrorOptions,
-  ) => void;
-};
-
-declare global {
-  interface Window {
-    __lovableEvents?: LovableEvents;
+export function reportLovableError(_error: unknown, _context: Record<string, unknown> = {}) {
+  // No-op in production until a real monitoring service is integrated.
+  // In development, errors are shown in the browser console and the error.tsx boundary.
+  if (process.env.NODE_ENV === 'development') {
+    console.error('[reportError]', _error, _context);
   }
-}
-
-export function reportLovableError(error: unknown, context: Record<string, unknown> = {}) {
-  if (typeof window === "undefined") return;
-  window.__lovableEvents?.captureException?.(
-    error,
-    {
-      source: "react_error_boundary",
-      route: window.location.pathname,
-      ...context,
-    },
-    {
-      mechanism: "react_error_boundary",
-      handled: false,
-      severity: "error",
-    },
-  );
 }

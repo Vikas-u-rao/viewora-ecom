@@ -1,9 +1,10 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, Smartphone, Truck, Wallet } from "lucide-react";
+import { Loader2, Plus, Smartphone, Truck } from "lucide-react";
 import { toast } from "sonner";
 import Header from "@/components/header";
 import { useAuth } from "@/context/AuthContext";

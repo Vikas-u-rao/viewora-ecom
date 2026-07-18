@@ -72,3 +72,22 @@ export const addressSchema = z.object({
   isDefault: z.boolean().optional(),
 });
 
+// ── Product Variant Schemas ──────────────────────────────────────────────────
+
+export const updateVariantSchema = z.object({
+  sku: z.string().trim().min(1).optional(),
+  color: z.string().trim().optional().nullable(),
+  size: z.string().trim().optional().nullable(),
+  lensType: z.string().trim().optional().nullable(),
+  material: z.string().trim().optional().nullable(),
+  price: z.preprocess(
+    (val) => (val === undefined ? undefined : Number(val)),
+    z.number().positive('Price must be a positive number').optional()
+  ),
+  stock: z.preprocess(
+    (val) => (val === undefined ? undefined : Number(val)),
+    z.number().int('Stock must be an integer').min(0, 'Stock cannot be negative').optional()
+  ),
+  imageUrls: z.array(z.string().url('Each image must be a valid URL')).optional(),
+  isActive: z.boolean().optional(),
+});
