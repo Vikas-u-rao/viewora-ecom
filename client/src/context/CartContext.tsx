@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/set-state-in-effect */
 
 import {
   createContext,
@@ -62,7 +61,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       const serverItems = await fetchCart(accessToken);
       setItems(serverItems);
-    } catch (err: any) {
+    } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       console.error('Failed to fetch cart:', err.message);
     } finally {
       setIsLoading(false);
@@ -86,6 +85,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
             }
           } catch (err) {
             console.error('Failed to merge guest cart:', err);
+            // Restore guest cart locally so the user doesn't lose their items
+            toast.warning('We could not merge your cart. Your saved items have been restored. Please try adding them again after refreshing.', {
+              duration: 6000,
+            });
+            // Keep the guest cart items in localStorage for next attempt
           }
         }
         await loadAuthCart();
@@ -165,7 +169,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         await addToCartApi(accessToken, variantId, quantity);
         toast.success('Item added to cart.');
         await loadAuthCart();
-      } catch (err: any) {
+      } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         setItems(prevItems);
         toast.error(err.message || 'Failed to add item');
       }
@@ -190,7 +194,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       try {
         await updateCartItemApi(accessToken, itemId, quantity);
-      } catch (err: any) {
+      } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         setItems(prevItems);
         toast.error(err.message || 'Failed to update quantity');
       }
@@ -214,7 +218,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       try {
         await removeCartItemApi(accessToken, itemId);
         toast.success('Item removed');
-      } catch (err: any) {
+      } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         setItems(prevItems);
         toast.error(err.message || 'Failed to remove item');
       }

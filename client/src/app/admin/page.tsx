@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -73,6 +74,19 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
 
+  // Pagination states
+  const [productsPage, setProductsPage] = useState(1);
+  const [productsTotalPages, setProductsTotalPages] = useState(1);
+  const [ordersPage, setOrdersPage] = useState(1);
+  const [ordersTotalPages, setOrdersTotalPages] = useState(1);
+
+  // Search & Filter states
+  const [inventorySearch, setInventorySearch] = useState("");
+  const [inventoryLowStockOnly, setInventoryLowStockOnly] = useState(false);
+  const [ordersSearch, setOrdersSearch] = useState("");
+  const [ordersFulfillmentFilter, setOrdersFulfillmentFilter] = useState("all");
+  const [couponsSearch, setCouponsSearch] = useState("");
+
   // Loading and Error states
   const [fetchLoading, setFetchLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -108,19 +122,21 @@ export default function AdminDashboard() {
       setErrorMsg(null);
       try {
         if (activeTab === "inventory") {
-          const res = await fetch(`${apiUrl}/admin/products`, {
+          const res = await fetch(`${apiUrl}/admin/products?page=${productsPage}&limit=12`, {
             headers: { Authorization: `Bearer ${accessToken}` },
           });
           if (!res.ok) throw new Error("Failed to load products");
           const data = await res.json();
           setProducts(data.products || []);
+          setProductsTotalPages(data.pagination?.totalPages || 1);
         } else if (activeTab === "orders") {
-          const res = await fetch(`${apiUrl}/admin/orders`, {
+          const res = await fetch(`${apiUrl}/admin/orders?page=${ordersPage}&limit=12`, {
             headers: { Authorization: `Bearer ${accessToken}` },
           });
           if (!res.ok) throw new Error("Failed to load orders");
           const data = await res.json();
           setOrders(data.orders || []);
+          setOrdersTotalPages(data.pagination?.totalPages || 1);
         } else if (activeTab === "coupons") {
           const res = await fetch(`${apiUrl}/admin/coupons`, {
             headers: { Authorization: `Bearer ${accessToken}` },
@@ -138,7 +154,7 @@ export default function AdminDashboard() {
     };
 
     fetchData();
-  }, [activeTab, accessToken, user, apiUrl]);
+  }, [activeTab, accessToken, user, apiUrl, productsPage, ordersPage]);
 
   // Handle stock level updates
   const handleUpdateStock = async (variantId: string) => {
@@ -341,6 +357,46 @@ export default function AdminDashboard() {
     }
   };
 
+  // Filtered Inventory Products
+  const filteredProducts = products.filter((p) => {
+    const q = inventorySearch.toLowerCase().trim();
+    const matchesSearch =
+      !q ||
+      p.name.toLowerCase().includes(q) ||
+      (p.brand && p.brand.toLowerCase().includes(q)) ||
+      p.variants.some((v) => v.sku.toLowerCase().includes(q));
+
+    const matchesLowStock = !inventoryLowStockOnly || p.variants.some((v) => v.stock <= 2);
+
+    return matchesSearch && matchesLowStock;
+  });
+
+  // Filtered Orders
+  const filteredOrders = orders.filter((o) => {
+    const q = ordersSearch.toLowerCase().trim();
+    const matchesSearch =
+      !q ||
+      o.id.toLowerCase().includes(q) ||
+      (o.shippingName && o.shippingName.toLowerCase().includes(q)) ||
+      (o.guestEmail && o.guestEmail.toLowerCase().includes(q)) ||
+      (o.user && o.user.email.toLowerCase().includes(q));
+
+    const matchesFulfillment =
+      ordersFulfillmentFilter === "all" || o.fulfillmentStatus === ordersFulfillmentFilter;
+
+    return matchesSearch && matchesFulfillment;
+  });
+
+  // Filtered Coupons
+  const filteredCoupons = coupons.filter((c) => {
+    const q = couponsSearch.toLowerCase().trim();
+    return (
+      !q ||
+      c.code.toLowerCase().includes(q) ||
+      (c.user?.email && c.user.email.toLowerCase().includes(q))
+    );
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
@@ -383,9 +439,9 @@ export default function AdminDashboard() {
         <div className="max-w-[1400px] mx-auto px-6">
           {/* Header titles */}
           <div className="text-center mb-10">
-            <p className="text-gold tracking-[0.3em] text-xs mb-3 font-medium">ADMINISTRATOR PORTAL</p>
+            <p className="text-accent-pink/80 tracking-[0.3em] text-xs mb-3 font-medium">ADMINISTRATOR PORTAL</p>
             <h1 className="font-serif text-4xl text-white">Store Backoffice</h1>
-            <div className="h-[1px] w-20 bg-gold/40 mx-auto mt-4"></div>
+            <div className="h-[1px] w-20 bg-accent-pink/30 mx-auto mt-4"></div>
           </div>
 
           {/* Toast Feedbacks */}
@@ -446,13 +502,39 @@ export default function AdminDashboard() {
               {/* TAB 1: INVENTORY MANAGEMENT */}
               {activeTab === "inventory" && (
                 <div className="space-y-6 font-sans">
-                  {products.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-10">No products configured in catalog.</p>
+                  {/* Search and Filters */}
+                  <div className="flex flex-wrap items-center gap-4 bg-card/10 p-4 border border-border rounded-md mb-6">
+                    <input
+                      type="text"
+                      placeholder="Search by product name, brand, or SKU..."
+                      value={inventorySearch}
+                      onChange={(e) => {
+                        setInventorySearch(e.target.value);
+                        setProductsPage(1); // Reset page on search
+                      }}
+                      className="flex-1 min-w-[250px] bg-background border border-border px-3 py-2 text-sm text-white focus:border-accent-pink/80 outline-none rounded-sm"
+                    />
+                    <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={inventoryLowStockOnly}
+                        onChange={(e) => {
+                          setInventoryLowStockOnly(e.target.checked);
+                          setProductsPage(1); // Reset page on filter
+                        }}
+                        className="rounded border-border text-accent-pink focus:ring-accent-pink bg-background h-4 w-4 accent-accent-pink"
+                      />
+                      Show Low Stock Only
+                    </label>
+                  </div>
+
+                  {filteredProducts.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-10">No products configured in catalog matching criteria.</p>
                   ) : (
-                    products.map((p) => (
-                      <div key={p.id} className="border border-border p-5 bg-card/25 rounded-md hover:border-gold/30 transition-colors">
+                    filteredProducts.map((p) => (
+                      <div key={p.id} className="border border-border p-5 bg-card/25 rounded-md hover:border-accent-pink/30 transition-colors">
                         <div className="mb-4">
-                          {p.brand && <span className="text-[10px] tracking-widest text-gold font-bold uppercase">{p.brand}</span>}
+                          {p.brand && <span className="text-[10px] tracking-widest text-accent-pink/80 font-bold uppercase">{p.brand}</span>}
                           <h3 className="font-serif text-lg text-white font-medium">{p.name}</h3>
                         </div>
 
@@ -496,12 +578,12 @@ export default function AdminDashboard() {
                                             [v.id]: e.target.value === "" ? undefined : Number(e.target.value),
                                           })
                                         }
-                                        className="w-20 bg-background border border-border px-2 py-1 text-xs text-white focus:border-gold outline-none"
+                                        className="w-20 bg-background border border-border px-2 py-1 text-xs text-white focus:border-accent-pink/80 outline-none"
                                       />
                                       <button
                                         onClick={() => handleUpdateStock(v.id)}
                                         disabled={actionLoading === v.id || editingStock[v.id] === undefined}
-                                        className="bg-gold text-background hover:bg-gold-soft px-3 py-1 text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                        className="border border-accent-pink/40 text-accent-pink hover:bg-accent-pink/10 px-3 py-1 text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                                       >
                                         {actionLoading === v.id ? (
                                           <Loader2 className="size-3 animate-spin" />
@@ -519,16 +601,72 @@ export default function AdminDashboard() {
                       </div>
                     ))
                   )}
+
+                  {/* Pagination Controls */}
+                  {productsTotalPages > 1 && (
+                    <div className="flex items-center justify-center gap-4 pt-6 border-t border-border/40">
+                      <button
+                        onClick={() => setProductsPage((prev) => Math.max(1, prev - 1))}
+                        disabled={productsPage === 1}
+                        className="border border-border text-white hover:border-accent-pink hover:text-accent-pink px-4 py-2 text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                      >
+                        PREVIOUS
+                      </button>
+                      <span className="text-sm text-muted-foreground">
+                        Page <strong className="text-white">{productsPage}</strong> of {productsTotalPages}
+                      </span>
+                      <button
+                        onClick={() => setProductsPage((prev) => Math.min(productsTotalPages, prev + 1))}
+                        disabled={productsPage === productsTotalPages}
+                        className="border border-border text-white hover:border-accent-pink hover:text-accent-pink px-4 py-2 text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                      >
+                        NEXT
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* TAB 2: CUSTOMER ORDERS */}
               {activeTab === "orders" && (
                 <div className="space-y-6 font-sans">
-                  {orders.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-10">No customer orders found.</p>
+                  {/* Search and Filters */}
+                  <div className="flex flex-wrap items-center gap-4 bg-card/10 p-4 border border-border rounded-md mb-6">
+                    <input
+                      type="text"
+                      placeholder="Search by Order ID, Name, or Email..."
+                      value={ordersSearch}
+                      onChange={(e) => {
+                        setOrdersSearch(e.target.value);
+                        setOrdersPage(1); // Reset page on search
+                      }}
+                      className="flex-1 min-w-[250px] bg-background border border-border px-3 py-2 text-sm text-white focus:border-accent-pink/80 outline-none rounded-sm"
+                    />
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="fulfillment-filter" className="text-sm text-muted-foreground whitespace-nowrap">Status:</label>
+                      <select
+                        id="fulfillment-filter"
+                        value={ordersFulfillmentFilter}
+                        onChange={(e) => {
+                          setOrdersFulfillmentFilter(e.target.value);
+                          setOrdersPage(1); // Reset page on status change
+                        }}
+                        className="bg-background border border-border text-xs text-white px-2 py-2 outline-none focus:border-accent-pink/80 cursor-pointer rounded-sm"
+                      >
+                        <option value="all">All Orders</option>
+                        <option value="unfulfilled">Unfulfilled</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {filteredOrders.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-10">No customer orders match the criteria.</p>
                   ) : (
-                    orders.map((o) => (
+                    filteredOrders.map((o) => (
                       <div key={o.id} className="border border-border p-5 bg-card/25 rounded-md flex flex-col gap-4">
                         {/* Order Meta Header */}
                         <div className="flex flex-wrap items-center justify-between border-b border-border/50 pb-3 gap-3">
@@ -573,18 +711,18 @@ export default function AdminDashboard() {
                         {/* Customer & Order Items list */}
                         <div className="grid md:grid-cols-[1fr_1.5fr] gap-6 text-sm">
                           <div>
-                            <h4 className="text-gold text-xs uppercase tracking-wider mb-2 font-semibold">Customer Details</h4>
+                            <h4 className="text-accent-pink text-xs uppercase tracking-wider mb-2 font-semibold">Customer Details</h4>
                             <p className="text-white font-medium">{o.shippingName || "Guest User"}</p>
                             <p className="text-muted-foreground text-xs">{o.guestEmail || o.user?.email || "No email"}</p>
                             <p className="text-muted-foreground text-xs">{o.guestPhone || o.user?.phone || "-"}</p>
                           </div>
                           <div>
-                            <h4 className="text-gold text-xs uppercase tracking-wider mb-2 font-semibold">Ordered Items</h4>
+                            <h4 className="text-accent-pink text-xs uppercase tracking-wider mb-2 font-semibold">Ordered Items</h4>
                             <ul className="divide-y divide-border/30 space-y-1.5">
                               {o.items.map((i) => (
                                 <li key={i.id} className="pt-1.5 flex justify-between gap-4 text-xs">
                                   <span className="text-white/80">
-                                    {i.variant?.product?.name || "Eyewear"} ({i.skuSnapshot}) <strong className="text-gold font-normal">x{i.quantity}</strong>
+                                    {i.variant?.product?.name || "Eyewear"} ({i.skuSnapshot}) <strong className="text-accent-pink font-normal">x{i.quantity}</strong>
                                   </span>
                                   <span className="text-white font-medium">₹{Number(i.priceAtPurchase).toLocaleString("en-IN")}</span>
                                 </li>
@@ -592,7 +730,7 @@ export default function AdminDashboard() {
                             </ul>
                             <div className="mt-3 pt-2 border-t border-border/40 flex justify-between text-white font-semibold">
                               <span>Total Amount:</span>
-                              <span className="text-gold">₹{Number(o.finalPayableAmount).toLocaleString("en-IN")}</span>
+                              <span className="text-accent-pink">₹{Number(o.finalPayableAmount).toLocaleString("en-IN")}</span>
                             </div>
                           </div>
                         </div>
@@ -606,7 +744,7 @@ export default function AdminDashboard() {
                               value={o.fulfillmentStatus}
                               disabled={actionLoading === o.id}
                               onChange={(e) => handleUpdateFulfillment(o.id, e.target.value)}
-                              className="bg-background border border-border text-xs text-white px-2 py-1 outline-none focus:border-gold cursor-pointer"
+                              className="bg-background border border-border text-xs text-white px-2 py-1 outline-none focus:border-accent-pink/80 cursor-pointer"
                             >
                               <option value="unfulfilled">Unfulfilled</option>
                               <option value="processing">Processing</option>
@@ -633,6 +771,29 @@ export default function AdminDashboard() {
                       </div>
                     ))
                   )}
+
+                  {/* Pagination Controls */}
+                  {ordersTotalPages > 1 && (
+                    <div className="flex items-center justify-center gap-4 pt-6 border-t border-border/40">
+                      <button
+                        onClick={() => setOrdersPage((prev) => Math.max(1, prev - 1))}
+                        disabled={ordersPage === 1}
+                        className="border border-border text-white hover:border-accent-pink hover:text-accent-pink px-4 py-2 text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                      >
+                        PREVIOUS
+                      </button>
+                      <span className="text-sm text-muted-foreground">
+                        Page <strong className="text-white">{ordersPage}</strong> of {ordersTotalPages}
+                      </span>
+                      <button
+                        onClick={() => setOrdersPage((prev) => Math.min(ordersTotalPages, prev + 1))}
+                        disabled={ordersPage === ordersTotalPages}
+                        className="border border-border text-white hover:border-accent-pink hover:text-accent-pink px-4 py-2 text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                      >
+                        NEXT
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -642,7 +803,7 @@ export default function AdminDashboard() {
                   {/* Create coupon form card */}
                   <div className="border border-border p-5 bg-card/25 rounded-md h-fit">
                     <h3 className="font-serif text-lg text-white mb-4 flex items-center gap-2">
-                      <Plus className="size-4 text-gold" /> Create New Coupon
+                      <Plus className="size-4 text-accent-pink" /> Create New Coupon
                     </h3>
                     <form onSubmit={handleCreateCoupon} className="space-y-4 text-sm">
                       <div className="flex flex-col gap-1.5">
@@ -654,7 +815,7 @@ export default function AdminDashboard() {
                           value={newCouponCode}
                           onChange={(e) => setNewCouponCode(e.target.value)}
                           placeholder="e.g. HELLO20"
-                          className="bg-background border border-border px-3 py-2 text-white focus:border-gold outline-none"
+                          className="bg-background border border-border px-3 py-2 text-white focus:border-accent-pink/80 outline-none"
                         />
                       </div>
 
@@ -668,7 +829,7 @@ export default function AdminDashboard() {
                           value={newCouponValue}
                           onChange={(e) => setNewCouponValue(e.target.value)}
                           placeholder="e.g. 500"
-                          className="bg-background border border-border px-3 py-2 text-white focus:border-gold outline-none"
+                          className="bg-background border border-border px-3 py-2 text-white focus:border-accent-pink/80 outline-none"
                         />
                       </div>
 
@@ -680,7 +841,7 @@ export default function AdminDashboard() {
                           required
                           value={newCouponExpiry}
                           onChange={(e) => setNewCouponExpiry(e.target.value)}
-                          className="bg-background border border-border px-3 py-2 text-white focus:border-gold outline-none cursor-pointer"
+                          className="bg-background border border-border px-3 py-2 text-white focus:border-accent-pink/80 outline-none cursor-pointer"
                         />
                       </div>
 
@@ -692,14 +853,14 @@ export default function AdminDashboard() {
                           value={newCouponUserEmail}
                           onChange={(e) => setNewCouponUserEmail(e.target.value)}
                           placeholder="e.g. customer@email.com"
-                          className="bg-background border border-border px-3 py-2 text-white focus:border-gold outline-none"
+                          className="bg-background border border-border px-3 py-2 text-white focus:border-accent-pink/80 outline-none"
                         />
                       </div>
 
                       <button
                         type="submit"
                         disabled={actionLoading === "create-coupon"}
-                        className="w-full bg-accent-pink hover:opacity-90 text-[#0d0b09] py-2.5 text-xs font-bold tracking-[0.15em] transition-opacity flex items-center justify-center"
+                        className="w-full bg-accent-pink hover:opacity-90 text-[#0d0b09] py-2.5 text-xs font-bold tracking-[0.15em] transition-opacity flex items-center justify-center font-semibold"
                       >
                         {actionLoading === "create-coupon" ? (
                           <Loader2 className="size-4 animate-spin" />
@@ -712,9 +873,18 @@ export default function AdminDashboard() {
 
                   {/* List coupons view */}
                   <div className="space-y-4">
-                    <h3 className="font-serif text-lg text-white mb-2">Existing Coupons</h3>
-                    {coupons.length === 0 ? (
-                      <p className="text-muted-foreground text-center py-10">No coupons active.</p>
+                    <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
+                      <h3 className="font-serif text-lg text-white">Existing Coupons</h3>
+                      <input
+                        type="text"
+                        placeholder="Search coupons..."
+                        value={couponsSearch}
+                        onChange={(e) => setCouponsSearch(e.target.value)}
+                        className="bg-background border border-border px-3 py-1.5 text-xs text-white focus:border-accent-pink/80 outline-none rounded-sm w-48"
+                      />
+                    </div>
+                    {filteredCoupons.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-10">No coupons match the search query.</p>
                     ) : (
                       <div className="border border-border rounded-md overflow-hidden bg-card/10">
                         <table className="w-full text-left border-collapse text-sm">
@@ -729,9 +899,9 @@ export default function AdminDashboard() {
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-border/50 text-white/95">
-                            {coupons.map((c) => (
+                            {filteredCoupons.map((c) => (
                               <tr key={c.id} className="hover:bg-white/5 transition-colors">
-                                <td className="p-3 font-mono font-bold text-xs text-gold">{c.code}</td>
+                                <td className="p-3 font-mono font-bold text-xs text-accent-pink">{c.code}</td>
                                 <td className="p-3">₹{Number(c.value).toLocaleString("en-IN")}</td>
                                 <td className="p-3 text-xs text-muted-foreground">
                                   {c.user?.email || "Global (Any User)"}

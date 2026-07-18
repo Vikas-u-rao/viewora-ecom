@@ -19,11 +19,12 @@ function requiredEnv(name: string): string {
 
 export const phonepeEnv = process.env.PHONEPE_ENV || 'sandbox';
 
+// NOTE: No hardcoded fallback credentials. Use PHONEPE_ENV=sandbox with real sandbox keys from the PhonePe dashboard.
 const rawMerchantId = requiredEnv('PHONEPE_MERCHANT_ID');
-export const merchantId = rawMerchantId || 'PGOMT';
+export const merchantId = rawMerchantId; // empty string in dev-no-creds mode
 
 const rawSaltKey = requiredEnv('PHONEPE_SALT_KEY');
-export const saltKey = rawSaltKey || '099eb0cd-02cf-4e2a-8aca-3e6c6aff0399';
+export const saltKey = rawSaltKey; // empty string in dev-no-creds mode
 
 export const saltIndex = process.env.PHONEPE_SALT_INDEX || '1';
 

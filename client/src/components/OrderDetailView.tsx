@@ -25,7 +25,6 @@ function PaymentBadge({ status }: { status: string }) {
 }
 
 export default function OrderDetailView({ order }: { order: Order }) {
-  const isProcessed = order.fulfillmentStatus === 'shipped' || order.fulfillmentStatus === 'delivered';
   const isShipped = order.fulfillmentStatus === 'shipped' || order.fulfillmentStatus === 'delivered';
   const isDelivered = order.fulfillmentStatus === 'delivered';
 

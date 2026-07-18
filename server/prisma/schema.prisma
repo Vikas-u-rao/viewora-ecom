@@ -394,7 +394,8 @@ model OtpVerification {
   id           String   @id @default(uuid())
   email        String   @unique
   purpose      String   // "signup" or "forgot_password"
-  otp          String
+  otpHash      String   @map("otp_hash") // SHA-256 hash of the OTP — never store plain text
+  attempts     Int      @default(0) // incremented on each failed verification; locked at MAX_OTP_ATTEMPTS
   expiresAt    DateTime @map("expires_at")
   name         String?  // stored temporarily for signup
   phone        String?  // stored temporarily for signup

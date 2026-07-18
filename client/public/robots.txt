@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /checkout/
+Disallow: /account/
+Disallow: /cart/
+Disallow: /order-confirmation/
+Disallow: /payment/
+Disallow: /verify-otp/
+Disallow: /reset-password/
+
+Sitemap: https://viewora.in/sitemap.xml

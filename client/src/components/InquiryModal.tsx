@@ -6,7 +6,7 @@ import { useUI } from '@/context/UIContext';
 import { API_BASE } from '@/context/AuthContext';
 
 export default function InquiryModal() {
-  const { isInquiryOpen, openInquiry, closeInquiry } = useUI();
+  const { isInquiryOpen, closeInquiry } = useUI();
   const [isMounted, setIsMounted] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',

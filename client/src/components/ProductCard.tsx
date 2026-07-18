@@ -7,18 +7,8 @@ import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { ApiProduct, variantSnapshot } from "@/services/products";
-import p1 from "@/assets/p1.jpg";
-import p2 from "@/assets/p2.jpg";
-import p3 from "@/assets/p3.png";
-import p4 from "@/assets/p4.png";
-
-function formatPrice(value: string | number) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(Number(value));
-}
+import { formatPrice } from "@/lib/format";
+import { getFallbackImage } from "@/lib/productImage";
 
 export default function ProductCard({ product }: { product: ApiProduct }) {
   const { items, addToCart, updateQuantity, removeItem } = useCart();
@@ -28,9 +18,7 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
 
   const variant = product.variants.find((item) => item.stock > 0) || product.variants[0];
 
-  const fallbackImgs = [p1, p2, p3, p4];
-  const slugHash = Array.from(product.slug || "").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  const fallback = fallbackImgs[slugHash % fallbackImgs.length];
+  const fallback = getFallbackImage(product.slug);
 
   const firstUrl = Array.isArray(product.defaultImageUrls) ? product.defaultImageUrls[0] : null;
   const image = firstUrl || fallback;

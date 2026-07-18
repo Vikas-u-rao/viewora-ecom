@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingBag, Menu, User, Heart, Search, X } from "lucide-react";
+import { Menu, User, Heart, Search, X, Loader2, ShoppingBag } from "lucide-react";
 import logoImg from "@/assets/logo.png";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { Sheet, SheetTrigger, SheetContent, SheetClose } from "@/components/ui/sheet";
 import { useRouter } from "next/navigation";
+import type { ApiProduct } from "@/services/products";
 
 const nav = [
   { label: "HOME", href: "/#home" },
@@ -51,6 +52,33 @@ export default function Header() {
   const router = useRouter();
   const [showSearch, setShowSearch] = useState(false);
   const [searchVal, setSearchVal] = useState("");
+  const [searchResults, setSearchResults] = useState<ApiProduct[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    if (!searchVal.trim()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSearchResults([]);
+      return;
+    }
+
+    const delayDebounce = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"}/products?search=${encodeURIComponent(searchVal.trim())}&limit=5`);
+        if (res.ok) {
+          const data = await res.json();
+          setSearchResults(data.products || []);
+        }
+      } catch (err) {
+        console.error("Search fetch failed", err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchVal]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,21 +93,88 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur border-b border-border">
       {showSearch && (
         <div className="fixed inset-x-0 top-0 z-[60] bg-background/98 backdrop-blur-md border-b border-gold/20 py-6 px-6 shadow-2xl animate-fade-in">
-          <div className="max-w-[1000px] mx-auto flex items-center justify-between gap-4">
-            <form onSubmit={handleSearchSubmit} className="flex-1 flex items-center gap-3">
-              <Search className="text-gold" size={24} strokeWidth={1.5} />
-              <input
-                type="text"
-                value={searchVal}
-                onChange={(e) => setSearchVal(e.target.value)}
-                placeholder="Search Viewora eyewear..."
-                className="flex-1 bg-transparent text-xl text-white border-none outline-none placeholder:text-muted-foreground/60 focus:ring-0 focus:outline-none font-sans"
-                autoFocus
-              />
-            </form>
+          <div className="max-w-[1000px] mx-auto flex items-start justify-between gap-4">
+            <div className="flex-1 relative">
+              <form onSubmit={handleSearchSubmit} className="flex items-center gap-3" role="search" aria-label="Search Viewora eyewear">
+                <Search className="text-gold" size={24} strokeWidth={1.5} aria-hidden="true" />
+                <input
+                  id="site-search"
+                  type="search"
+                  value={searchVal}
+                  onChange={(e) => setSearchVal(e.target.value)}
+                  placeholder="Search Viewora eyewear..."
+                  aria-label="Search eyewear"
+                  aria-autocomplete="list"
+                  aria-controls="search-results"
+                  className="flex-1 bg-transparent text-xl text-white border-none outline-none placeholder:text-muted-foreground/60 focus:ring-0 focus:outline-none font-sans"
+                  autoFocus
+                />
+              </form>
+
+              {searchVal.trim() && (
+                <div id="search-results" className="absolute left-0 right-0 top-full mt-5 bg-[#0d0b09]/95 backdrop-blur-md border border-border shadow-2xl rounded-md max-h-[450px] overflow-y-auto z-50 p-4 animate-fade-in text-white text-left" role="listbox" aria-label="Search results">
+                  {isSearching ? (
+                    <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                      <Loader2 className="size-4 animate-spin text-gold mr-2" />
+                      Searching Viewora catalog...
+                    </div>
+                  ) : searchResults.length === 0 ? (
+                    <div className="text-center py-6 text-sm text-muted-foreground font-sans">
+                      No items found matching &quot;<span className="text-white font-medium">{searchVal}</span>&quot;
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <p className="text-[10px] tracking-widest text-muted-foreground uppercase font-bold">Suggested Products</p>
+                      <div className="divide-y divide-border/40">
+                        {searchResults.map((prod) => (
+                          <Link
+                            key={prod.id}
+                            href={`/products/${prod.slug}`}
+                            onClick={() => {
+                              setShowSearch(false);
+                              setSearchVal("");
+                            }}
+                            className="flex items-center gap-4 py-3 hover:bg-white/5 transition-colors group cursor-pointer"
+                          >
+                            {prod.defaultImageUrls?.[0] && (
+                              <Image
+                                src={prod.defaultImageUrls[0]}
+                                alt={prod.name}
+                                width={48}
+                                height={48}
+                                className="w-12 h-12 object-cover border border-border bg-card flex-shrink-0"
+                              />
+                            )}
+                            <div className="flex-1">
+                              {prod.brand && <span className="text-[9px] tracking-wider text-gold font-bold uppercase">{prod.brand}</span>}
+                              <h4 className="text-sm font-sans text-white group-hover:text-gold transition-colors font-medium -mt-0.5">{prod.name}</h4>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-xs font-sans text-white font-semibold">₹{Number(prod.startingPrice).toLocaleString("en-IN")}</span>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                      
+                      <button
+                        onClick={() => {
+                          router.push(`/shop?search=${encodeURIComponent(searchVal.trim())}`);
+                          setShowSearch(false);
+                          setSearchVal("");
+                        }}
+                        className="w-full text-center py-2.5 mt-2 border border-gold/40 text-gold hover:bg-gold hover:text-background text-xs font-bold tracking-widest transition-all cursor-pointer block uppercase"
+                        type="button"
+                      >
+                        View More Results
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             <button 
               onClick={() => { setShowSearch(false); setSearchVal(""); }} 
-              className="text-muted-foreground hover:text-white transition-colors cursor-pointer"
+              className="text-muted-foreground hover:text-white transition-colors cursor-pointer self-start mt-1.5"
               type="button"
             >
               <X size={24} strokeWidth={1.5} />
@@ -246,7 +341,7 @@ export default function Header() {
             )}
           </Link>
           <Link href="/cart" className="relative hover:text-gold transition-colors" aria-label={`Cart with ${cartCount} items`}>
-            <span className="material-symbols-outlined !text-[30px] select-none align-middle -mt-[3px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24" }}>shopping_bag</span>
+            <ShoppingBag size={28} strokeWidth={1.5} />
             {cartCount > 0 && (
               <span className="absolute -right-2.5 -top-2.5 min-w-5 h-5 rounded-full bg-gold px-1 text-[10px] font-bold leading-5 text-background text-center tabular-nums">
                 {cartCount > 99 ? "99+" : cartCount}
