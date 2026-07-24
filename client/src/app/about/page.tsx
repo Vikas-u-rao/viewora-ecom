@@ -4,7 +4,6 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import logoImg from "@/assets/logo.png";
 import view1 from "@/assets/view1.jpg";
-import campaign3 from "@/assets/IMG_0985.jpg";
 import { ShieldCheck, Sparkles, Eye, Award } from "lucide-react";
 
 export const metadata = {
@@ -89,9 +88,9 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <div className="relative aspect-[4/5] rounded-sm overflow-hidden border border-gold/20 shadow-2xl">
+          <div className="relative w-full aspect-square rounded-full overflow-hidden border border-gold/20 shadow-2xl max-w-md mx-auto">
             <Image
-              src={campaign3}
+              src={view1}
               alt="Viewora Heritage"
               fill
               className="object-cover"
