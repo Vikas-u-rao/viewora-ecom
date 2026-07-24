@@ -3,7 +3,7 @@ import Link from "next/link";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import logoImg from "@/assets/logo.png";
-import campaign1 from "@/assets/IMG_0976.jpg";
+import view1 from "@/assets/view1.jpg";
 import campaign3 from "@/assets/IMG_0985.jpg";
 import { ShieldCheck, Sparkles, Eye, Award } from "lucide-react";
 
@@ -44,7 +44,7 @@ export default function AboutPage() {
       <section className="relative pt-32 pb-20 px-6 bg-black overflow-hidden border-b border-border/40">
         <div className="absolute inset-0 opacity-30">
           <Image
-            src={campaign1}
+            src={view1}
             alt="Viewora Luxury Craftsmanship"
             fill
             className="object-cover"
