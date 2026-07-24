@@ -1,0 +1,15 @@
+# Exclude env files — secrets are injected via docker-compose environment or Azure App Settings
+.env
+.env.*
+!.env.example
+
+# Exclude dev/build artifacts
+node_modules
+.next
+
+# Exclude logs
+*.log
+
+# Exclude OS files
+.DS_Store
+Thumbs.db
