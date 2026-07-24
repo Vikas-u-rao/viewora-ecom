@@ -119,9 +119,8 @@ export default function Home() {
               key={i}
               onClick={() => setActiveSlide(i)}
               aria-label={`Go to slide ${i + 1}`}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === activeSlide ? "bg-gold w-6" : "bg-white/30 w-1.5"
-              }`}
+              className={`h-1.5 rounded-full transition-all duration-300 ${i === activeSlide ? "bg-gold w-6" : "bg-white/30 w-1.5"
+                }`}
             />
           ))}
         </div>
