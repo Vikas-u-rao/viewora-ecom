@@ -24,10 +24,11 @@ const SANS = "var(--font-sans), Arial, sans-serif";
 const quickLinks = [
   ["Home", "/"],
   ["Shop Collection", "/shop"],
+  ["Collections", "/collections"],
   ["New Arrivals", "/shop?collection=new-arrivals"],
   ["Best Sellers", "/shop?collection=best-sellers"],
-  ["About Us", "/#about"],
-  ["Contact Us", "/#contact"],
+  ["About Us", "/about"],
+  ["Contact Us", "/contact"],
 ];
 
 const careLinks = [

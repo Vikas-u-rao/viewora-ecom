@@ -13,10 +13,11 @@ import { useRouter } from "next/navigation";
 import type { ApiProduct } from "@/services/products";
 
 const nav = [
-  { label: "HOME", href: "/#home" },
-  { label: "ABOUT", href: "/#about" },
-  { label: "COLLECTIONS", href: "/#collections", megaCollections: true },
-  { label: "SHOP", href: "/#shop", megaShop: true },
+  { label: "HOME", href: "/" },
+  { label: "ABOUT", href: "/about" },
+  { label: "COLLECTIONS", href: "/collections", megaCollections: true },
+  { label: "SHOP", href: "/shop", megaShop: true },
+  { label: "CONTACT", href: "/contact" },
   { label: "SOCIALS", href: "/socials" },
 ];
 

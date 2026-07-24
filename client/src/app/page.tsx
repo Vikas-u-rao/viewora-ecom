@@ -75,7 +75,7 @@ export default function Home() {
     if (isPaused) return;
     const timer = setInterval(() => {
       setActiveSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    }, 2000);
     return () => clearInterval(timer);
   }, [slides.length, isPaused]);
 
@@ -211,13 +211,16 @@ export default function Home() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-gold/5 blur-3xl pointer-events-none" />
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
-          <div className="mb-10 inline-block">
-            <Image src={logoImg} alt="Viewora" className="h-32 w-auto mx-auto" style={{ width: "auto", height: "auto" }} loading="lazy" width={288} height={288} />
+          <div className="mb-8 inline-block">
+            <Image src={logoImg} alt="Viewora" className="h-28 w-auto mx-auto" style={{ width: "auto", height: "auto" }} loading="lazy" width={288} height={288} />
           </div>
-          <div className="h-[1px] w-20 bg-gold/30 mx-auto mb-10" />
-          <p className="text-xl font-serif leading-relaxed text-muted-foreground max-w-2xl mx-auto">
+          <div className="h-[1px] w-20 bg-gold/30 mx-auto mb-8" />
+          <p className="text-xl font-serif leading-relaxed text-muted-foreground max-w-2xl mx-auto mb-8">
             At <span className="text-gold font-semibold">Viewora</span>, every frame is a statement of timeless style, crafted for those who see life with clarity and class.
           </p>
+          <Link href="/about" className="inline-block border border-gold/40 text-gold px-8 py-3 text-xs font-bold tracking-[0.2em] hover:bg-gold hover:text-black transition-all uppercase">
+            Read Our Story &rarr;
+          </Link>
         </div>
       </section>
 
