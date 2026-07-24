@@ -13,10 +13,10 @@ import logoImg from "@/assets/logo.png";
 import colSun from "@/assets/col-sunglasses.jpg";
 import colOpt from "@/assets/col-optical.jpg";
 import colLtd from "@/assets/col-limited.jpg";
-import campaign1 from "@/assets/IMG_0976.jpg";
-import campaign2 from "@/assets/IMG_0979.jpg";
-import campaign3 from "@/assets/IMG_0985.jpg";
-import campaign4 from "@/assets/IMG_1223.jpg";
+import view1 from "@/assets/view1.jpg";
+import view2 from "@/assets/view2.jpg";
+import view3 from "@/assets/view3.jpg";
+import view4 from "@/assets/view4.jpg";
 
 // Import style images
 import wayfarerImg from "@/assets/styles/wayfarer.png";
@@ -67,7 +67,7 @@ const frameStyles = [
 ];
 
 export default function Home() {
-  const slides = [campaign1, campaign2, campaign3, campaign4];
+  const slides = [view1, view2, view3, view4];
   const [activeSlide, setActiveSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
