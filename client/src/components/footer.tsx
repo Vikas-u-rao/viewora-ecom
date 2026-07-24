@@ -2,6 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
+import logoImg from "@/assets/logo.png";
 import {
   Facebook,
   Heart,
@@ -102,8 +104,7 @@ export default function Footer() {
         <div className="viewora-footer-grid">
           <section className="viewora-footer-column viewora-footer-brand" aria-label="Viewora">
             <Link href="/" aria-label="Viewora home" style={{ textDecoration: "none" }}>
-              <div className="viewora-mark">VO</div>
-              <div className="viewora-brand-name">VIEWORA</div>
+              <Image src={logoImg} alt="Viewora" className="h-16 w-auto mx-auto mb-2 filter drop-shadow-md brightness-110" width={160} height={160} style={{ width: "auto" }} />
               <div className="viewora-brand-subtitle">FASHION EYEWEAR</div>
             </Link>
             <div className="viewora-brand-rule" aria-hidden="true">✦</div>

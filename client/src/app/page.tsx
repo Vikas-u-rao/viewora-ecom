@@ -9,7 +9,6 @@ import Footer from "@/components/footer";
 import NewsletterForm from "@/components/NewsletterForm";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 
-import logoImg from "@/assets/logo.png";
 import colSun from "@/assets/col-sunglasses.jpg";
 import colOpt from "@/assets/col-optical.jpg";
 import colLtd from "@/assets/col-limited.jpg";
@@ -17,7 +16,7 @@ import view1 from "@/assets/view1.jpg";
 import view2 from "@/assets/view2.jpg";
 import view3 from "@/assets/view3.jpg";
 import view4 from "@/assets/view4.jpg";
-
+import logo from "@/assets/logo.png"
 // Import style images
 import wayfarerImg from "@/assets/styles/wayfarer.png";
 import aviatorImg from "@/assets/styles/aviator.png";
@@ -211,7 +210,7 @@ export default function Home() {
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
           <div className="mb-8 inline-block">
-            <Image src={logoImg} alt="Viewora" className="h-28 w-auto mx-auto" style={{ width: "auto", height: "auto" }} loading="lazy" width={288} height={288} />
+            <Image src={logo} alt="Viewora" className="h-28 w-auto mx-auto" style={{ width: "auto", height: "auto" }} loading="lazy" width={288} height={288} />
           </div>
           <div className="h-[1px] w-20 bg-gold/30 mx-auto mb-8" />
           <p className="text-xl font-serif leading-relaxed text-muted-foreground max-w-2xl mx-auto mb-8">
