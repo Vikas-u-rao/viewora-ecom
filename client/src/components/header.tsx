@@ -9,6 +9,7 @@ import logoImg from "@/assets/logo.png";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { getApiBaseUrl } from "@/lib/constants";
 import { Sheet, SheetTrigger, SheetContent, SheetClose } from "@/components/ui/sheet";
 import type { ApiProduct } from "@/services/products";
 
@@ -71,7 +72,7 @@ export default function Header() {
     const delayDebounce = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"}/products?search=${encodeURIComponent(searchVal.trim())}&limit=5`);
+        const res = await fetch(`${getApiBaseUrl()}/products?search=${encodeURIComponent(searchVal.trim())}&limit=5`);
         if (res.ok) {
           const data = await res.json();
           setSearchResults(data.products || []);

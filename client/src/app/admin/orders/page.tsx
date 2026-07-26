@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ShoppingCart, Search } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useDashboardData } from "@/components/dashboard/useDashboardData";
+import { getApiBaseUrl } from "@/lib/constants";
 import type { Order } from "@/components/dashboard/useDashboardData";
 
 export default function OrdersPage() {
@@ -16,7 +17,7 @@ export default function OrdersPage() {
   const [fulfillmentFilter, setFulfillmentFilter] = useState("all");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  const apiUrl = getApiBaseUrl();
 
   const filteredOrders = orders.filter((o) => {
     const q = searchQuery.toLowerCase().trim();
