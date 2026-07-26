@@ -41,8 +41,15 @@ const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:3000')
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow non-browser requests (e.g., server-to-server, curl) and listed origins
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow non-browser requests (e.g., server-to-server, curl), listed origins, or viewora domains
+    if (
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      allowedOrigins.includes('*') ||
+      origin.endsWith('.viewora.in') ||
+      origin === 'https://viewora.in' ||
+      origin.includes('azurewebsites.net')
+    ) {
       callback(null, true);
     } else {
       callback(new Error(`CORS: origin '${origin}' is not allowed`));
