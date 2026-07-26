@@ -23,18 +23,20 @@ const MAX_OTP_ATTEMPTS = 5;
 
 // Helper to sign access token
 function signAccessToken(userId: string, role: string): string {
+  const secret = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || 'viewora_default_jwt_access_secret_key_2026';
   return jwt.sign(
     { userId, role },
-    process.env.JWT_ACCESS_SECRET!,
+    secret,
     { expiresIn: (process.env.JWT_ACCESS_EXPIRES_IN || '15m') as any }
   );
 }
 
 // Helper to sign refresh token with jti
 function signRefreshToken(userId: string): { token: string; expiresAt: Date } {
+  const secret = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || 'viewora_default_jwt_refresh_secret_key_2026';
   const token = jwt.sign(
     { userId, jti: uuidv4() },
-    process.env.JWT_REFRESH_SECRET!,
+    secret,
     { expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as any }
   );
 

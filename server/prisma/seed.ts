@@ -1,11 +1,39 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding database catalog...');
 
-  // 1. Clear Existing Data
+  // 1. Seed Default Admin and Customer Users
+  const passwordHashAdmin = await bcrypt.hash('Admin123Password!', 10);
+  const passwordHashUser = await bcrypt.hash('User123Password!', 10);
+
+  await prisma.user.upsert({
+    where: { email: 'admin@viewora.in' },
+    update: { role: 'admin', passwordHash: passwordHashAdmin },
+    create: {
+      email: 'admin@viewora.in',
+      passwordHash: passwordHashAdmin,
+      name: 'Admin User',
+      role: 'admin',
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'user@viewora.in' },
+    update: { role: 'customer', passwordHash: passwordHashUser },
+    create: {
+      email: 'user@viewora.in',
+      passwordHash: passwordHashUser,
+      name: 'Customer User',
+      role: 'customer',
+    },
+  });
+
+  // 2. Clear Existing Data
+
   console.log('Clearing transactional, cart, and wishlist tables...');
   await prisma.cartItem.deleteMany();
   await prisma.wishlistItem.deleteMany();

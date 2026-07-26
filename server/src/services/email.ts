@@ -8,6 +8,11 @@ const user = process.env.EMAIL_USER;
 const pass = process.env.EMAIL_PASS;
 const from = process.env.EMAIL_FROM || 'noreply@viewora.in';
 
+// Infer secure connection (true for SSL port 465, false for STARTTLS port 587) unless explicitly overridden
+const isSecure = process.env.EMAIL_SECURE !== undefined
+  ? process.env.EMAIL_SECURE === 'true'
+  : port === 465;
+
 export const hasCredentials = !!(host && user && pass);
 
 export let transporter: nodemailer.Transporter | null = null;
@@ -16,14 +21,29 @@ if (hasCredentials) {
   transporter = nodemailer.createTransport({
     host,
     port,
-    secure: port === 465, // true for 465, false for other ports like 587
+    secure: isSecure,
     auth: {
       user,
       pass,
     },
+    tls: {
+      // Prevent TLS certificate validation failures commonly encountered on hosted SMTP servers
+      rejectUnauthorized: process.env.EMAIL_REJECT_UNAUTHORIZED === 'true',
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+  });
+
+  // Verify SMTP connection on startup
+  transporter.verify((error) => {
+    if (error) {
+      logger.error({ msg: `SMTP connection verification failed (${host}:${port})`, error: error.message || error });
+    } else {
+      logger.info({ msg: `SMTP email service connected successfully (${host}:${port})` });
+    }
   });
 } else {
-  logger.warn('SMTP Email credentials not configured. Emails will be logged to console in development mode.');
+  logger.warn('SMTP email credentials not configured. Emails will be logged to console in development mode.');
 }
 
 /**
@@ -203,7 +223,7 @@ function logCouponToConsole(email: string, couponCode: string, value: number, ex
 }
 
 export async function sendSubscriptionConfirmationEmail(email: string) {
-  const subject = "Welcome to Viewora Community ✨";
+  const subject = "Welcome to Viewora Community";
 
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #ffffff; color: #333333;">

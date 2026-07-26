@@ -19,6 +19,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Viewora — Premium Fashion Eyewear",
   description: "Viewora crafts premium fashion eyewear — handcrafted frames where elegance meets clarity.",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
   openGraph: {
     title: "Viewora — Premium Fashion Eyewear",
     description: "Handcrafted frames where elegance meets clarity.",

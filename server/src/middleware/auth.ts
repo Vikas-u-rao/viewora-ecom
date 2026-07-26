@@ -12,7 +12,8 @@ export function authenticate(req: AuthRequest, _res: Response, next: NextFunctio
   if (!token) return next(new AppError('UNAUTHENTICATED', 401, 'No token provided'));
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET!) as any;
+    const secret = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || 'viewora_default_jwt_access_secret_key_2026';
+    const payload = jwt.verify(token, secret) as any;
     req.userId = payload.userId;
     req.userRole = payload.role;
     next();
@@ -32,7 +33,8 @@ export function optionalAuth(req: AuthRequest, _res: Response, next: NextFunctio
   const token = req.headers.authorization?.split(' ')[1];
   if (token) {
     try {
-      const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET!) as any;
+      const secret = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || 'viewora_default_jwt_access_secret_key_2026';
+      const payload = jwt.verify(token, secret) as any;
       req.userId = payload.userId;
       req.userRole = payload.role;
     } catch {

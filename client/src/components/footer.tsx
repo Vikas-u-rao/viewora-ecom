@@ -30,7 +30,6 @@ const quickLinks = [
   ["New Arrivals", "/shop?collection=new-arrivals"],
   ["Best Sellers", "/shop?collection=best-sellers"],
   ["About Us", "/about"],
-  ["Contact Us", "/contact"],
 ];
 
 const careLinks = [
@@ -86,19 +85,17 @@ export default function Footer() {
         .viewora-footer-list { display: flex; flex-direction: column; gap: 17px; list-style: none; margin: 0; padding: 0; }
         .viewora-footer-link { color: ${GRAY}; font-size: 15px; line-height: 1.35; text-decoration: none; transition: color .2s ease; }
         .viewora-footer-link:hover { color: ${DEEP_GOLD}; }
-        .viewora-contact-list { display: flex; flex-direction: column; gap: 24px; }
-        .viewora-contact-item { align-items: flex-start; color: ${SILVER}; display: flex; font-size: 15px; gap: 12px; line-height: 1.55; text-decoration: none; transition: color .2s ease; }
+        .viewora-contact-list { display: flex; flex-direction: column; gap: 20px; }
+        .viewora-contact-item { align-items: center; color: ${SILVER}; display: flex; font-size: 15px; gap: 14px; line-height: 1.55; text-decoration: none; transition: color .2s ease; }
         .viewora-contact-item:hover { color: ${GOLD}; }
-        .viewora-contact-icon { color: ${PINK}; flex: 0 0 auto; margin-top: 2px; }
-        .viewora-footer-bottom { align-items: center; border-top: 1px solid rgba(250, 214, 227, .7); display: grid; gap: 24px; grid-template-columns: 1fr auto 1fr; margin-top: 55px; min-height: 105px; }
-        .viewora-copyright, .viewora-designed { color: ${SILVER}; font-size: 14px; margin: 0; }
-        .viewora-designed { justify-self: end; }
-        .viewora-heart { color: ${PINK}; fill: ${PINK}; height: 17px; margin: 0 6px -3px; width: 17px; }
-        .viewora-payments { align-items: center; display: flex; gap: 23px; }
-        .viewora-payment { color: ${SILVER}; font-size: 17px; font-style: italic; font-weight: 800; letter-spacing: -.05em; }
-        .viewora-payment.visa { color: #8395ff; } .viewora-payment.mastercard { color: #ff8f32; } .viewora-payment.amex { background: #287bcc; border-radius: 2px; color: white; font-size: 11px; font-style: normal; letter-spacing: -.08em; padding: 4px; } .viewora-payment.paypal { color: #7ba3de; } .viewora-payment.upi { color: #dedede; }
+        .viewora-contact-icon-wrapper { align-items: center; border: 1px solid rgba(250, 214, 227, .78); border-radius: 999px; color: ${PINK}; display: inline-flex; height: 38px; width: 38px; flex: 0 0 38px; justify-content: center; transition: all .25s ease; }
+        .viewora-contact-item:hover .viewora-contact-icon-wrapper { background: ${GOLD}; border-color: ${GOLD}; color: #000; }
+        .viewora-footer-bottom { align-items: center; border-top: 1px solid rgba(250, 214, 227, .7); display: flex; justify-content: space-between; margin-top: 55px; min-height: 80px; padding: 20px 0; }
+        .viewora-copyright { color: ${SILVER}; font-size: 14px; margin: 0; }
+        .viewora-designed { align-items: center; color: ${SILVER}; display: inline-flex; font-size: 14px; gap: 6px; margin: 0; white-space: nowrap; }
+        .viewora-heart { color: ${PINK}; fill: ${PINK}; height: 16px; width: 16px; flex-shrink: 0; display: inline-block; vertical-align: middle; }
         @media (max-width: 1100px) { .viewora-footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 45px 0; } .viewora-footer-column { padding: 0 42px; } .viewora-footer-column:nth-child(odd) { border-left: 0; padding-left: 0; } .viewora-footer-brand { align-items: flex-start; padding-right: 42px; text-align: left; } .viewora-brand-name, .viewora-brand-subtitle { padding-left: 0; } .viewora-mark { margin-left: 0; } }
-        @media (max-width: 640px) { .viewora-footer-inner { padding: 55px 25px 0; } .viewora-footer-grid { display: flex; flex-direction: column; gap: 38px; } .viewora-footer-column, .viewora-footer-column:first-child { border-left: 0; border-top: 1px solid rgba(250, 214, 227, .38); padding: 34px 0 0; } .viewora-footer-brand { align-items: center; border-top: 0 !important; padding-top: 0; text-align: center; } .viewora-brand-rule, .viewora-tagline, .viewora-socials { justify-content: center; } .viewora-tagline { text-align: center; } .viewora-footer-column:last-child { max-width: none; } .viewora-footer-heading { margin-top: 0; } .viewora-footer-bottom { display: flex; flex-direction: column; gap: 18px; justify-content: center; margin-top: 40px; padding: 25px 0; text-align: center; } .viewora-designed { justify-self: auto; } .viewora-payments { gap: 15px; } }
+        @media (max-width: 640px) { .viewora-footer-inner { padding: 55px 25px 0; } .viewora-footer-grid { display: flex; flex-direction: column; gap: 38px; } .viewora-footer-column, .viewora-footer-column:first-child { border-left: 0; border-top: 1px solid rgba(250, 214, 227, .38); padding: 34px 0 0; } .viewora-footer-brand { align-items: center; border-top: 0 !important; padding-top: 0; text-align: center; } .viewora-brand-rule, .viewora-tagline, .viewora-socials { justify-content: center; } .viewora-tagline { text-align: center; } .viewora-footer-column:last-child { max-width: none; } .viewora-footer-heading { margin-top: 0; } .viewora-footer-bottom { flex-direction: column; gap: 12px; justify-content: center; margin-top: 40px; padding: 24px 0; text-align: center; } }
       `}</style>
       <div className="viewora-footer-inner">
         <div className="viewora-footer-grid">
@@ -116,9 +113,36 @@ export default function Footer() {
 
           <section className="viewora-footer-column"><FooterHeading>QUICK LINKS</FooterHeading><ul className="viewora-footer-list">{quickLinks.map(([label, href]) => <li key={label}><Link className="viewora-footer-link" href={href}>{label}</Link></li>)}</ul></section>
           <section className="viewora-footer-column"><FooterHeading>CUSTOMER CARE</FooterHeading><ul className="viewora-footer-list">{careLinks.map(([label, href]) => <li key={label}><Link className="viewora-footer-link" href={href}>{label}</Link></li>)}</ul></section>
-          <section className="viewora-footer-column"><FooterHeading>CONTACT US</FooterHeading><div className="viewora-contact-list"><a className="viewora-contact-item" href="tel:+919876543210"><Phone className="viewora-contact-icon" size={21} fill={PINK} />+91 98765 43210</a><a className="viewora-contact-item" href="mailto:support@viewora.in"><Mail className="viewora-contact-icon" size={21} fill={PINK} />support@viewora.in</a><span className="viewora-contact-item"><MapPin className="viewora-contact-icon" size={22} fill={PINK} />Bangalore, Karnataka<br />India 560001</span></div></section>
+          <section className="viewora-footer-column">
+            <FooterHeading>CONTACT US</FooterHeading>
+            <div className="viewora-contact-list">
+              <a className="viewora-contact-item" href="tel:+919876543210">
+                <div className="viewora-contact-icon-wrapper">
+                  <Phone size={18} strokeWidth={1.8} />
+                </div>
+                <span>+91 98765 43210</span>
+              </a>
+              <a className="viewora-contact-item" href="mailto:contact@viewora.in">
+                <div className="viewora-contact-icon-wrapper">
+                  <Mail size={18} strokeWidth={1.8} />
+                </div>
+                <span>contact@viewora.in</span>
+              </a>
+              <div className="viewora-contact-item">
+                <div className="viewora-contact-icon-wrapper">
+                  <MapPin size={18} strokeWidth={1.8} />
+                </div>
+                <span>Bangalore, Karnataka<br />India 560001</span>
+              </div>
+            </div>
+          </section>
         </div>
-        <div className="viewora-footer-bottom"><p className="viewora-copyright">© 2026 Viewora. All rights reserved.</p><div className="viewora-payments" aria-label="Accepted payment methods"><span className="viewora-payment visa">VISA</span><span className="viewora-payment mastercard">●●</span><span className="viewora-payment amex">AMEX</span><span className="viewora-payment paypal">PayPal</span><span className="viewora-payment upi">UPI</span></div><p className="viewora-designed">Designed with <Heart className="viewora-heart" /> by Viewora</p></div>
+        <div className="viewora-footer-bottom">
+          <p className="viewora-copyright">© 2026 Viewora. All rights reserved.</p>
+          <p className="viewora-designed">
+            Designed with <Heart className="viewora-heart" /> by Viewora
+          </p>
+        </div>
       </div>
     </footer>
   );

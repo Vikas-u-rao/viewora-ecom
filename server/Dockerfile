@@ -46,5 +46,6 @@ COPY --from=builder /app/prisma/seed.js ./prisma/seed.js
 # Expose backend port
 EXPOSE 5000
 
-# Start server
-CMD ["node", "dist/index.js"]
+# Start server with schema push and seed
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node prisma/seed.js && node dist/index.js"]
+

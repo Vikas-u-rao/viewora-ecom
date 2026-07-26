@@ -29,6 +29,7 @@ import { startStockCleanupJob } from './jobs/stockReservationCleanup';
 import { startCouponExpiryJob } from './jobs/couponExpiry';
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet());
@@ -53,11 +54,25 @@ app.use(cors({
 // Compress JSON responses (3-5x bandwidth reduction)
 app.use(compression());
 
+// Robust IP key generator for rate limiters behind Azure proxies
+const getClientIp = (req: express.Request): string => {
+  const forwarded = req.headers['x-forwarded-for'];
+  const raw = (Array.isArray(forwarded) ? forwarded[0] : forwarded) || req.socket.remoteAddress || '127.0.0.1';
+  const ipStr = String(raw).split(',')[0].trim();
+  // Strip port number if present (e.g., 106.51.217.229:39948 -> 106.51.217.229)
+  if (ipStr.includes(':') && !ipStr.includes('::')) {
+    return ipStr.split(':')[0];
+  }
+  return ipStr;
+};
+
 // Rate limiting — global
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000, // 15 min
-  max: 200,
+  max: 500,
   message: { error: { code: 'RATE_LIMITED', message: 'Too many requests', details: [] } },
+  validate: { trustProxy: false, xForwardedForHeader: false },
+  keyGenerator: getClientIp,
 }));
 
 app.use(express.json());
@@ -65,7 +80,12 @@ app.use(cookieParser());
 app.use(requestId);
 
 // Stricter rate limit for auth and payments
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20 });
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 50,
+  validate: { trustProxy: false, xForwardedForHeader: false },
+  keyGenerator: getClientIp,
+});
 
 // Routes
 app.use('/api/v1/auth', authLimiter, authRoutes);

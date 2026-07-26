@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: viewora-db
+    restart: always
+    environment:
+      POSTGRES_USER: dbadmin
+      POSTGRES_PASSWORD: VieworaDbPassword123!
+      POSTGRES_DB: viewora_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  server:
+    image: vikasurao/viewora-server:latest
+    container_name: viewora-server
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql://dbadmin:VieworaDbPassword123!@db:5432/viewora_db?schema=public
+      PORT: 5000
+      NODE_ENV: production
+      JWT_SECRET: viewora_production_jwt_secret_2026
+
+volumes:
+  db_data:
