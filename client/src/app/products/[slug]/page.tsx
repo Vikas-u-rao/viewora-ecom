@@ -2,6 +2,7 @@
 export const dynamic = "force-dynamic";
 
 import { useEffect, useMemo, useState } from "react";
+import { StaticImageData } from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Heart, Loader2, ShoppingCart, Plus, Check } from "lucide-react";
@@ -60,16 +61,35 @@ export default function ProductDetailPage() {
     [product, selectedVariantId],
   );
 
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
   const fallback = getFallbackImage(product?.slug || "");
 
-  const variantImage = selectedVariant?.imageUrls?.[0];
-  const firstUrl = variantImage || (Array.isArray(product?.defaultImageUrls) ? product.defaultImageUrls[0] : null);
-  const image = firstUrl || fallback;
+  const allImages = useMemo(() => {
+    const list: (string | StaticImageData)[] = [];
+    if (selectedVariant?.imageUrls?.length) {
+      list.push(...selectedVariant.imageUrls);
+    }
+    if (product?.defaultImageUrls?.length) {
+      product.defaultImageUrls.forEach((img) => {
+        if (!list.includes(img)) list.push(img);
+      });
+    }
+    if (list.length === 0) list.push(fallback);
+    return list;
+  }, [selectedVariant, product, fallback]);
+
+  const activeImage = allImages[activeImageIndex] || allImages[0] || fallback;
   const unavailable = !selectedVariant || selectedVariant.stock < 1;
 
   const wishlisted = product ? isWishlisted(product.id) : false;
 
   const cartItem = selectedVariant ? items.find((i) => i.variantId === selectedVariant.id) : undefined;
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setActiveImageIndex(0);
+  }, [selectedVariantId]);
 
   useEffect(() => {
     if (showCheck) {
@@ -137,9 +157,28 @@ export default function ProductDetailPage() {
       <Header />
       <main className="mx-auto max-w-[1200px] px-6 pt-28 pb-16">
         <div className="grid gap-10 md:grid-cols-[1fr_0.9fr]">
-          {/* Product Image */}
-          <div className="relative aspect-[4/5] overflow-hidden border border-border bg-card">
-            <ProductImage src={image} alt={product.name} priority sizes="50vw" />
+          {/* Product Images & Multi-Image Gallery */}
+          <div className="flex flex-col gap-4">
+            <div className="relative aspect-[4/5] overflow-hidden border border-border bg-card">
+              <ProductImage src={activeImage} alt={product.name} priority sizes="50vw" />
+            </div>
+
+            {/* Multi-Image Thumbnails */}
+            {allImages.length > 1 && (
+              <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none">
+                {allImages.map((imgUrl, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImageIndex(idx)}
+                    className={`relative h-20 w-20 shrink-0 overflow-hidden border transition-all duration-200 bg-black/40 ${
+                      activeImageIndex === idx ? "border-gold ring-1 ring-gold shadow-[0_0_10px_rgba(197,160,89,0.3)]" : "border-border/60 hover:border-gold/50 opacity-70 hover:opacity-100"
+                    }`}
+                  >
+                    <ProductImage src={imgUrl} alt={`${product.name} view ${idx + 1}`} sizes="80px" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <section className="flex flex-col justify-center">
