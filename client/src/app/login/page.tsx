@@ -5,7 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, Mail, Lock, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import { useAuth, API_BASE } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
+import { getApiBaseUrl } from '@/lib/constants';
 import logoImg from '@/assets/logo.png';
 
 function LoginContent() {
@@ -40,7 +41,8 @@ function LoginContent() {
     setIsLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
+      const baseUrl = getApiBaseUrl();
+      const res = await fetch(`${baseUrl}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

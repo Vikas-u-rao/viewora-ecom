@@ -1,8 +1,9 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { getApiBaseUrl } from '@/lib/constants';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+export const API_BASE = getApiBaseUrl();
 
 interface User {
   id: string;
@@ -33,7 +34,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const tryRefresh = async () => {
       try {
-        const res = await fetch(`${API_BASE}/auth/refresh`, {
+        const baseUrl = getApiBaseUrl();
+        const res = await fetch(`${baseUrl}/auth/refresh`, {
           method: 'POST',
           credentials: 'include',
         });
@@ -43,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Decode user from token payload
 
           // Fetch user profile
-          const profileRes = await fetch(`${API_BASE}/users/me`, {
+          const profileRes = await fetch(`${baseUrl}/users/me`, {
             headers: { Authorization: `Bearer ${data.accessToken}` },
             credentials: 'include',
           });
@@ -72,7 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const res = await fetch(`${API_BASE}/auth/login`, {
+    const baseUrl = getApiBaseUrl();
+    const res = await fetch(`${baseUrl}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -86,7 +89,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await fetch(`${API_BASE}/auth/logout`, {
+      const baseUrl = getApiBaseUrl();
+      await fetch(`${baseUrl}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
@@ -108,5 +112,3 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }
-
-export { API_BASE };
