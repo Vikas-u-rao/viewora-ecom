@@ -124,17 +124,19 @@ async function main() {
       color = item.variantTitle.trim();
     }
 
+    // Ensure 100% unique SKU
+    const uniqueSku = item.sku ? `${item.sku}-${count + 1}` : `VW-SKU-${count + 1}`;
+
     // Create Product Variant
     await prisma.productVariant.create({
       data: {
         productId: product.id,
-        sku: item.sku,
+        sku: uniqueSku,
         color: color,
         size: size,
         lensType: item.productType === 'Sunglass' ? 'UV400 Protected' : 'Clear Prescription',
         price: item.price,
-        compareAtPrice: item.comparePrice || null,
-        inventoryQuantity: 50,
+        stock: 50,
         imageUrls: item.imageUrls,
         isActive: true,
       },
