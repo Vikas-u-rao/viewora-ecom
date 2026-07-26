@@ -86,7 +86,7 @@ function ShopContent() {
     setIsLoadingProducts(true);
     setProductError(null);
 
-    let query = "?limit=48";
+    let query = "?limit=5000";
     if (selectedCollection !== "all") {
       query += `&collection=${selectedCollection}`;
     }
