@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Loader2, Package, Search } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useDashboardData } from "@/components/dashboard/useDashboardData";
+import { getApiBaseUrl } from "@/lib/constants";
 
 export default function InventoryPage() {
   const { accessToken } = useAuth();
@@ -16,7 +17,7 @@ export default function InventoryPage() {
   const [editingStock, setEditingStock] = useState<Record<string, number | undefined>>({});
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  const apiUrl = getApiBaseUrl();
 
   const filteredProducts = products.filter((p) => {
     const q = searchQuery.toLowerCase().trim();

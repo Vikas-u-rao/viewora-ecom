@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+import { getApiBaseUrl } from "@/lib/constants";
 
 export default function NewsletterForm() {
   const [email, setEmail] = useState("");
@@ -17,7 +18,7 @@ export default function NewsletterForm() {
     setErrorMessage("");
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+      const apiUrl = getApiBaseUrl();
       const response = await fetch(`${apiUrl}/subscribers`, {
         method: 'POST',
         headers: {

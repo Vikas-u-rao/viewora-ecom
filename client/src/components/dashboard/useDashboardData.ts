@@ -83,9 +83,10 @@ export interface DashboardData {
   setOrdersPage: (p: number) => void;
 }
 
+import { getApiBaseUrl } from "@/lib/constants";
+
 export function useDashboardData(accessToken: string | null): DashboardData {
-  const apiUrl =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  const apiUrl = getApiBaseUrl();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
