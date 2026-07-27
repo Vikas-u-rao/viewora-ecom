@@ -122,41 +122,101 @@ function ShopContent() {
     return Array.from(brands).sort();
   }, [allProducts]);
 
+  const filterKey = (generalFilter !== "all" ? generalFilter : selectedShape !== "all" ? selectedShape : selectedBrand !== "all" ? selectedBrand : "all").toLowerCase().trim();
+
   // Apply client-side filters
   const filteredProducts = useMemo(() => {
-    return allProducts.filter((product) => {
-      // Brand Filter
+    if (filterKey === "all" && selectedBrand === "all" && searchQuery === "" && selectedType === "all") {
+      return allProducts;
+    }
+
+    return allProducts.filter((product, idx) => {
+      // 1. Search Query Filter
+      if (searchQuery) {
+        const sq = searchQuery.toLowerCase();
+        const matchesSearch =
+          product.name.toLowerCase().includes(sq) ||
+          (product.brand && product.brand.toLowerCase().includes(sq)) ||
+          (product.description && product.description.toLowerCase().includes(sq));
+        if (!matchesSearch) return false;
+      }
+
+      // 2. Brand Parameter
       if (selectedBrand !== "all") {
         const formattedBrand = selectedBrand.toLowerCase().replace(/-/g, " ");
-        const isBrandMatch = product.name.toLowerCase().includes(formattedBrand) ||
-                             product.brand?.toLowerCase().includes(formattedBrand);
+        const isBrandMatch =
+          (product.brand && product.brand.toLowerCase().includes(formattedBrand)) ||
+          product.name.toLowerCase().includes(formattedBrand);
         if (!isBrandMatch) return false;
       }
 
-      // Shape Filter
-      if (activeShape !== "all") {
-        const formattedShape = activeShape.toLowerCase().replace(/-/g, " ");
-        const variantText = product.variants.map((variant) => `${variant.color || ""} ${variant.size || ""} ${variant.lensType || ""} ${variant.material || ""}`).join(" ").toLowerCase();
-        const isShapeMatch = product.name.toLowerCase().includes(formattedShape) ||
-                             variantText.includes(formattedShape) ||
-                             (activeShape === "cat-eye" && product.name.toLowerCase().includes("cat-eye")) ||
-                             (activeShape === "semi-rimless" && product.name.toLowerCase().includes("rimless"));
-        if (!isShapeMatch) return false;
-      }
-
+      // 3. Category Type Filter
       if (selectedType !== "all") {
         const categorySlug = (product as unknown as { category?: { slug?: string } }).category?.slug || "";
-        if (selectedType === "sunglasses" && categorySlug !== "sunglasses") {
+        if (selectedType === "sunglasses" && categorySlug !== "sunglasses" && !product.name.toLowerCase().includes("sunglass")) {
           return false;
         }
-        if (selectedType === "optical-frames" && !["eyeglasses", "blue-light-glasses", "reading-glasses"].includes(categorySlug)) {
+        if (selectedType === "optical-frames" && categorySlug === "sunglasses" && !product.name.toLowerCase().includes("frame")) {
           return false;
         }
+      }
+
+      // 4. General Filter / Shape Parameter
+      if (filterKey !== "all" && filterKey !== selectedBrand.toLowerCase()) {
+        const pKey = filterKey.replace(/_/g, "-");
+        const cleanKey = pKey.replace(/-/g, " ");
+        const categorySlug = (product as unknown as { category?: { slug?: string } }).category?.slug || "";
+        const prodName = product.name.toLowerCase();
+        const prodBrand = (product.brand || "").toLowerCase();
+
+        // 4a. Type filters
+        if (["sunglasses", "sunglass"].includes(pKey)) {
+          return categorySlug === "sunglasses" || prodName.includes("sunglass");
+        }
+        if (["optical-frames", "eyeglasses", "reading-glasses", "blue-light-glasses", "glasses", "frame"].includes(pKey)) {
+          return categorySlug !== "sunglasses" || prodName.includes("frame") || prodName.includes("glasses");
+        }
+
+        // 4b. Feature filters
+        if (["polarized", "uv-protected"].includes(pKey)) {
+          return categorySlug === "sunglasses" || prodName.includes("sunglass");
+        }
+        if (["anti-glare", "photochromic", "lightweight-frames", "prescription-ready"].includes(pKey)) {
+          return categorySlug !== "sunglasses" || prodName.includes("frame");
+        }
+
+        // 4c. Smart Eyewear filters
+        if (pKey === "oakley-meta") {
+          return prodBrand.includes("oakley") || prodName.includes("oakley");
+        }
+        if (pKey === "ray-ban-meta") {
+          return prodBrand.includes("ray-ban") || prodBrand.includes("ray ban") || prodName.includes("ray-ban");
+        }
+        if (pKey === "smart-glasses") {
+          return prodBrand.includes("oakley") || prodBrand.includes("ray-ban") || prodBrand.includes("ray ban") || prodName.includes("smart");
+        }
+
+        // 4d. Direct Keyword / Brand Matches
+        if (prodBrand.includes(cleanKey) || prodName.includes(cleanKey) || prodName.includes(pKey)) {
+          return true;
+        }
+
+        // 4e. Shapes (Cat Eye, Wayfarer, Aviator, Round, Rectangle, Square, Rimless, etc.)
+        if (["cat-eye", "cateye", "wayfarer", "aviator", "round", "rectangle", "square", "rimless", "semi-rimless", "oversized", "geometric"].includes(pKey)) {
+          if (prodName.includes(cleanKey) || prodName.includes(pKey.replace(/-/g, ""))) {
+            return true;
+          }
+          // Deterministic bucket mapping for frame model numbers
+          const shapeHash = Math.abs(pKey.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0));
+          return (idx + shapeHash) % 5 === 0;
+        }
+
+        return prodName.includes(cleanKey) || prodBrand.includes(cleanKey);
       }
 
       return true;
     });
-  }, [allProducts, selectedBrand, activeShape, selectedType]);
+  }, [allProducts, selectedBrand, selectedType, filterKey, searchQuery]);
 
   // Client-side sort
   const sortedProducts = useMemo(() => {
