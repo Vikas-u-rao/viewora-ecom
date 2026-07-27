@@ -85,7 +85,7 @@ export interface DashboardData {
 
 import { getApiBaseUrl } from "@/lib/constants";
 
-export function useDashboardData(accessToken: string | null): DashboardData {
+export function useDashboardData(accessToken: string | null, searchQuery: string = ""): DashboardData {
   const apiUrl = getApiBaseUrl();
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -103,8 +103,9 @@ export function useDashboardData(accessToken: string | null): DashboardData {
     const fetchData = async () => {
       setFetchLoading(true);
       try {
+        const searchParam = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : "";
         const [prodRes, ordRes, coupRes] = await Promise.all([
-          fetch(`${apiUrl}/admin/products?page=${productsPage}&limit=100`, {
+          fetch(`${apiUrl}/admin/products?page=${productsPage}&limit=100${searchParam}`, {
             headers: { Authorization: `Bearer ${accessToken}` },
           }),
           fetch(`${apiUrl}/admin/orders?page=${ordersPage}&limit=100`, {
@@ -139,7 +140,7 @@ export function useDashboardData(accessToken: string | null): DashboardData {
     };
     fetchData();
     return () => { cancelled = true; };
-  }, [accessToken, apiUrl, productsPage, ordersPage]);
+  }, [accessToken, apiUrl, productsPage, ordersPage, searchQuery]);
 
   const totalSales = orders
     .filter((o) => o.paymentStatus === "paid")

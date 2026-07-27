@@ -9,15 +9,20 @@ import { getApiBaseUrl } from "@/lib/constants";
 
 export default function InventoryPage() {
   const { accessToken } = useAuth();
-  const { products, fetchLoading, productsPage, productsTotalPages, setProductsPage } =
-    useDashboardData(accessToken);
-
   const [searchQuery, setSearchQuery] = useState("");
+  const { products, fetchLoading, productsPage, productsTotalPages, setProductsPage } =
+    useDashboardData(accessToken, searchQuery);
+
   const [lowStockOnly, setLowStockOnly] = useState(false);
   const [editingStock, setEditingStock] = useState<Record<string, number | undefined>>({});
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const apiUrl = getApiBaseUrl();
+
+  const handleSearchChange = (q: string) => {
+    setSearchQuery(q);
+    setProductsPage(1);
+  };
 
   const filteredProducts = products.filter((p) => {
     const q = searchQuery.toLowerCase().trim();
@@ -75,7 +80,7 @@ export default function InventoryPage() {
               type="text"
               placeholder="Filter by Name, Brand, or SKU..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full bg-white border border-gray-200 pl-10 pr-3.5 py-2 rounded-xl text-sm focus:border-gray-900 outline-none text-gray-800 transition-colors"
             />
           </div>
