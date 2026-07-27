@@ -85,8 +85,13 @@ app.use(rateLimit({
 }));
 
 app.use(express.json());
-app.use(cookieParser());
-app.use(requestId);
+import path from 'path';
+
+// Serve local static media uploads with 1-year immutable caching
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads'), {
+  maxAge: '1y',
+  immutable: true,
+}));
 
 // Stricter rate limit for auth and payments
 const authLimiter = rateLimit({
