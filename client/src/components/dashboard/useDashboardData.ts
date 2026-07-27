@@ -104,7 +104,7 @@ export function useDashboardData(accessToken: string | null): DashboardData {
       setFetchLoading(true);
       try {
         const [prodRes, ordRes, coupRes] = await Promise.all([
-          fetch(`${apiUrl}/admin/products?page=${productsPage}&limit=50`, {
+          fetch(`${apiUrl}/admin/products?page=${productsPage}&limit=100`, {
             headers: { Authorization: `Bearer ${accessToken}` },
           }),
           fetch(`${apiUrl}/admin/orders?page=${ordersPage}&limit=100`, {
