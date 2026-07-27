@@ -414,3 +414,14 @@ model Subscriber {
 
   @@map("subscribers")
 }
+
+model PageView {
+  id        String   @id @default(uuid())
+  path      String
+  userIp    String?  @map("user_ip")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("page_views")
+}

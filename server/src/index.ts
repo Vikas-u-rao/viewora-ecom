@@ -23,6 +23,7 @@ import contactRoutes from './routes/contact';
 import variantRoutes from './routes/variants';
 import couponRoutes from './routes/coupons';
 import subscriberRoutes from './routes/subscribers';
+import analyticsRoutes from './routes/analytics';
 
 // Jobs
 import { startStockCleanupJob } from './jobs/stockReservationCleanup';
@@ -116,6 +117,7 @@ app.use('/api/v1/contact', contactRoutes);
 app.use('/api/v1/variants', variantRoutes);
 app.use('/api/v1/coupons', couponRoutes);
 app.use('/api/v1/subscribers', subscriberRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
 
 // Health check
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));

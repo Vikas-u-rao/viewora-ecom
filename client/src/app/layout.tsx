@@ -3,6 +3,7 @@ import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/providers";
 import InquiryModal from "@/components/InquiryModal";
+import { PageTracker } from "@/components/PageTracker";
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-serif",
@@ -52,6 +53,7 @@ export default function RootLayout({
           Skip to main content
         </a>
         <Providers>
+          <PageTracker />
           {children}
           <InquiryModal />
         </Providers>
