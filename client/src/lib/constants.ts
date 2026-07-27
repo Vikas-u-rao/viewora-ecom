@@ -23,17 +23,18 @@ export const TOAST_DURATION_LONG = 6000;
 
 // ── API Configuration ────────────────────────────────────────────────────────
 export function getApiBaseUrl(): string {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL;
-  }
   if (typeof window !== 'undefined') {
     const host = window.location.hostname;
     if (host !== 'localhost' && host !== '127.0.0.1') {
       return `${window.location.origin}/api/v1`;
     }
   }
-  return 'http://localhost:5000/api/v1';
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 }
 
-export const API_BASE = getApiBaseUrl();
+export const API_BASE = typeof window !== 'undefined'
+  ? (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+      ? `${window.location.origin}/api/v1`
+      : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'))
+  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1');
 
