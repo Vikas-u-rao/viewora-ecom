@@ -275,8 +275,6 @@ function ShopContent() {
         {/* Filters Sidebar */}
         <aside className={`w-full md:w-64 lg:w-72 shrink-0 ${sidebarOpen ? "block" : "hidden md:block"}`}>
           <FilterSidebar
-            sortBy={sortBy}
-            setSortBy={setSortBy}
             tryIn3D={tryIn3D}
             setTryIn3D={setTryIn3D}
             selectedPriceRange={selectedPriceRange}
