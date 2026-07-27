@@ -94,7 +94,11 @@ export default function Home() {
       {/* Hero Section - Split Layout */}
       <section
         id="main-content"
+<<<<<<< Updated upstream
         className="relative w-full overflow-hidden bg-black text-white"
+=======
+        className="relative min-h-screen flex items-end justify-center pb-24 overflow-hidden bg-black"
+>>>>>>> Stashed changes
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
@@ -168,11 +172,26 @@ export default function Home() {
               </div>
             ))}
 
+<<<<<<< Updated upstream
             {/* Left seam gradient overlay - blends left edge only into black text panel */}
             <div
               aria-hidden
               className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-transparent lg:bg-gradient-to-r lg:from-black lg:via-black/40 lg:to-transparent z-10"
             />
+=======
+        {/* Centered Hero Text */}
+        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
+          <h1 className="font-serif text-xl font-normal leading-[1.15] mb-8 text-white">
+            See the World in <span className="text-gold font-bold italic drop-shadow-[0_0_20px_rgba(197,160,89,0.65)] motion-safe:animate-pulse">GOLD</span>
+          </h1>
+          <p className="text-sm text-white/95 mb-12 leading-relaxed font-light max-w-2xl mx-auto font-sans">
+            Luxury eyewear crafted with premium materials, designed for everyday comfort and timeless elegance.
+          </p>
+          <div className="flex justify-center">
+            <Link href="/shop" className="bg-gold text-background px-12 py-4.5 text-xs font-bold tracking-[0.2em] hover:bg-gold-soft transition-all duration-300 hover:shadow-[0_0_30px_rgba(197,160,89,0.45)] hover:-translate-y-0.5 text-center">
+              SHOP NOW
+            </Link>
+>>>>>>> Stashed changes
           </div>
         </div>
       </section>
