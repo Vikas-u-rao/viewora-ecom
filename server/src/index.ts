@@ -32,6 +32,19 @@ import { startCouponExpiryJob } from './jobs/couponExpiry';
 const app = express();
 app.set('trust proxy', 1);
 
+// ── Production secrets guard ────────────────────────────────────────────────
+// Fail fast in production if critical env vars are missing rather than
+// silently falling back to hardcoded/weak defaults.
+if (process.env.NODE_ENV === 'production') {
+  const requiredSecrets = ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'DATABASE_URL'];
+  const missing = requiredSecrets.filter((k) => !process.env[k]);
+  if (missing.length > 0) {
+    logger.error({ msg: 'FATAL: Missing required production env vars', missing });
+    process.exit(1);
+  }
+}
+
+
 // Security middleware
 app.use(helmet());
 // Support comma-separated origins: CLIENT_URL=https://viewora.in,https://staging.viewora.in

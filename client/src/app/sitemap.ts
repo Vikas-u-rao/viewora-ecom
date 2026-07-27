@@ -1,7 +1,12 @@
 import { MetadataRoute } from 'next';
 
 const SITE_URL = 'https://viewora.in';
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+// INTERNAL_API_URL is used for server-side fetching inside the container network
+// (e.g., http://viewora-server:5000/api/v1 on Azure/Docker).
+// Falls back to NEXT_PUBLIC_API_URL, then localhost for local dev.
+const API_BASE = process.env.INTERNAL_API_URL
+  || process.env.NEXT_PUBLIC_API_URL
+  || 'http://localhost:5000/api/v1';
 
 interface SlimProduct {
   slug: string;

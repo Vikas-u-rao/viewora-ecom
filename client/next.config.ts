@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   images: {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 31536000,
@@ -35,8 +36,37 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    // In production, BACKEND_URL proxies /api/v1/* requests to the Express server
+    // so both frontend and backend share the same viewora.in domain (no CORS issues).
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:5000";
+    return [
+      {
+        source: "/api/v1/:path*",
+        destination: `${backendUrl}/api/v1/:path*`,
+      },
+      {
+        source: "/health",
+        destination: `${backendUrl}/health`,
+      },
+    ];
+  },
   async headers() {
     return [
+      {
+        // Security headers on all routes
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-XSS-Protection", value: "1; mode=block" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+        ],
+      },
       {
         source: "/_next/static/:path*",
         headers: [

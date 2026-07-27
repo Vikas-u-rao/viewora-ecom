@@ -1,10 +1,9 @@
 import { Router, Request, Response, RequestHandler } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { logger } from '../lib/logger';
 import { sendSubscriptionConfirmationEmail } from '../services/email';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 const subscribeHandler: RequestHandler = async (req, res, next): Promise<void> => {
   const { email } = req.body;
