@@ -21,7 +21,6 @@ interface FilterSidebarProps {
   selectedMaterial: string;
   setSelectedMaterial: (val: string) => void;
   availableBrands: string[];
-  onApplyFilters: () => void;
   onClearAll: () => void;
   hasActiveFilters: boolean;
 }
@@ -44,7 +43,6 @@ export function FilterSidebar({
   selectedMaterial,
   setSelectedMaterial,
   availableBrands,
-  onApplyFilters,
   onClearAll,
   hasActiveFilters,
 }: FilterSidebarProps) {
@@ -66,7 +64,6 @@ export function FilterSidebar({
 
   return (
     <div className="w-full bg-[#121212] text-foreground border border-gold/20 rounded-2xl p-5 shadow-2xl space-y-5 font-sans backdrop-blur-md">
-
       {/* Filters Header */}
       <div className="flex items-center justify-between pt-1 pb-3 border-b border-gold/15">
         <div className="flex items-center gap-2 font-serif text-lg text-white font-medium">
@@ -361,14 +358,6 @@ export function FilterSidebar({
           )}
         </div>
       </div>
-
-      {/* Viewora Luxury Gold Apply Button */}
-      <button
-        onClick={onApplyFilters}
-        className="w-full py-3 px-4 bg-gold hover:bg-gold-soft active:scale-[0.98] text-background font-bold text-xs uppercase tracking-[0.15em] rounded-xl shadow-lg transition-all cursor-pointer text-center"
-      >
-        APPLY FILTERS
-      </button>
     </div>
   );
 }

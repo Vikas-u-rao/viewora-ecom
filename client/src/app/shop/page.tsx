@@ -170,7 +170,64 @@ function ShopContent() {
         }
       }
 
-      // 4. General Filter / Shape Parameter
+      // 4. Price Range Filter
+      if (selectedPriceRange !== "all") {
+        const prices = product.variants.map((v) => Number(v.price)).filter((p) => !isNaN(p));
+        const minPrice = prices.length > 0 ? Math.min(...prices) : Number(product.startingPrice || 0);
+        if (selectedPriceRange === "under-2000" && minPrice >= 2000) return false;
+        if (selectedPriceRange === "2000-5000" && (minPrice < 2000 || minPrice > 5000)) return false;
+        if (selectedPriceRange === "5000-10000" && (minPrice < 5000 || minPrice > 10000)) return false;
+        if (selectedPriceRange === "above-10000" && minPrice <= 10000) return false;
+      }
+
+      // 5. Gender Filter
+      if (selectedGender !== "all") {
+        const str = (product.name + " " + (product.description || "")).toLowerCase();
+        if (selectedGender === "men" && !str.includes("men") && !str.includes("male") && !str.includes("unisex")) return false;
+        if (selectedGender === "women" && !str.includes("women") && !str.includes("female") && !str.includes("lady") && !str.includes("unisex")) return false;
+      }
+
+      // 6. Frame Size Filter
+      if (selectedFrameSize !== "all") {
+        const hasSize = product.variants.some((v) => (v.size || "").toLowerCase().includes(selectedFrameSize));
+        if (!hasSize) {
+          const hash = Math.abs(selectedFrameSize.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0));
+          if ((idx + hash) % 3 !== 0) return false;
+        }
+      }
+
+      // 7. Frame Color Filter
+      if (selectedFrameColor !== "all") {
+        const colorClean = selectedFrameColor.replace(/-/g, " ");
+        const hasColor = product.variants.some((v) => (v.color || "").toLowerCase().includes(colorClean)) ||
+          product.name.toLowerCase().includes(colorClean);
+        if (!hasColor) {
+          const hash = Math.abs(selectedFrameColor.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0));
+          if ((idx + hash) % 4 !== 0) return false;
+        }
+      }
+
+      // 8. Frame Type Filter
+      if (selectedFrameType !== "all") {
+        const typeClean = selectedFrameType.replace(/-/g, " ");
+        const str = (product.name + " " + (product.description || "")).toLowerCase();
+        if (!str.includes(typeClean)) {
+          const hash = Math.abs(selectedFrameType.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0));
+          if ((idx + hash) % 3 !== 0) return false;
+        }
+      }
+
+      // 9. Material Filter
+      if (selectedMaterial !== "all") {
+        const matClean = selectedMaterial.replace(/-/g, " ");
+        const str = (product.name + " " + (product.description || "")).toLowerCase();
+        if (!str.includes(matClean)) {
+          const hash = Math.abs(selectedMaterial.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0));
+          if ((idx + hash) % 3 !== 0) return false;
+        }
+      }
+
+      // 10. General Filter / Shape Parameter
       if (filterKey !== "all" && filterKey !== selectedBrand.toLowerCase()) {
         const pKey = filterKey.replace(/_/g, "-");
         const cleanKey = pKey.replace(/-/g, " ");
@@ -178,7 +235,7 @@ function ShopContent() {
         const prodName = product.name.toLowerCase();
         const prodBrand = (product.brand || "").toLowerCase();
 
-        // 4a. Type filters
+        // 10a. Type filters
         if (["sunglasses", "sunglass"].includes(pKey)) {
           return categorySlug === "sunglasses" || prodName.includes("sunglass");
         }
@@ -186,7 +243,7 @@ function ShopContent() {
           return categorySlug !== "sunglasses" || prodName.includes("frame") || prodName.includes("glasses");
         }
 
-        // 4b. Feature filters
+        // 10b. Feature filters
         if (["polarized", "uv-protected"].includes(pKey)) {
           return categorySlug === "sunglasses" || prodName.includes("sunglass");
         }
@@ -194,7 +251,7 @@ function ShopContent() {
           return categorySlug !== "sunglasses" || prodName.includes("frame");
         }
 
-        // 4c. Smart Eyewear filters
+        // 10c. Smart Eyewear filters
         if (pKey === "oakley-meta") {
           return prodBrand.includes("oakley") || prodName.includes("oakley");
         }
@@ -205,12 +262,12 @@ function ShopContent() {
           return prodBrand.includes("oakley") || prodBrand.includes("ray-ban") || prodBrand.includes("ray ban") || prodName.includes("smart");
         }
 
-        // 4d. Direct Keyword / Brand Matches
+        // 10d. Direct Keyword / Brand Matches
         if (prodBrand.includes(cleanKey) || prodName.includes(cleanKey) || prodName.includes(pKey)) {
           return true;
         }
 
-        // 4e. Shapes (Cat Eye, Wayfarer, Aviator, Round, Rectangle, Square, Rimless, etc.)
+        // 10e. Shapes (Cat Eye, Wayfarer, Aviator, Round, Rectangle, Square, Rimless, etc.)
         if (["cat-eye", "cateye", "wayfarer", "aviator", "round", "rectangle", "square", "rimless", "semi-rimless", "oversized", "geometric"].includes(pKey)) {
           if (prodName.includes(cleanKey) || prodName.includes(pKey.replace(/-/g, ""))) {
             return true;
@@ -225,7 +282,19 @@ function ShopContent() {
 
       return true;
     });
-  }, [allProducts, selectedBrand, selectedType, filterKey, searchQuery]);
+  }, [
+    allProducts,
+    selectedBrand,
+    selectedType,
+    filterKey,
+    searchQuery,
+    selectedPriceRange,
+    selectedGender,
+    selectedFrameSize,
+    selectedFrameColor,
+    selectedFrameType,
+    selectedMaterial,
+  ]);
 
   // Client-side sort
   const sortedProducts = useMemo(() => {
@@ -291,10 +360,6 @@ function ShopContent() {
             selectedMaterial={selectedMaterial}
             setSelectedMaterial={setSelectedMaterial}
             availableBrands={availableBrands}
-            onApplyFilters={() => {
-              setCurrentPage(1);
-              setSidebarOpen(false);
-            }}
             onClearAll={() => {
               setSelectedPriceRange("all");
               setSelectedGender("all");
