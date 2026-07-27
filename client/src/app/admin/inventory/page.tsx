@@ -118,76 +118,120 @@ export default function InventoryPage() {
                   <h3 className="text-base text-gray-900 font-bold">{p.name}</h3>
                 </div>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs">
+                <div className="overflow-x-auto rounded-xl border border-gray-100 bg-gray-50/40">
+                  <table className="min-w-[760px] w-full table-fixed border-collapse text-left text-xs">
+                    <colgroup>
+                      <col className="w-[180px]" />
+                      <col className="w-[270px]" />
+                      <col className="w-[120px]" />
+                      <col className="w-[120px]" />
+                      <col className="w-[190px]" />
+                    </colgroup>
                     <thead>
-                      <tr className="border-b border-gray-150 text-gray-500 font-semibold uppercase tracking-wider">
-                        <th className="pb-2">SKU</th>
-                        <th className="pb-2">Color & Size</th>
-                        <th className="pb-2">Base Price</th>
-                        <th className="pb-2">Current Stock</th>
-                        <th className="pb-2 text-right">Adjust Qty</th>
+                      <tr className="border-b border-gray-200 text-gray-500 font-semibold uppercase tracking-[0.16em]">
+                        <th className="px-3 py-3 text-left">SKU</th>
+                        <th className="px-3 py-3 text-left">Color & Size</th>
+                        <th className="px-3 py-3 text-right">Base Price</th>
+                        <th className="px-3 py-3 text-center">Current Stock</th>
+                        <th className="px-3 py-3 text-right">Adjust Qty</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100 text-gray-700">
-                      {p.variants.map((v) => (
-                        <tr key={v.id} className="hover:bg-gray-50/70 transition-colors">
-                          <td className="py-3 font-mono text-[11px] font-bold text-gray-900">
-                            {v.sku}
-                          </td>
-                          <td className="py-3">
-                            {v.color || "-"} {v.size ? `(${v.size})` : ""}
-                          </td>
-                          <td className="py-3">
-                            ₹{Number(v.price).toLocaleString("en-IN")}
-                          </td>
-                          <td className="py-3 font-bold">
-                            {v.stock <= 2 ? (
-                              <span className="text-red-600 bg-red-50 px-1.5 py-0.5 rounded">
-                                {v.stock} (Low)
-                              </span>
-                            ) : (
-                              <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
-                                {v.stock}
-                              </span>
-                            )}
-                          </td>
-                          <td className="py-3 text-right">
-                            <div className="inline-flex items-center gap-2">
-                              <input
-                                type="number"
-                                min="0"
-                                placeholder="Qty"
-                                value={editingStock[v.id] ?? ""}
-                                onChange={(e) =>
-                                  setEditingStock({
-                                    ...editingStock,
-                                    [v.id]:
-                                      e.target.value === ""
-                                        ? undefined
-                                        : Number(e.target.value),
-                                  })
-                                }
-                                className="w-16 bg-white border border-gray-200 px-2.5 py-1 rounded-lg text-xs text-gray-800 focus:border-gray-900 outline-none text-center"
-                              />
-                              <button
-                                onClick={() => handleUpdateStock(v.id)}
-                                disabled={
-                                  actionLoading === v.id ||
-                                  editingStock[v.id] === undefined
-                                }
-                                className="bg-gray-900 hover:bg-gray-800 text-white px-3.5 py-1 rounded-lg text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                              >
-                                {actionLoading === v.id ? (
-                                  <Loader2 className="size-3 animate-spin" />
+                    <tbody className="divide-y divide-gray-200 text-gray-700">
+                      {p.variants.map((v) => {
+                        const detailItems = [
+                          ...(v.size ? [{ label: "Size", value: v.size }] : []),
+                          ...(v.material ? [{ label: "Material", value: v.material }] : []),
+                          ...(v.color ? [{ label: "Color", value: v.color }] : []),
+                          ...(v.lensType ? [{ label: "Lens", value: v.lensType }] : []),
+                        ];
+
+                        return (
+                          <tr key={v.id} className="align-middle hover:bg-white/70 transition-colors">
+                            <td className="px-3 py-3 align-middle">
+                              <div className="max-w-[160px] rounded-lg border border-gray-200 bg-white px-2.5 py-2 shadow-[0_1px_0_rgba(15,23,42,0.03)]">
+                                <p className="font-mono text-[11px] font-semibold leading-5 text-gray-900 break-words">
+                                  {v.sku}
+                                </p>
+                              </div>
+                            </td>
+                            <td className="px-3 py-3 align-middle">
+                              <div className="flex flex-col gap-1.5">
+                                {detailItems.length > 0 ? (
+                                  detailItems.map(({ label, value }) => (
+                                    <div
+                                      key={label}
+                                      className="flex items-start gap-2 rounded-lg bg-white px-2.5 py-1.5 shadow-[0_1px_0_rgba(15,23,42,0.03)]"
+                                    >
+                                      <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                                        {label}
+                                      </span>
+                                      <span className="text-sm leading-5 text-gray-700">
+                                        {value}
+                                      </span>
+                                    </div>
+                                  ))
                                 ) : (
-                                  "Update"
+                                  <div className="rounded-lg bg-white px-2.5 py-1.5 text-sm text-gray-600 shadow-[0_1px_0_rgba(15,23,42,0.03)]">
+                                    No variant details
+                                  </div>
                                 )}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                              </div>
+                            </td>
+                            <td className="px-3 py-3 align-middle text-right">
+                              <div className="text-base font-semibold text-gray-900">
+                                ₹{Number(v.price).toLocaleString("en-IN")}
+                              </div>
+                            </td>
+                            <td className="px-3 py-3 align-middle text-center">
+                              <span
+                                className={`inline-flex min-w-[74px] items-center justify-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                                  v.stock <= 2
+                                    ? "bg-red-50 text-red-600"
+                                    : "bg-emerald-50 text-emerald-700"
+                                }`}
+                              >
+                                {v.stock <= 2 ? `${v.stock} • Low` : v.stock}
+                              </span>
+                            </td>
+                            <td className="px-3 py-3 align-middle">
+                              <div className="flex justify-end">
+                                <div className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-2.5 py-2 shadow-[0_1px_0_rgba(15,23,42,0.03)]">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    placeholder="0"
+                                    value={editingStock[v.id] ?? ""}
+                                    onChange={(e) =>
+                                      setEditingStock({
+                                        ...editingStock,
+                                        [v.id]:
+                                          e.target.value === ""
+                                            ? undefined
+                                            : Number(e.target.value),
+                                      })
+                                    }
+                                    className="w-16 border-0 bg-transparent px-1 py-1 text-center text-xs font-semibold text-gray-800 outline-none"
+                                  />
+                                  <button
+                                    onClick={() => handleUpdateStock(v.id)}
+                                    disabled={
+                                      actionLoading === v.id ||
+                                      editingStock[v.id] === undefined
+                                    }
+                                    className="rounded-lg bg-gray-900 px-3.5 py-1.5 text-xs font-semibold text-white transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
+                                  >
+                                    {actionLoading === v.id ? (
+                                      <Loader2 className="size-3 animate-spin" />
+                                    ) : (
+                                      "Update"
+                                    )}
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

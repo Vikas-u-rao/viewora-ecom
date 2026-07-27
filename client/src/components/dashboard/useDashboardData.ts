@@ -7,6 +7,8 @@ interface Variant {
   sku: string;
   color: string | null;
   size: string | null;
+  material?: string | null;
+  lensType?: string | null;
   price: string;
   stock: number;
 }
