@@ -18,6 +18,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://viewora.in"),
   title: "Viewora — Premium Fashion Eyewear",
   description: "Viewora crafts premium fashion eyewear — handcrafted frames where elegance meets clarity.",
   icons: {
@@ -27,11 +28,28 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Viewora — Premium Fashion Eyewear",
-    description: "Handcrafted frames where elegance meets clarity.",
+    description: "Handcrafted frames where elegance meets clarity. Shop sunglasses, optical frames & more.",
+    url: "https://viewora.in",
+    siteName: "Viewora",
     type: "website",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Viewora — Premium Fashion Eyewear",
+      },
+    ],
+    locale: "en_IN",
   },
   twitter: {
     card: "summary_large_image",
+    title: "Viewora — Premium Fashion Eyewear",
+    description: "Handcrafted frames where elegance meets clarity.",
+    images: ["/logo.png"],
+  },
+  alternates: {
+    canonical: "https://viewora.in",
   },
 };
 

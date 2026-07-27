@@ -5,15 +5,15 @@ services:
     container_name: viewora-postgres
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
-      POSTGRES_DB: viewora_db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgrespassword}
+      POSTGRES_DB: ${POSTGRES_DB:-viewora_db}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -27,32 +27,22 @@ services:
     restart: always
     ports:
       - "5000:5000"
+    env_file:
+      - .env          # ← secrets live here (git-ignored)
     environment:
       PORT: 5000
-      NODE_ENV: development
-      CLIENT_URL: http://localhost:3000
-      DATABASE_URL: postgresql://postgres:postgrespassword@postgres:5432/viewora_db?schema=public
-      JWT_ACCESS_SECRET: 117655d1989a0a5aef079973e665a2309c624514680bfbb329f67af7e09dfbc3b30ab1363059e99ce38c89b5b38950b843ddddde4a1bb628ba9ffeb4290d316f
-      JWT_REFRESH_SECRET: 7017232a31819ec9ceb9b4e0571af15728b635048724b4c86093b5efbc83e0b1cdc51d001c1725601d4bc01df2df2ce9c4335ffb78fb0898782bfea8a9ecdf68
-      JWT_ACCESS_EXPIRES_IN: 15m
-      JWT_REFRESH_EXPIRES_IN: 7d
-      PHONEPE_ENV: sandbox
-      PHONEPE_MERCHANT_ID: YOUR_VALUE_HERE
-      PHONEPE_SALT_KEY: YOUR_VALUE_HERE
-      PHONEPE_SALT_INDEX: 1
+      NODE_ENV: ${NODE_ENV:-development}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:3000}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgrespassword@postgres:5432/viewora_db?schema=public}
+      JWT_ACCESS_EXPIRES_IN: ${JWT_ACCESS_EXPIRES_IN:-15m}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
+      PHONEPE_ENV: ${PHONEPE_ENV:-sandbox}
+      PHONEPE_SALT_INDEX: ${PHONEPE_SALT_INDEX:-1}
       PHONEPE_BASE_URL_SANDBOX: https://api-preprod.phonepe.com/apis/pg-sandbox
       PHONEPE_BASE_URL_PRODUCTION: https://api.phonepe.com/apis/hermes
-      PHONEPE_REDIRECT_URL: http://localhost:3000/payment/status
-      PHONEPE_CALLBACK_URL: http://localhost:5000/api/v1/payments/callback
-      EMAIL_HOST: smtp-relay.brevo.com
-      EMAIL_PORT: 587
-      EMAIL_USER: b00614001@smtp-brevo.com
-      EMAIL_PASS: xsmtpsib-b9388804b87a271a7a193e80fabfff6ae547d2e4a19beff314a4fd01ff179bc9-HfRzGF7XXYnTcYsu
-      EMAIL_FROM: deekshakhathi26@gmail.com
-      CLOUDINARY_CLOUD_NAME: YOUR_VALUE_HERE
-      CLOUDINARY_API_KEY: YOUR_VALUE_HERE
-      CLOUDINARY_API_SECRET: YOUR_VALUE_HERE
-      LOG_LEVEL: debug
+      EMAIL_HOST: ${EMAIL_HOST:-smtp-relay.brevo.com}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
     depends_on:
       postgres:
         condition: service_healthy
@@ -63,17 +53,20 @@ services:
       context: ./client
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: http://localhost:5000/api/v1
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000/api/v1}
     container_name: viewora-client
     restart: always
     ports:
       - "3000:3000"
+    env_file:
+      - .env          # ← secrets live here (git-ignored)
     environment:
       NODE_ENV: production
       PORT: 3000
-      NEXT_PUBLIC_API_URL: http://localhost:5000/api/v1
+      BACKEND_URL: ${BACKEND_URL:-http://viewora-server:5000}
+      INTERNAL_API_URL: ${INTERNAL_API_URL:-http://viewora-server:5000/api/v1}
     depends_on:
       - server
 
 volumes:
-  postgres_data:
+  postgres_data:

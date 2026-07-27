@@ -115,6 +115,17 @@ const authLimiter = rateLimit({
   keyGenerator: getClientIp,
 });
 
+// Light rate limit for analytics tracking (prevents spam inflation of heatmap data)
+const trackLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute window
+  max: 20,             // max 20 page-view pings per IP per minute
+  validate: { trustProxy: false, xForwardedForHeader: false },
+  keyGenerator: getClientIp,
+  standardHeaders: false,
+  legacyHeaders: false,
+  skipFailedRequests: true,
+});
+
 // Routes
 app.use('/api/v1/auth', authLimiter, authRoutes);
 app.use('/api/v1/users', userRoutes);
@@ -130,7 +141,7 @@ app.use('/api/v1/contact', contactRoutes);
 app.use('/api/v1/variants', variantRoutes);
 app.use('/api/v1/coupons', couponRoutes);
 app.use('/api/v1/subscribers', subscriberRoutes);
-app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/analytics', trackLimiter, analyticsRoutes);
 
 // Health check
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
