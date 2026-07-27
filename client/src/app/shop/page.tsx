@@ -135,7 +135,18 @@ function ShopContent() {
 
   // Apply client-side filters
   const filteredProducts = useMemo(() => {
-    if (filterKey === "all" && selectedBrand === "all" && searchQuery === "" && selectedType === "all") {
+    if (
+      filterKey === "all" &&
+      selectedBrand === "all" &&
+      searchQuery === "" &&
+      selectedType === "all" &&
+      selectedPriceRange === "all" &&
+      selectedGender === "all" &&
+      selectedFrameSize === "all" &&
+      selectedFrameColor === "all" &&
+      selectedFrameType === "all" &&
+      selectedMaterial === "all"
+    ) {
       return allProducts;
     }
 
@@ -344,21 +355,21 @@ function ShopContent() {
         <aside className={`w-full md:w-64 lg:w-72 shrink-0 ${sidebarOpen ? "block" : "hidden md:block"}`}>
           <FilterSidebar
             selectedPriceRange={selectedPriceRange}
-            setSelectedPriceRange={setSelectedPriceRange}
+            setSelectedPriceRange={(val) => { setSelectedPriceRange(val); setCurrentPage(1); }}
             selectedGender={selectedGender}
-            setSelectedGender={setSelectedGender}
+            setSelectedGender={(val) => { setSelectedGender(val); setCurrentPage(1); }}
             selectedShape={selectedShape}
             setSelectedShape={(val) => updateFilter("shape", val)}
             selectedFrameSize={selectedFrameSize}
-            setSelectedFrameSize={setSelectedFrameSize}
+            setSelectedFrameSize={(val) => { setSelectedFrameSize(val); setCurrentPage(1); }}
             selectedBrand={selectedBrand}
             setSelectedBrand={(val) => updateFilter("brand", val)}
             selectedFrameColor={selectedFrameColor}
-            setSelectedFrameColor={setSelectedFrameColor}
+            setSelectedFrameColor={(val) => { setSelectedFrameColor(val); setCurrentPage(1); }}
             selectedFrameType={selectedFrameType}
-            setSelectedFrameType={setSelectedFrameType}
+            setSelectedFrameType={(val) => { setSelectedFrameType(val); setCurrentPage(1); }}
             selectedMaterial={selectedMaterial}
-            setSelectedMaterial={setSelectedMaterial}
+            setSelectedMaterial={(val) => { setSelectedMaterial(val); setCurrentPage(1); }}
             availableBrands={availableBrands}
             onClearAll={() => {
               setSelectedPriceRange("all");
