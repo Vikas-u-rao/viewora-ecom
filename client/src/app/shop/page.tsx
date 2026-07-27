@@ -22,8 +22,7 @@ function ShopContent() {
   const [sortBy, setSortBy] = useState("newest");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Lenskart filter states
-  const [tryIn3D, setTryIn3D] = useState(false);
+  // Filter states
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
   const [selectedGender, setSelectedGender] = useState("all");
   const [selectedFrameSize, setSelectedFrameSize] = useState("all");
@@ -275,8 +274,6 @@ function ShopContent() {
         {/* Filters Sidebar */}
         <aside className={`w-full md:w-64 lg:w-72 shrink-0 ${sidebarOpen ? "block" : "hidden md:block"}`}>
           <FilterSidebar
-            tryIn3D={tryIn3D}
-            setTryIn3D={setTryIn3D}
             selectedPriceRange={selectedPriceRange}
             setSelectedPriceRange={setSelectedPriceRange}
             selectedGender={selectedGender}
@@ -305,7 +302,6 @@ function ShopContent() {
               setSelectedFrameColor("all");
               setSelectedFrameType("all");
               setSelectedMaterial("all");
-              setTryIn3D(false);
               updateFilter("clear");
             }}
             hasActiveFilters={
@@ -315,8 +311,7 @@ function ShopContent() {
               selectedFrameSize !== "all" ||
               selectedFrameColor !== "all" ||
               selectedFrameType !== "all" ||
-              selectedMaterial !== "all" ||
-              tryIn3D
+              selectedMaterial !== "all"
             }
           />
         </aside>

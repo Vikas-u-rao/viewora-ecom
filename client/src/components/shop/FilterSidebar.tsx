@@ -4,8 +4,6 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp, Filter, RotateCcw } from "lucide-react";
 
 interface FilterSidebarProps {
-  tryIn3D: boolean;
-  setTryIn3D: (val: boolean) => void;
   selectedPriceRange: string;
   setSelectedPriceRange: (val: string) => void;
   selectedGender: string;
@@ -29,8 +27,6 @@ interface FilterSidebarProps {
 }
 
 export function FilterSidebar({
-  tryIn3D,
-  setTryIn3D,
   selectedPriceRange,
   setSelectedPriceRange,
   selectedGender,
@@ -70,28 +66,6 @@ export function FilterSidebar({
 
   return (
     <div className="w-full bg-[#121212] text-foreground border border-gold/20 rounded-2xl p-5 shadow-2xl space-y-5 font-sans backdrop-blur-md">
-      {/* Try in 3D Switch */}
-      <div className="flex items-center justify-between py-1 border-b border-gold/15 pb-4">
-        <div className="flex items-center gap-2">
-          <span className="font-serif font-semibold text-white text-base">Try in 3D</span>
-          <span className="text-[10px] bg-gold/10 border border-gold/30 text-gold font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
-            AR Preview
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={() => setTryIn3D(!tryIn3D)}
-          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border border-gold/30 transition-colors duration-200 ease-in-out focus:outline-none ${
-            tryIn3D ? "bg-gold" : "bg-gray-800"
-          }`}
-        >
-          <span
-            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow ring-0 transition duration-200 ease-in-out ${
-              tryIn3D ? "translate-x-5" : "translate-x-0"
-            }`}
-          />
-        </button>
-      </div>
 
       {/* Filters Header */}
       <div className="flex items-center justify-between pt-1 pb-3 border-b border-gold/15">
