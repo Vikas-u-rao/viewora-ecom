@@ -16,10 +16,10 @@ export default function CollectionProductGrid({ collection }: { collection: stri
     setLoading(true);
     setError(null);
 
-    fetchProductsApi(`?collection=${collection}&limit=24`)
+    fetchProductsApi(`?collection=${collection}&limit=500`)
       .then(async (data) => {
         if (data.products.length > 0) return data;
-        return fetchProductsApi("?limit=24");
+        return fetchProductsApi("?limit=500");
       })
       .then((data) => {
         if (!cancelled) setProducts(data.products);

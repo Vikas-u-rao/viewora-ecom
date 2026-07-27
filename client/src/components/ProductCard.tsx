@@ -21,6 +21,7 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
   const fallback = getFallbackImage(product.slug);
 
   const firstUrl = Array.isArray(product.defaultImageUrls) ? product.defaultImageUrls[0] : null;
+  const secondUrl = Array.isArray(product.defaultImageUrls) && product.defaultImageUrls.length > 1 ? product.defaultImageUrls[1] : null;
   const image = firstUrl || fallback;
   const unavailable = !variant || variant.stock < 1;
   const wishlisted = isWishlisted(product.id);
@@ -88,13 +89,26 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
           className="relative w-full h-full block"
         >
           {image ? (
-            <Image
-              src={image}
-              alt={product.name}
-              fill
-              className="object-contain animate-fade-in"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            />
+            <>
+              <Image
+                src={image}
+                alt={product.name}
+                fill
+                className={`object-contain transition-opacity duration-500 ease-in-out ${
+                  secondUrl ? "group-hover:opacity-0" : ""
+                }`}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              />
+              {secondUrl && (
+                <Image
+                  src={secondUrl}
+                  alt={`${product.name} secondary view`}
+                  fill
+                  className="object-contain opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                />
+              )}
+            </>
           ) : (
             <div className="flex h-full items-center justify-center">
               <Package className="size-10 text-muted-foreground" strokeWidth={1.2} />

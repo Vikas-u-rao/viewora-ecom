@@ -42,6 +42,7 @@ RUN npx prisma generate
 # Copy built dist files from builder stage
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma/seed.js ./prisma/seed.js
+COPY --from=builder /app/prisma/cleaned_products.json ./prisma/cleaned_products.json
 
 # Expose backend port
 EXPOSE 5000

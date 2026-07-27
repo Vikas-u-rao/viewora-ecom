@@ -46,6 +46,8 @@ app.use(cors({
       !origin ||
       allowedOrigins.includes(origin) ||
       allowedOrigins.includes('*') ||
+      origin.startsWith('http://localhost:') ||
+      origin.startsWith('http://127.0.0.1:') ||
       origin.endsWith('.viewora.in') ||
       origin === 'https://viewora.in' ||
       origin.includes('azurewebsites.net')
