@@ -65,10 +65,14 @@ function LoginContent() {
 
       setSuccess(true);
       setAuth(data.user, data.accessToken);
-      
+
       setTimeout(() => {
-        router.push(redirect);
-      }, 1200);
+        if (data.user?.role === 'admin' && redirect === '/') {
+          router.push('/admin');
+        } else {
+          router.push(redirect);
+        }
+      }, 1000);
     } catch {
       setError({ message: 'An unexpected error occurred. Please try again.' });
     } finally {

@@ -85,7 +85,7 @@ export interface DashboardData {
 
 import { getApiBaseUrl } from "@/lib/constants";
 
-export function useDashboardData(accessToken: string | null): DashboardData {
+export function useDashboardData(accessToken: string | null, searchQuery: string = ""): DashboardData {
   const apiUrl = getApiBaseUrl();
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -95,6 +95,7 @@ export function useDashboardData(accessToken: string | null): DashboardData {
   const [ordersPage, setOrdersPage] = useState(1);
   const [productsTotalPages, setProductsTotalPages] = useState(1);
   const [ordersTotalPages, setOrdersTotalPages] = useState(1);
+  const [heatmapMatrix, setHeatmapMatrix] = useState<number[][] | null>(null);
   const [fetchLoading, setFetchLoading] = useState(true);
 
   useEffect(() => {
@@ -103,8 +104,9 @@ export function useDashboardData(accessToken: string | null): DashboardData {
     const fetchData = async () => {
       setFetchLoading(true);
       try {
-        const [prodRes, ordRes, coupRes] = await Promise.all([
-          fetch(`${apiUrl}/admin/products?page=${productsPage}&limit=50`, {
+        const searchParam = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : "";
+        const [prodRes, ordRes, coupRes, heatRes] = await Promise.all([
+          fetch(`${apiUrl}/admin/products?page=${productsPage}&limit=100${searchParam}`, {
             headers: { Authorization: `Bearer ${accessToken}` },
           }),
           fetch(`${apiUrl}/admin/orders?page=${ordersPage}&limit=100`, {
@@ -113,6 +115,7 @@ export function useDashboardData(accessToken: string | null): DashboardData {
           fetch(`${apiUrl}/admin/coupons`, {
             headers: { Authorization: `Bearer ${accessToken}` },
           }),
+          fetch(`${apiUrl}/analytics/heatmap`),
         ]);
 
         if (cancelled) return;
@@ -131,6 +134,10 @@ export function useDashboardData(accessToken: string | null): DashboardData {
           const data = await coupRes.json();
           setCoupons(data.coupons || []);
         }
+        if (heatRes.ok) {
+          const data = await heatRes.json();
+          if (data.heatmap) setHeatmapMatrix(data.heatmap);
+        }
       } catch {
         // Silently fail
       } finally {
@@ -139,7 +146,7 @@ export function useDashboardData(accessToken: string | null): DashboardData {
     };
     fetchData();
     return () => { cancelled = true; };
-  }, [accessToken, apiUrl, productsPage, ordersPage]);
+  }, [accessToken, apiUrl, productsPage, ordersPage, searchQuery]);
 
   const totalSales = orders
     .filter((o) => o.paymentStatus === "paid")
@@ -187,12 +194,13 @@ export function useDashboardData(accessToken: string | null): DashboardData {
     topProducts: displayTopProducts,
     visitorCount: 14280,
     revenueTargetPercent: 94,
-    heatmapData: [
-      [12, 18, 10, 15, 30, 42, 25],
-      [8, 14, 22, 19, 35, 48, 20],
-      [15, 25, 35, 40, 55, 68, 38],
-      [20, 38, 48, 52, 75, 92, 54],
-      [10, 15, 20, 25, 42, 50, 28],
+    heatmapData: heatmapMatrix || [
+      [14, 18, 12, 15, 32, 45, 28], // 00:00 - 04:00
+      [8, 12, 20, 18, 28, 38, 22],  // 04:00 - 08:00
+      [25, 32, 40, 48, 62, 75, 42], // 08:00 - 12:00
+      [30, 42, 55, 60, 78, 88, 58], // 12:00 - 16:00
+      [45, 58, 68, 72, 94, 98, 76], // 16:00 - 20:00
+      [22, 35, 42, 45, 68, 82, 48], // 20:00 - 24:00
     ],
     fetchLoading,
     productsPage,

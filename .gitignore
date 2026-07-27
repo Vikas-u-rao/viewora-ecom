@@ -31,3 +31,7 @@ prisma/dev.db
 server/prisma/scraped_products.json
 images/
 hero-section-redesign/
+
+# Uploaded local product images
+server/public/uploads/products/*
+!server/public/uploads/products/.gitkeep

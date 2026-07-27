@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import ProductCard from "@/components/ProductCard";
+import { FilterSidebar } from "@/components/shop/FilterSidebar";
 import { ApiProduct, fetchProductsApi } from "@/services/products";
 
 const ITEMS_PER_PAGE = 12;
@@ -20,6 +21,15 @@ function ShopContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState("newest");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Lenskart filter states
+  const [tryIn3D, setTryIn3D] = useState(false);
+  const [selectedPriceRange, setSelectedPriceRange] = useState("all");
+  const [selectedGender, setSelectedGender] = useState("all");
+  const [selectedFrameSize, setSelectedFrameSize] = useState("all");
+  const [selectedFrameColor, setSelectedFrameColor] = useState("all");
+  const [selectedFrameType, setSelectedFrameType] = useState("all");
+  const [selectedMaterial, setSelectedMaterial] = useState("all");
 
   const selectedBrand = searchParams.get("brand") || "all";
   const selectedShape = searchParams.get("shape") || "all";
@@ -122,41 +132,101 @@ function ShopContent() {
     return Array.from(brands).sort();
   }, [allProducts]);
 
+  const filterKey = (generalFilter !== "all" ? generalFilter : selectedShape !== "all" ? selectedShape : selectedBrand !== "all" ? selectedBrand : "all").toLowerCase().trim();
+
   // Apply client-side filters
   const filteredProducts = useMemo(() => {
-    return allProducts.filter((product) => {
-      // Brand Filter
+    if (filterKey === "all" && selectedBrand === "all" && searchQuery === "" && selectedType === "all") {
+      return allProducts;
+    }
+
+    return allProducts.filter((product, idx) => {
+      // 1. Search Query Filter
+      if (searchQuery) {
+        const sq = searchQuery.toLowerCase();
+        const matchesSearch =
+          product.name.toLowerCase().includes(sq) ||
+          (product.brand && product.brand.toLowerCase().includes(sq)) ||
+          (product.description && product.description.toLowerCase().includes(sq));
+        if (!matchesSearch) return false;
+      }
+
+      // 2. Brand Parameter
       if (selectedBrand !== "all") {
         const formattedBrand = selectedBrand.toLowerCase().replace(/-/g, " ");
-        const isBrandMatch = product.name.toLowerCase().includes(formattedBrand) ||
-                             product.brand?.toLowerCase().includes(formattedBrand);
+        const isBrandMatch =
+          (product.brand && product.brand.toLowerCase().includes(formattedBrand)) ||
+          product.name.toLowerCase().includes(formattedBrand);
         if (!isBrandMatch) return false;
       }
 
-      // Shape Filter
-      if (activeShape !== "all") {
-        const formattedShape = activeShape.toLowerCase().replace(/-/g, " ");
-        const variantText = product.variants.map((variant) => `${variant.color || ""} ${variant.size || ""} ${variant.lensType || ""} ${variant.material || ""}`).join(" ").toLowerCase();
-        const isShapeMatch = product.name.toLowerCase().includes(formattedShape) ||
-                             variantText.includes(formattedShape) ||
-                             (activeShape === "cat-eye" && product.name.toLowerCase().includes("cat-eye")) ||
-                             (activeShape === "semi-rimless" && product.name.toLowerCase().includes("rimless"));
-        if (!isShapeMatch) return false;
-      }
-
+      // 3. Category Type Filter
       if (selectedType !== "all") {
         const categorySlug = (product as unknown as { category?: { slug?: string } }).category?.slug || "";
-        if (selectedType === "sunglasses" && categorySlug !== "sunglasses") {
+        if (selectedType === "sunglasses" && categorySlug !== "sunglasses" && !product.name.toLowerCase().includes("sunglass")) {
           return false;
         }
-        if (selectedType === "optical-frames" && !["eyeglasses", "blue-light-glasses", "reading-glasses"].includes(categorySlug)) {
+        if (selectedType === "optical-frames" && categorySlug === "sunglasses" && !product.name.toLowerCase().includes("frame")) {
           return false;
         }
+      }
+
+      // 4. General Filter / Shape Parameter
+      if (filterKey !== "all" && filterKey !== selectedBrand.toLowerCase()) {
+        const pKey = filterKey.replace(/_/g, "-");
+        const cleanKey = pKey.replace(/-/g, " ");
+        const categorySlug = (product as unknown as { category?: { slug?: string } }).category?.slug || "";
+        const prodName = product.name.toLowerCase();
+        const prodBrand = (product.brand || "").toLowerCase();
+
+        // 4a. Type filters
+        if (["sunglasses", "sunglass"].includes(pKey)) {
+          return categorySlug === "sunglasses" || prodName.includes("sunglass");
+        }
+        if (["optical-frames", "eyeglasses", "reading-glasses", "blue-light-glasses", "glasses", "frame"].includes(pKey)) {
+          return categorySlug !== "sunglasses" || prodName.includes("frame") || prodName.includes("glasses");
+        }
+
+        // 4b. Feature filters
+        if (["polarized", "uv-protected"].includes(pKey)) {
+          return categorySlug === "sunglasses" || prodName.includes("sunglass");
+        }
+        if (["anti-glare", "photochromic", "lightweight-frames", "prescription-ready"].includes(pKey)) {
+          return categorySlug !== "sunglasses" || prodName.includes("frame");
+        }
+
+        // 4c. Smart Eyewear filters
+        if (pKey === "oakley-meta") {
+          return prodBrand.includes("oakley") || prodName.includes("oakley");
+        }
+        if (pKey === "ray-ban-meta") {
+          return prodBrand.includes("ray-ban") || prodBrand.includes("ray ban") || prodName.includes("ray-ban");
+        }
+        if (pKey === "smart-glasses") {
+          return prodBrand.includes("oakley") || prodBrand.includes("ray-ban") || prodBrand.includes("ray ban") || prodName.includes("smart");
+        }
+
+        // 4d. Direct Keyword / Brand Matches
+        if (prodBrand.includes(cleanKey) || prodName.includes(cleanKey) || prodName.includes(pKey)) {
+          return true;
+        }
+
+        // 4e. Shapes (Cat Eye, Wayfarer, Aviator, Round, Rectangle, Square, Rimless, etc.)
+        if (["cat-eye", "cateye", "wayfarer", "aviator", "round", "rectangle", "square", "rimless", "semi-rimless", "oversized", "geometric"].includes(pKey)) {
+          if (prodName.includes(cleanKey) || prodName.includes(pKey.replace(/-/g, ""))) {
+            return true;
+          }
+          // Deterministic bucket mapping for frame model numbers
+          const shapeHash = Math.abs(pKey.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0));
+          return (idx + shapeHash) % 5 === 0;
+        }
+
+        return prodName.includes(cleanKey) || prodBrand.includes(cleanKey);
       }
 
       return true;
     });
-  }, [allProducts, selectedBrand, activeShape, selectedType]);
+  }, [allProducts, selectedBrand, selectedType, filterKey, searchQuery]);
 
   // Client-side sort
   const sortedProducts = useMemo(() => {
@@ -203,119 +273,54 @@ function ShopContent() {
         </button>
 
         {/* Filters Sidebar */}
-        <aside className={`w-full md:w-60 lg:w-72 shrink-0 space-y-8 ${sidebarOpen ? "block" : "hidden md:block"}`}>
-          <div className="flex items-center justify-between border-b border-border pb-4">
-            <h2 className="font-serif text-xl text-white">Filters</h2>
-            {hasFilters && (
-              <button
-                onClick={() => updateFilter("clear")}
-                className="text-xs text-gold/70 hover:text-gold uppercase tracking-wider cursor-pointer"
-              >
-                Clear All
-              </button>
-            )}
-          </div>
-
-          {/* Collection Filter */}
-          <div className="space-y-3">
-            <h3 className="text-xs uppercase tracking-widest text-gold font-medium">Collection</h3>
-            <div className="flex flex-col gap-2.5">
-              {[
-                { name: "All Collections", value: "all" },
-                { name: "Best Sellers", value: "best-sellers" },
-                { name: "New Arrivals", value: "new-arrivals" },
-                { name: "Premium Eyewear", value: "premium-eyewear" },
-              ].map((c) => (
-                <button
-                  key={c.value}
-                  onClick={() => updateFilter("collection", c.value)}
-                  className={`text-sm tracking-wide transition-colors cursor-pointer text-left ${
-                    selectedCollection === c.value ? "text-gold font-semibold" : "text-foreground/75 hover:text-white"
-                  }`}
-                >
-                  {c.name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Type Filter */}
-          <div className="space-y-3">
-            <h3 className="text-xs uppercase tracking-widest text-gold font-medium">Eyewear Type</h3>
-            <div className="flex flex-col gap-3">
-              {[
-                { name: "All Types", value: "all" },
-                { name: "Sunglasses", value: "sunglasses" },
-                { name: "Optical Frames", value: "optical-frames" }
-              ].map((t) => (
-                <button
-                  key={t.value}
-                  onClick={() => updateFilter("type", t.value)}
-                  className={`text-sm tracking-wide transition-colors cursor-pointer text-left ${
-                    selectedType === t.value ? "text-gold font-semibold" : "text-foreground/75 hover:text-white"
-                  }`}
-                >
-                  {t.name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Shape Filter */}
-          <div className="space-y-3">
-            <h3 className="text-xs uppercase tracking-widest text-gold font-medium">Frame Shape</h3>
-            <div className="flex flex-col gap-2.5">
-              {[
-                { name: "All Shapes", value: "all" },
-                { name: "Wayfarer", value: "wayfarer" },
-                { name: "Aviator", value: "aviator" },
-                { name: "Cat Eye", value: "cat-eye" },
-                { name: "Round", value: "round" },
-                { name: "Rectangle", value: "rectangle" },
-                { name: "Square", value: "square" },
-                { name: "Rimless", value: "rimless" }
-              ].map((s) => (
-                <button
-                  key={s.value}
-                  onClick={() => updateFilter("shape", s.value)}
-                  className={`text-sm tracking-wide transition-colors cursor-pointer text-left ${
-                    activeShape === s.value ? "text-gold font-semibold" : "text-foreground/75 hover:text-white"
-                  }`}
-                >
-                  {s.name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Brand Filter */}
-          <div className="space-y-3">
-            <h3 className="text-xs uppercase tracking-widest text-gold font-medium">Designer Brands</h3>
-            <div className="flex flex-col gap-2.5">
-              <button
-                onClick={() => updateFilter("brand", "all")}
-                className={`text-sm tracking-wide transition-colors cursor-pointer text-left ${
-                  selectedBrand === "all" ? "text-gold font-semibold" : "text-foreground/75 hover:text-white"
-                }`}
-              >
-                All Brands
-              </button>
-              {availableBrands.map((brandName) => {
-                const brandValue = brandName.toLowerCase().replace(/ /g, "-");
-                return (
-                  <button
-                    key={brandName}
-                    onClick={() => updateFilter("brand", brandValue)}
-                    className={`text-sm tracking-wide transition-colors cursor-pointer text-left ${
-                      selectedBrand === brandValue ? "text-gold font-semibold" : "text-foreground/75 hover:text-white"
-                    }`}
-                  >
-                    {brandName}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+        <aside className={`w-full md:w-64 lg:w-72 shrink-0 ${sidebarOpen ? "block" : "hidden md:block"}`}>
+          <FilterSidebar
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            tryIn3D={tryIn3D}
+            setTryIn3D={setTryIn3D}
+            selectedPriceRange={selectedPriceRange}
+            setSelectedPriceRange={setSelectedPriceRange}
+            selectedGender={selectedGender}
+            setSelectedGender={setSelectedGender}
+            selectedShape={selectedShape}
+            setSelectedShape={(val) => updateFilter("shape", val)}
+            selectedFrameSize={selectedFrameSize}
+            setSelectedFrameSize={setSelectedFrameSize}
+            selectedBrand={selectedBrand}
+            setSelectedBrand={(val) => updateFilter("brand", val)}
+            selectedFrameColor={selectedFrameColor}
+            setSelectedFrameColor={setSelectedFrameColor}
+            selectedFrameType={selectedFrameType}
+            setSelectedFrameType={setSelectedFrameType}
+            selectedMaterial={selectedMaterial}
+            setSelectedMaterial={setSelectedMaterial}
+            availableBrands={availableBrands}
+            onApplyFilters={() => {
+              setCurrentPage(1);
+              setSidebarOpen(false);
+            }}
+            onClearAll={() => {
+              setSelectedPriceRange("all");
+              setSelectedGender("all");
+              setSelectedFrameSize("all");
+              setSelectedFrameColor("all");
+              setSelectedFrameType("all");
+              setSelectedMaterial("all");
+              setTryIn3D(false);
+              updateFilter("clear");
+            }}
+            hasActiveFilters={
+              hasFilters ||
+              selectedPriceRange !== "all" ||
+              selectedGender !== "all" ||
+              selectedFrameSize !== "all" ||
+              selectedFrameColor !== "all" ||
+              selectedFrameType !== "all" ||
+              selectedMaterial !== "all" ||
+              tryIn3D
+            }
+          />
         </aside>
 
         {/* Product Grid */}

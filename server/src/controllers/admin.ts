@@ -236,11 +236,25 @@ export async function initiateRefund(req: AuthRequest, res: Response, next: Next
 export async function listAllProducts(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const page = Math.max(1, parseInt(String(req.query.page || '1'), 10));
-    const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit || '50'), 10)));
+    const limit = Math.min(5000, Math.max(1, parseInt(String(req.query.limit || '50'), 10)));
+    const search = req.query.search ? String(req.query.search).trim() : '';
     const skip = (page - 1) * limit;
+
+    const whereClause: any = {
+      deletedAt: null,
+    };
+
+    if (search) {
+      whereClause.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { brand: { contains: search, mode: 'insensitive' } },
+        { variants: { some: { sku: { contains: search, mode: 'insensitive' } } } },
+      ];
+    }
 
     const [products, total] = await prisma.$transaction([
       prisma.product.findMany({
+        where: whereClause,
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
@@ -250,7 +264,7 @@ export async function listAllProducts(req: AuthRequest, res: Response, next: Nex
           collections: { include: { collection: true } },
         },
       }),
-      prisma.product.count(),
+      prisma.product.count({ where: whereClause }),
     ]);
 
     res.json({

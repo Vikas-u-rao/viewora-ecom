@@ -534,7 +534,7 @@ export async function resetPassword(req: Request, res: Response, next: NextFunct
 // POST /auth/refresh
 export async function refresh(req: Request, res: Response, next: NextFunction) {
   try {
-    const token = req.cookies.refreshToken;
+    const token = req.cookies?.refreshToken || req.body?.refreshToken;
     if (!token) {
       throw new AppError('UNAUTHORIZED', 401, 'Refresh token not found');
     }
