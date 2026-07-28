@@ -20,7 +20,7 @@ import view3 from "@/assets/view3.jpg";
 import view4 from "@/assets/view4.jpg";
 import view5 from "@/assets/view5.jpg";
 import logo from "@/assets/logo.png";
-import promoBannerImg from "@/assets/IMG-20260725-WA0085.jpg";
+import promoBannerImg from "@/assets/promo-banner-new.jpg";
 
 // Import style images
 import wayfarerImg from "@/assets/styles/wayfarer.png";
