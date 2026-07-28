@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import fs from "fs";
 import path from "path";
 
@@ -18,13 +18,41 @@ const s3Client = new S3Client({
 
 const imagesDir = path.resolve(__dirname, "../../../images");
 
+async function getExistingKeys(): Promise<Set<string>> {
+  console.log("Fetching list of existing objects in R2 bucket...");
+  const keys = new Set<string>();
+  let continuationToken: string | undefined = undefined;
+
+  do {
+    const response: any = await s3Client.send(
+      new ListObjectsV2Command({
+        Bucket: bucketName,
+        ContinuationToken: continuationToken,
+      })
+    );
+
+    if (response.Contents) {
+      for (const item of response.Contents) {
+        if (item.Key) {
+          keys.add(item.Key);
+        }
+      }
+    }
+    continuationToken = response.NextContinuationToken;
+  } while (continuationToken);
+
+  console.log(`Found ${keys.size} existing keys in R2.`);
+  return keys;
+}
+
 async function uploadImages() {
-  console.log(`Starting bulk upload from: ${imagesDir}`);
+  console.log(`Starting optimized bulk upload from: ${imagesDir}`);
   if (!fs.existsSync(imagesDir)) {
     console.error(`Images directory does not exist: ${imagesDir}`);
     process.exit(1);
   }
 
+  const existingKeys = await getExistingKeys();
   const files = fs.readdirSync(imagesDir);
   console.log(`Found ${files.length} files to process.`);
 
@@ -32,18 +60,14 @@ async function uploadImages() {
   let skipped = 0;
   let errors = 0;
 
-  for (let i = 0; i < files.length; i++) {
-    const filename = files[i];
-    const filePath = path.join(imagesDir, filename);
+  // Prepare list of all upload tasks
+  const uploadTasks: { filePath: string; key: string; contentType: string }[] = [];
 
-    // Skip directories or non-image files
+  for (const filename of files) {
+    const filePath = path.join(imagesDir, filename);
     if (fs.statSync(filePath).isDirectory()) continue;
     if (!/\.(jpg|jpeg|png|webp|gif|svg)$/i.test(filename)) continue;
 
-    // R2 Object Keys to generate for 100% DB compatibility:
-    // 1. uploads/products/SGGUC..._gucci-sunglass-gg1793s-004.jpg
-    // 2. uploads/products/gucci-sunglass-gg1793s-004.jpg
-    // 3. uploads/products/gucci-sunglass-gg1793s-004_0.jpg
     const keyWithSku = `uploads/products/${filename}`;
     const cleanName = filename.replace(/^[A-Z0-9;,_-]+?_/, "");
     const cleanKey = `uploads/products/${cleanName}`;
@@ -52,7 +76,6 @@ async function uploadImages() {
     const ext = extMatch ? extMatch[0] : ".jpg";
     const nameNoExt = cleanName.replace(/\.(jpg|jpeg|png|webp)$/i, "");
     
-    // Add _0 suffix if not already containing _
     const zeroKey = nameNoExt.includes("_") 
       ? `uploads/products/${nameNoExt}${ext}`
       : `uploads/products/${nameNoExt}_0${ext}`;
@@ -66,16 +89,28 @@ async function uploadImages() {
     const keysToUpload = Array.from(new Set([keyWithSku, cleanKey, zeroKey]));
 
     for (const key of keysToUpload) {
-      try {
-        // Check if file already exists in R2
-        try {
-          await s3Client.send(new HeadObjectCommand({ Bucket: bucketName, Key: key }));
-          skipped++;
-          continue;
-        } catch (err: any) {
-          // Object doesn't exist, proceed with upload
-        }
+      if (existingKeys.has(key)) {
+        skipped++;
+      } else {
+        uploadTasks.push({ filePath, key, contentType });
+      }
+    }
+  }
 
+  console.log(`Skipped: ${skipped} keys (already exist). Need to upload: ${uploadTasks.length} keys.`);
+
+  // Upload in parallel using a promise pool
+  const CONCURRENCY = 80;
+  let activeIndex = 0;
+
+  async function worker() {
+    while (activeIndex < uploadTasks.length) {
+      const taskIndex = activeIndex++;
+      if (taskIndex >= uploadTasks.length) break;
+
+      const { filePath, key, contentType } = uploadTasks[taskIndex];
+
+      try {
         const fileStream = fs.readFileSync(filePath);
         await s3Client.send(
           new PutObjectCommand({
@@ -85,9 +120,10 @@ async function uploadImages() {
             ContentType: contentType,
           })
         );
-
         uploaded++;
-        if (uploaded % 50 === 0) console.log(`[${uploaded}] Uploaded: ${key}`);
+        if (uploaded % 100 === 0) {
+          console.log(`[${uploaded}] Successfully uploaded: ${key}`);
+        }
       } catch (err: any) {
         errors++;
         console.error(`Failed to upload ${key}:`, err.message);
@@ -95,10 +131,14 @@ async function uploadImages() {
     }
   }
 
-  console.log(`\n🎉 Upload Complete!`);
+  // Start workers
+  const workers = Array(CONCURRENCY).fill(null).map(worker);
+  await Promise.all(workers);
+
+  console.log(`\n🎉 Optimized Upload Complete!`);
   console.log(`Uploaded: ${uploaded}`);
   console.log(`Skipped (already exists): ${skipped}`);
   console.log(`Errors: ${errors}`);
 }
 
-uploadImages();
+uploadImages().catch(console.error);
