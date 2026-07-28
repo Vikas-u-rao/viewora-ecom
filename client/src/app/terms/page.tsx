@@ -34,12 +34,12 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-white font-serif text-xl mb-3">4. Shipping & Delivery</h2>
-            <p>We ship across India. Standard delivery takes 5–7 business days. Delivery timelines are estimates and may vary due to courier delays or unforeseen circumstances. A shipping fee of ₹99 applies to all orders. Free shipping may be available during promotional periods.</p>
+            <p>We ship across India. Standard delivery takes 3–5 business days. Delivery timelines are estimates and may vary due to courier delays or unforeseen circumstances. A shipping fee of ₹99 applies to all orders. Free shipping may be available during promotional periods.</p>
           </section>
 
           <section>
             <h2 className="text-white font-serif text-xl mb-3">5. Returns & Exchanges</h2>
-            <p>We accept returns within 7 days of delivery for unused, undamaged products in original packaging. To initiate a return, contact <a href="mailto:support@viewora.in" className="text-gold hover:underline">support@viewora.in</a> with your order number. Refunds are processed within 5–7 business days after we receive the returned item. Shipping charges are non-refundable.</p>
+            <p>We accept returns within 3 days of delivery for unused, undamaged products in original packaging. To initiate a return, contact <a href="mailto:contact@viewora.in" className="text-gold hover:underline">contact@viewora.in</a> with your order number. Refunds are processed within 5–7 business days after we receive the returned item. Shipping charges are non-refundable.</p>
           </section>
 
           <section>
@@ -59,7 +59,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-white font-serif text-xl mb-3">9. Contact</h2>
-            <p>For any queries, write to us at: <a href="mailto:support@viewora.in" className="text-gold hover:underline">support@viewora.in</a></p>
+            <p>For any queries, write to us at: <a href="mailto:contact@viewora.in" className="text-gold hover:underline">contact@viewora.in</a></p>
           </section>
         </div>
       </main>

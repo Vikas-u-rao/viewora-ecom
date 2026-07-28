@@ -74,7 +74,7 @@ export default function Footer() {
         .viewora-brand-subtitle { color: ${SILVER}; font-size: 10px; font-weight: 600; letter-spacing: .55em; padding-left: .55em; }
         .viewora-brand-rule { align-items: center; color: ${PINK}; display: flex; font-size: 18px; gap: 10px; margin: 35px 0 25px; width: 100%; }
         .viewora-brand-rule::before, .viewora-brand-rule::after { background: ${PINK}; content: ""; flex: 1; height: 1px; }
-        .viewora-tagline { color: ${PINK}; font-family: ${SERIF}; font-size: 19px; line-height: 1.55; margin: 0; text-align: left; width: 100%; }
+        .viewora-tagline { color: ${PINK}; font-family: ${SERIF}; font-size: 19px; line-height: 1.55; margin: 0; text-align: center; width: 100%; }
         .viewora-socials { display: flex; gap: 19px; margin-top: 28px; width: 100%; }
         .viewora-social { align-items: center; border: 1px solid rgba(250, 214, 227, .78); border-radius: 999px; color: ${PINK}; display: inline-flex; height: 43px; justify-content: center; transition: all .25s ease; width: 43px; }
         .viewora-social:hover { background: ${GOLD}; border-color: ${GOLD}; color: #000; transform: translateY(-3px); }
