@@ -7,7 +7,7 @@ import Link from "next/link";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import NewsletterForm from "@/components/NewsletterForm";
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 
 import { ArrowRight } from "lucide-react";
 
@@ -20,7 +20,7 @@ import view3 from "@/assets/view3.jpg";
 import view4 from "@/assets/view4.jpg";
 import view5 from "@/assets/view5.jpg";
 import logo from "@/assets/logo.png";
-import promoBannerImg from "@/assets/IMG-20260725-WA0085.jpg";
+import promoBannerImg from "@/assets/promo-banner-new.jpg";
 
 // Import style images
 import wayfarerImg from "@/assets/styles/wayfarer.png";
@@ -70,109 +70,106 @@ const frameStyles = [
 
 export default function Home() {
   const slides = [
-    { image: view1, alt: "Viewora Campaign 1", focal: "50% 20%", scale: "scale-100 lg:scale-[1.08]" },
-    { image: view2, alt: "Viewora Campaign 2", focal: "50% 55%", scale: "scale-[1.3] lg:scale-[1.4]" },
-    { image: view3, alt: "Viewora Campaign 3", focal: "50% 20%", scale: "scale-[1.1] lg:scale-[1.18]" },
-    { image: view4, alt: "Viewora Campaign 4", focal: "50% 20%", scale: "scale-[1.15] lg:scale-[1.25]" },
-    { image: view5, alt: "Viewora Campaign 5", focal: "50% 25%", scale: "scale-[1.15] lg:scale-[1.25]" },
+    { image: view1, alt: "Viewora Campaign 1", focal: "center center" },
+    { image: view2, alt: "Viewora Campaign 2", focal: "50% 65%" },
+    { image: view3, alt: "Viewora Campaign 3", focal: "center center" },
+    { image: view4, alt: "Viewora Campaign 4", focal: "center center" },
+    { image: view5, alt: "Viewora Campaign 5", focal: "center center" },
   ];
+
   const [activeSlide, setActiveSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [frameApi, setFrameApi] = useState<CarouselApi>();
 
   useEffect(() => {
     if (isPaused) return;
     const timer = setInterval(() => {
       setActiveSlide((prev) => (prev + 1) % slides.length);
-    }, 3000);
+    }, 4500);
     return () => clearInterval(timer);
   }, [slides.length, isPaused]);
 
+  useEffect(() => {
+    if (!frameApi) return;
+    const timer = setInterval(() => {
+      frameApi.scrollNext();
+    }, 2500);
+    return () => clearInterval(timer);
+  }, [frameApi]);
+
   return (
-    <div className="min-h-screen bg-background text-foreground animate-fade-in duration-300">
+    <div className="min-h-screen bg-background text-foreground">
       <Header />
 
-      {/* Hero Section - Split Layout */}
+      {/* Hero Section - Full Screen Viewport */}
       <section
         id="main-content"
-        className="relative w-full overflow-hidden bg-black text-white"
+        className="relative w-full h-screen overflow-hidden bg-black text-white flex items-center justify-center pt-16"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        <div className="grid min-h-[560px] grid-rows-[auto_1fr] lg:min-h-screen lg:grid-cols-2 lg:grid-rows-1">
-          {/* Left Column - Text Content */}
-          <div className="relative z-10 flex flex-col justify-center px-6 pb-10 pt-28 sm:px-10 lg:px-16 lg:py-32 xl:px-24">
-            <h1 className="max-w-xl text-balance font-serif text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-normal leading-[1.08] tracking-tight text-white">
-              See the World in <span className="italic uppercase text-gold drop-shadow-[0_0_20px_rgba(197,160,89,0.65)]">GOLD</span>
-            </h1>
+        {/* Background Image Carousel with Smooth Crossfade */}
+        {slides.map((slide, idx) => (
+          <div
+            key={idx}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+              idx === activeSlide ? "opacity-75 z-0" : "opacity-0 -z-10"
+            }`}
+          >
+            <Image
+              src={slide.image}
+              alt={slide.alt}
+              fill
+              priority={idx === 0}
+              className="object-cover"
+              style={{ objectPosition: slide.focal }}
+              sizes="100vw"
+            />
+          </div>
+        ))}
 
-            <p className="mt-7 max-w-md text-pretty text-sm sm:text-base leading-relaxed text-[#C8C8C8] font-sans">
-              Luxury eyewear crafted with premium materials, designed for everyday comfort and timeless elegance.
-            </p>
+        {/* Soft Dark Vignette Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/50" />
 
-            <div className="mt-10">
-              <Link
-                href="/shop"
-                className="group inline-flex items-center gap-3 bg-gold px-9 py-4 text-xs font-bold uppercase tracking-[0.25em] text-background transition-colors hover:bg-gold-soft hover:shadow-[0_0_30px_rgba(197,160,89,0.45)]"
-              >
-                <span>SHOP NOW</span>
-                <ArrowRight
-                  className="h-4 w-4 transition-transform group-hover:translate-x-1"
-                  strokeWidth={2}
-                />
-              </Link>
-            </div>
+        {/* Hero Content - Lower Third positioning below sunglasses */}
+        <div className="relative z-10 max-w-2xl mx-auto px-6 pb-20 pt-auto text-center flex flex-col items-center justify-end h-full">
+          <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-normal leading-[1.15] text-white max-w-2xl mb-4 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+            See the World in <span className="text-[#c5a059] italic font-semibold drop-shadow-[0_0_20px_rgba(197,160,89,0.5)]">GOLD</span>
+          </h1>
 
-            {/* Slide controls */}
-            <div className="mt-12 flex items-center gap-3" role="tablist" aria-label="Carousel slides">
-              {slides.map((_, i) => (
-                <button
-                  key={i}
-                  role="tab"
-                  aria-selected={i === activeSlide}
-                  aria-label={`Show slide ${i + 1}`}
-                  onClick={() => setActiveSlide(i)}
-                  className="group py-2 cursor-pointer"
-                >
-                  <span
-                    className={`block h-[3px] rounded-full transition-all duration-300 ${
-                      i === activeSlide
-                        ? "w-10 bg-gold"
-                        : "w-5 bg-white/25 group-hover:bg-white/50"
-                    }`}
-                  />
-                </button>
-              ))}
-            </div>
+          <p className="text-xs sm:text-sm lg:text-base text-white/80 leading-relaxed font-sans max-w-lg mx-auto font-light mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+            Luxury eyewear crafted with premium materials, designed for everyday comfort and timeless elegance.
+          </p>
+
+          <div>
+            <Link
+              href="/shop"
+              className="inline-flex items-center justify-center bg-[#c5a059] px-9 py-3.5 text-xs font-bold uppercase tracking-[0.25em] text-black transition-all hover:bg-[#d8b46e] hover:shadow-[0_0_25px_rgba(197,160,89,0.5)]"
+            >
+              <span>SHOP NOW</span>
+            </Link>
           </div>
 
-          {/* Right Column - Full Photograph with Standardized Crop & Seam Gradient */}
-          <div className="relative min-h-[420px] sm:min-h-[540px] overflow-hidden lg:min-h-full h-full w-full">
-            {slides.map((slide, idx) => (
-              <div
-                key={idx}
-                className={`absolute inset-0 w-full h-full overflow-hidden transition-opacity duration-1000 ease-in-out ${
-                  idx === activeSlide ? "opacity-100" : "opacity-0"
-                }`}
+          {/* Centered Slide Dots */}
+          <div className="mt-8 flex items-center gap-3" role="tablist" aria-label="Carousel slides">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                role="tab"
+                aria-selected={i === activeSlide}
+                aria-label={`Show slide ${i + 1}`}
+                onClick={() => setActiveSlide(i)}
+                className="group py-2 cursor-pointer"
               >
-                <Image
-                  src={slide.image}
-                  alt={slide.alt}
-                  style={{ objectPosition: slide.focal }}
-                  className={`object-cover w-full h-full transform ${slide.scale} transition-transform duration-700 ease-out`}
-                  priority={idx === 0}
-                  loading={idx === 0 ? 'eager' : 'lazy'}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  quality={90}
+                <span
+                  className={`block h-[3px] rounded-full transition-all duration-300 ${
+                    i === activeSlide
+                      ? "w-8 bg-[#c5a059]"
+                      : "w-3 bg-white/30 group-hover:bg-white/60"
+                  }`}
                 />
-              </div>
+              </button>
             ))}
-
-            {/* Left seam gradient overlay - blends left edge only into black text panel */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-transparent lg:bg-gradient-to-r lg:from-black lg:via-black/40 lg:to-transparent z-10"
-            />
           </div>
         </div>
       </section>
@@ -208,7 +205,7 @@ export default function Home() {
             <h2 className="text-4xl font-normal">Shop by Frame</h2>
             <div className="h-[1px] w-24 bg-gold/40 mx-auto mt-4"></div>
           </div>
-          <Carousel opts={{ align: "start", loop: true }} className="px-4">
+          <Carousel setApi={setFrameApi} opts={{ align: "start", loop: true }} className="px-4">
             <CarouselContent>
               {frameStyles.map((s) => (
                 <CarouselItem key={s.name} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
@@ -233,8 +230,6 @@ export default function Home() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="flex -left-4 bg-background/80 border-border hover:bg-background" />
-            <CarouselNext className="flex -right-4 bg-background/80 border-border hover:bg-background" />
           </Carousel>
         </div>
       </section>
