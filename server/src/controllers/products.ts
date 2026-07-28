@@ -23,15 +23,40 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
       };
     }
 
-    // Collection Filter by slug
+    // Collection Filter by slug, category, or smart fallback
     if (collection) {
-      whereClause.collections = {
-        some: {
-          collection: {
-            slug: collection as string,
+      const colSlug = (collection as string).toLowerCase().trim();
+      
+      if (colSlug === "sunglasses") {
+        whereClause.OR = [
+          { category: { slug: "sunglasses" } },
+          { name: { contains: "sunglass", mode: "insensitive" } },
+          { description: { contains: "sunglass", mode: "insensitive" } },
+          { collections: { some: { collection: { slug: colSlug } } } }
+        ];
+      } else if (colSlug === "optical-frames" || colSlug === "optical") {
+        whereClause.OR = [
+          { category: { slug: { not: "sunglasses" } } },
+          { name: { contains: "frame", mode: "insensitive" } },
+          { name: { contains: "glasses", mode: "insensitive" } },
+          { collections: { some: { collection: { slug: colSlug } } } }
+        ];
+      } else if (colSlug === "limited-edition") {
+        whereClause.OR = [
+          { name: { contains: "gold", mode: "insensitive" } },
+          { name: { contains: "edition", mode: "insensitive" } },
+          { name: { contains: "luxury", mode: "insensitive" } },
+          { collections: { some: { collection: { slug: colSlug } } } }
+        ];
+      } else {
+        whereClause.collections = {
+          some: {
+            collection: {
+              slug: colSlug,
+            },
           },
-        },
-      };
+        };
+      }
     }
 
     // Search Query Filter
