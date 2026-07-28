@@ -20,7 +20,7 @@ export default function ShippingPage() {
           <section className="border border-border p-6 rounded-sm">
             <h2 className="text-white font-serif text-xl mb-3">Standard Delivery</h2>
             <ul className="space-y-2 list-disc list-inside">
-              <li>Delivery within <span className="text-white font-medium">5–7 business days</span> across India</li>
+              <li>Delivery within <span className="text-white font-medium">3–5 business days</span> across India</li>
               <li>Shipping fee: <span className="text-white font-medium">₹99</span> on all orders</li>
               <li>Orders are dispatched within 1–2 business days of confirmation</li>
             </ul>
@@ -47,7 +47,7 @@ export default function ShippingPage() {
 
           <section>
             <h2 className="text-white font-serif text-xl mb-3">Need Help?</h2>
-            <p>Contact us at <a href="mailto:support@viewora.in" className="text-gold hover:underline">support@viewora.in</a> or call <a href="tel:+919876543210" className="text-gold hover:underline">+91 98765 43210</a>.</p>
+            <p>Contact us at <a href="mailto:contact@viewora.in" className="text-gold hover:underline">contact@viewora.in</a> or call <a href="tel:+919876543210" className="text-gold hover:underline">+91 98765 43210</a>.</p>
           </section>
         </div>
       </main>

@@ -49,7 +49,7 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-white font-serif text-xl mb-3">7. Contact Us</h2>
-            <p>If you have questions about this Privacy Policy, please contact us at: <a href="mailto:support@viewora.in" className="text-gold hover:underline">support@viewora.in</a></p>
+            <p>If you have questions about this Privacy Policy, please contact us at: <a href="mailto:contact@viewora.in" className="text-gold hover:underline">contact@viewora.in</a></p>
           </section>
         </div>
       </main>

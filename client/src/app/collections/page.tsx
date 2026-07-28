@@ -25,7 +25,7 @@ const collectionsList = [
   {
     title: "Optical Frames",
     subtitle: "Precision & Elegance",
-    desc: "Refined prescription-ready frames engineered for everyday comfort, light weight, and structural strength.",
+    desc: "Refined prescription-ready frames designed for clarity, lightweight comfort, and structural strength.",
     img: colOpt,
     slug: "optical-frames",
     count: "36+ Models",
@@ -33,7 +33,7 @@ const collectionsList = [
   {
     title: "Limited Edition",
     subtitle: "Small-Batch Masterpieces",
-    desc: "Rare, handcrafted designs reserved for connoisseurs seeking unique craftsmanship and gold detailing.",
+    desc: "Rare handcrafted designs reserved for collectors seeking exceptional craftsmanship and refined gold detailing.",
     img: colLtd,
     slug: "limited-edition",
     count: "12 Exclusive Pieces",
@@ -82,38 +82,35 @@ export default function CollectionsPage() {
       <section className="py-20 px-6 max-w-[1400px] mx-auto">
         <div className="text-center mb-14">
           <p className="text-gold tracking-[0.3em] text-xs mb-3 font-semibold uppercase">SIGNATURE LINES</p>
-          <h2 className="text-3xl sm:text-4xl font-serif">Explore Collection Lines</h2>
+          <h2 className="text-3xl sm:text-4xl font-serif">Crafted for All Generations</h2>
           <div className="h-[1px] w-20 bg-gold/40 mx-auto mt-4" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {collectionsList.map((c) => (
             <Link
               key={c.slug}
               href={`/collections/${c.slug}`}
-              className="group relative overflow-hidden aspect-[3/4] block border border-border/60 hover:border-gold/60 transition-all duration-500 bg-black"
+              className="group relative overflow-hidden aspect-[4/5] block border border-border/40 bg-black/90 hover:border-gold/60 transition-all duration-500 rounded-2xl shadow-xl"
             >
-              <Image
-                src={c.img}
-                alt={c.title}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                sizes="(max-width: 768px) 100vw, 33vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
-
-              <div className="absolute top-6 right-6">
-                <span className="text-[10px] tracking-widest text-gold bg-black/70 backdrop-blur-md px-3 py-1 border border-gold/30 uppercase font-semibold">
-                  {c.count}
-                </span>
+              <div className="absolute top-0 left-0 w-full h-[65%] p-6 sm:p-8 flex items-center justify-center">
+                <Image
+                  src={c.img}
+                  alt={c.title}
+                  className="w-full h-full object-contain transition-all duration-500 ease-out transform group-hover:scale-110 group-hover:-translate-y-2.5 filter group-hover:drop-shadow-[0_15px_25px_rgba(197,160,89,0.35)]"
+                  loading="lazy"
+                  width={800}
+                  height={900}
+                />
               </div>
 
-              <div className="absolute bottom-0 left-0 right-0 p-8">
-                <p className="text-xs text-gold/90 font-sans tracking-widest uppercase mb-1">{c.subtitle}</p>
-                <h3 className="text-3xl font-serif text-white mb-3 group-hover:text-gold transition-colors">{c.title}</h3>
-                <p className="text-xs sm:text-sm text-white/80 mb-6 font-sans leading-relaxed">{c.desc}</p>
-                <span className="text-xs tracking-[0.2em] text-gold font-bold uppercase inline-flex items-center gap-2 group-hover:translate-x-1 transition-transform">
-                  EXPLORE LINE →
+              <div className="absolute bottom-0 left-0 w-full h-[40%] bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none z-10" />
+
+              <div className="absolute bottom-0 left-0 w-full p-8 md:p-10 z-20 flex flex-col justify-end">
+                <h3 className="text-2xl font-serif text-gold mb-2 group-hover:text-gold-soft transition-colors">{c.title}</h3>
+                <p className="text-sm text-white/80 mb-4 leading-relaxed font-sans max-w-[95%]">{c.desc}</p>
+                <span className="text-xs font-bold tracking-[0.2em] text-white uppercase group-hover:text-gold transition-colors">
+                  VIEW COLLECTION &rarr;
                 </span>
               </div>
             </Link>

@@ -20,7 +20,7 @@ import view3 from "@/assets/view3.jpg";
 import view4 from "@/assets/view4.jpg";
 import view5 from "@/assets/view5.jpg";
 import logo from "@/assets/logo.png";
-import promoBannerImg from "@/assets/promo-banner-new.jpg";
+import promoBannerImg from "@/assets/promo-banner-new.png";
 
 // Import style images
 import wayfarerImg from "@/assets/styles/wayfarer.png";
@@ -184,13 +184,33 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {collections.map((c) => (
-              <Link key={c.title} href={`/collections/${c.slug}`} className="group relative overflow-hidden aspect-[4/5] block border border-border/40">
-                <Image src={c.img} alt={c.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" width={800} height={900} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-8">
-                  <h3 className="text-2xl text-gold mb-2">{c.title}</h3>
-                  <p className="text-sm text-white/80 mb-4 max-w-[85%] leading-relaxed font-sans">{c.desc}</p>
-                  <span className="text-sm tracking-[0.2em] text-white">VIEW COLLECTION →</span>
+              <Link
+                key={c.title}
+                href={`/collections/${c.slug}`}
+                className="group relative overflow-hidden aspect-[4/5] block border border-border/40 bg-black/90 hover:border-gold/60 transition-all duration-500 rounded-2xl shadow-xl"
+              >
+                {/* Product Image - Vertically centered with Pop-Up effect */}
+                <div className="absolute top-0 left-0 w-full h-[65%] p-6 sm:p-8 flex items-center justify-center">
+                  <Image
+                    src={c.img}
+                    alt={c.title}
+                    className="w-full h-full object-contain transition-all duration-500 ease-out transform group-hover:scale-110 group-hover:-translate-y-2.5 filter group-hover:drop-shadow-[0_15px_25px_rgba(197,160,89,0.35)]"
+                    loading="lazy"
+                    width={800}
+                    height={900}
+                  />
+                </div>
+
+                {/* Subtle Bottom Gradient for Content Readability */}
+                <div className="absolute bottom-0 left-0 w-full h-[40%] bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none z-10" />
+
+                {/* Content Container - Reserved for Bottom 30-35% */}
+                <div className="absolute bottom-0 left-0 w-full p-8 md:p-10 z-20 flex flex-col justify-end">
+                  <h3 className="text-2xl font-serif text-gold mb-2 group-hover:text-gold-soft transition-colors">{c.title}</h3>
+                  <p className="text-sm text-white/80 mb-4 leading-relaxed font-sans max-w-[95%]">{c.desc}</p>
+                  <span className="text-xs font-bold tracking-[0.2em] text-white uppercase group-hover:text-gold transition-colors">
+                    VIEW COLLECTION &rarr;
+                  </span>
                 </div>
               </Link>
             ))}
@@ -211,12 +231,12 @@ export default function Home() {
                 <CarouselItem key={s.name} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
                   <Link
                     href={`/shop?shape=${s.slug}`}
-                    className="group relative block aspect-[3/4] overflow-hidden border border-border/50 hover:border-gold transition-colors duration-500 bg-black"
+                    className="group relative block aspect-[3/4] overflow-hidden border border-border/50 hover:border-gold transition-all duration-500 bg-black rounded-2xl shadow-lg"
                   >
                     <Image
                       src={s.img}
                       alt={s.name}
-                      className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+                      className="w-full h-full object-contain transition-all duration-500 ease-out transform group-hover:scale-110 group-hover:-translate-y-2 filter group-hover:drop-shadow-[0_12px_20px_rgba(197,160,89,0.3)]"
                       loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition-opacity duration-300" />
@@ -245,7 +265,7 @@ export default function Home() {
           </p>
 
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif mb-8 leading-tight text-white">
-            <span className="text-gold font-semibold drop-shadow-[0_0_15px_rgba(197,160,89,0.5)]">Redefining Eyewear</span> with <span className="italic text-gold">Gold Distinction</span>
+            <span className="text-gold font-semibold drop-shadow-[0_0_15px_rgba(197,160,89,0.5)]">Redefining Eyewear</span> with <span className="italic text-gold">Gold Craftsmanship</span>
           </h2>
 
           <div className="mb-8 inline-block">
@@ -262,8 +282,8 @@ export default function Home() {
       </section>
 
       {/* Promotional Banner Section */}
-      <section className="w-full bg-black py-10 px-6">
-        <div className="max-w-[1200px] mx-auto overflow-hidden rounded-2xl border border-gold/20 shadow-2xl">
+      <section className="w-full bg-black py-6 px-6">
+        <div className="max-w-[800px] mx-auto overflow-hidden rounded-2xl border border-gold/20 shadow-2xl">
           <Image
             src={promoBannerImg}
             alt="Viewora Luxury Eyewear Collection"

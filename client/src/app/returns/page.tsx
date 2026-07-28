@@ -4,7 +4,7 @@ import Footer from '@/components/footer';
 
 export const metadata: Metadata = {
   title: 'Returns & Exchange — Viewora',
-  description: 'Viewora return and exchange policy. Easy returns within 7 days of delivery.',
+  description: 'Viewora return and exchange policy. Easy returns within 3-4 days of delivery.',
 };
 
 export default function ReturnsPage() {
@@ -18,14 +18,14 @@ export default function ReturnsPage() {
 
         <div className="space-y-8 text-muted-foreground leading-relaxed text-[15px]">
           <section className="border border-gold/30 bg-gold/5 p-6 rounded-sm">
-            <h2 className="text-white font-serif text-xl mb-3">7-Day Return Window</h2>
-            <p>We accept returns within <span className="text-white font-medium">7 days of delivery</span> for products that are unused, undamaged, and in their original packaging with all tags intact.</p>
+            <h2 className="text-white font-serif text-xl mb-3">3-4 Day Return Window</h2>
+            <p>We accept returns within <span className="text-white font-medium">3-4 days of delivery</span> for products that are unused, undamaged, and in their original packaging with all tags intact.</p>
           </section>
 
           <section>
             <h2 className="text-white font-serif text-xl mb-3">How to Initiate a Return</h2>
             <ol className="space-y-3 list-decimal list-inside">
-              <li>Email <a href="mailto:support@viewora.in" className="text-gold hover:underline">support@viewora.in</a> with your order number and reason for return</li>
+              <li>Email <a href="mailto:contact@viewora.in" className="text-gold hover:underline">contact@viewora.in</a> with your order number and reason for return</li>
               <li>Our team will respond within 24 hours with return instructions</li>
               <li>Pack the item securely in its original packaging</li>
               <li>Drop off the package with the courier as instructed</li>
@@ -55,7 +55,7 @@ export default function ReturnsPage() {
 
           <section>
             <h2 className="text-white font-serif text-xl mb-3">Damaged or Defective Items</h2>
-            <p>If you receive a damaged or defective product, contact us within <span className="text-white font-medium">48 hours of delivery</span> at <a href="mailto:support@viewora.in" className="text-gold hover:underline">support@viewora.in</a> with photos of the damage. We will arrange a free replacement or full refund.</p>
+            <p>If you receive a damaged or defective product, contact us within <span className="text-white font-medium">48 hours of delivery</span> at <a href="mailto:contact@viewora.in" className="text-gold hover:underline">contact@viewora.in</a> with photos of the damage. We will arrange a free replacement or full refund.</p>
           </section>
         </div>
       </main>
