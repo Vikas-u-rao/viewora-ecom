@@ -14,7 +14,7 @@ const faqs = [
   },
   {
     q: 'Can I change or cancel my order after placing it?',
-    a: 'Orders can be cancelled within 30 minutes of placement. After that, cancellation may not be possible as orders enter fulfilment. Contact us immediately at support@viewora.in.',
+    a: 'Orders can be cancelled within 30 minutes of placement. After that, cancellation may not be possible as orders enter fulfilment. Contact us immediately at contact@viewora.in.',
   },
   {
     q: 'What payment methods do you accept?',
@@ -22,7 +22,7 @@ const faqs = [
   },
   {
     q: 'How long does delivery take?',
-    a: 'Standard delivery takes 5–7 business days across India. Orders are dispatched within 1–2 business days after payment confirmation.',
+    a: 'Standard delivery takes 3–5 business days across India. Orders are dispatched within 1–2 business days after payment confirmation.',
   },
   {
     q: 'What is your return policy?',
@@ -46,7 +46,7 @@ const faqs = [
   },
   {
     q: 'I still have a question. How can I contact you?',
-    a: 'Reach us at support@viewora.in or call +91 98765 43210 (Mon–Sat, 10am–6pm IST). We typically respond within 24 hours.',
+    a: 'Reach us at contact@viewora.in or call +91 98765 43210 (Mon-Sat, 11am-7pm IST). We typically respond within 24 hours.',
   },
 ];
 
