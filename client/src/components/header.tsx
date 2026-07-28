@@ -52,10 +52,15 @@ export default function Header() {
   const { wishlistCount } = useWishlist();
   const router = useRouter();
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchVal, setSearchVal] = useState("");
   const [searchResults, setSearchResults] = useState<ApiProduct[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isActiveLink = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -97,7 +102,7 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#000]/95 backdrop-blur border-b border-[#2E2820]">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#000]/95 backdrop-blur border-b border-[#2E2820]" suppressHydrationWarning>
       {showSearch && (
         <div className="fixed inset-x-0 top-0 z-[60] bg-[#000]/98 backdrop-blur-md border-b border-gold/20 py-6 px-6 shadow-2xl animate-fade-in">
           <div className="max-w-[1000px] mx-auto flex items-start justify-between gap-4">
@@ -191,7 +196,7 @@ export default function Header() {
       )}
 
       <div className="max-w-[1400px] mx-auto px-6 h-[72px] grid grid-cols-[auto_1fr_auto] items-center gap-4">
-        <Link href="/" className="flex flex-col items-center justify-center shrink-0 leading-none group py-1 text-center" aria-label="Viewora home">
+        <Link href="/" className="flex flex-col items-center justify-center shrink-0 leading-none group py-1 text-center" aria-label="Viewora home" suppressHydrationWarning>
           <Image
             src={logoImg}
             alt="Viewora"
@@ -336,20 +341,20 @@ export default function Header() {
           >
             <Search size={28} strokeWidth={1.5} />
           </button>
-          <Link href={user ? "/account/profile" : "/login"} className="text-[#FAD6E3] hover:text-gold transition-colors" aria-label={user ? "Profile" : "Login"}>
+          <Link href={mounted && user ? "/account/profile" : "/login"} className="text-[#FAD6E3] hover:text-gold transition-colors" aria-label={mounted && user ? "Profile" : "Login"}>
             <User size={28} strokeWidth={1.5} />
           </Link>
-          <Link href="/wishlist" className="relative text-[#FAD6E3] hover:text-gold transition-colors" aria-label={`Wishlist with ${wishlistCount} items`}>
+          <Link href="/wishlist" className="relative text-[#FAD6E3] hover:text-gold transition-colors" aria-label={`Wishlist with ${mounted ? wishlistCount : 0} items`}>
             <Heart size={28} strokeWidth={1.5} />
-            {wishlistCount > 0 && (
+            {mounted && wishlistCount > 0 && (
               <span className="absolute -right-2.5 -top-2.5 min-w-5 h-5 rounded-full bg-gold px-1 text-[10px] font-bold leading-5 text-background text-center tabular-nums">
                 {wishlistCount > 99 ? "99+" : wishlistCount}
               </span>
             )}
           </Link>
-          <Link href="/cart" className="relative text-[#FAD6E3] hover:text-gold transition-colors" aria-label={`Cart with ${cartCount} items`}>
+          <Link href="/cart" className="relative text-[#FAD6E3] hover:text-gold transition-colors" aria-label={`Cart with ${mounted ? cartCount : 0} items`}>
             <ShoppingBag size={28} strokeWidth={1.5} />
-            {cartCount > 0 && (
+            {mounted && cartCount > 0 && (
               <span className="absolute -right-2.5 -top-2.5 min-w-5 h-5 rounded-full bg-gold px-1 text-[10px] font-bold leading-5 text-background text-center tabular-nums">
                 {cartCount > 99 ? "99+" : cartCount}
               </span>
