@@ -10,6 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { getApiBaseUrl } from "@/lib/constants";
+import { resolveImageUrl } from "@/lib/productImage";
 import { Sheet, SheetTrigger, SheetContent, SheetClose } from "@/components/ui/sheet";
 import type { ApiProduct } from "@/services/products";
 
@@ -143,9 +144,9 @@ export default function Header() {
                             }}
                             className="flex items-center gap-4 py-3 hover:bg-white/5 transition-colors group cursor-pointer"
                           >
-                            {prod.defaultImageUrls?.[0] && (
+                            {resolveImageUrl(prod.defaultImageUrls?.[0]) && (
                               <Image
-                                src={prod.defaultImageUrls[0]}
+                                src={resolveImageUrl(prod.defaultImageUrls[0])!}
                                 alt={prod.name}
                                 width={48}
                                 height={48}
@@ -191,7 +192,7 @@ export default function Header() {
       )}
 
       <div className="max-w-[1400px] mx-auto px-6 h-[72px] grid grid-cols-[auto_1fr_auto] items-center gap-4">
-        <Link href="/" className="flex flex-col items-center justify-center shrink-0 leading-none group py-1 text-center" aria-label="Viewora home">
+        <Link href="/" className="flex items-center justify-center shrink-0 leading-none group py-1 text-center" aria-label="Viewora home">
           <Image
             src={logoImg}
             alt="Viewora"
@@ -200,9 +201,6 @@ export default function Header() {
             height={36}
             priority
           />
-          <span className="text-[8px] sm:text-[9px] font-semibold tracking-[0.35em] text-gold/80 uppercase mt-0.5 text-center">
-            FASHION EYEWEAR
-          </span>
         </Link>
 
         <nav className="hidden md:flex items-center justify-center gap-6">

@@ -8,7 +8,7 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { ApiProduct, variantSnapshot } from "@/services/products";
 import { formatPrice } from "@/lib/format";
-import { getFallbackImage } from "@/lib/productImage";
+import { getFallbackImage, resolveImageUrl } from "@/lib/productImage";
 
 export default function ProductCard({ product }: { product: ApiProduct }) {
   const { items, addToCart, updateQuantity, removeItem } = useCart();
@@ -20,8 +20,8 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
 
   const fallback = getFallbackImage(product.slug);
 
-  const firstUrl = Array.isArray(product.defaultImageUrls) ? product.defaultImageUrls[0] : null;
-  const secondUrl = Array.isArray(product.defaultImageUrls) && product.defaultImageUrls.length > 1 ? product.defaultImageUrls[1] : null;
+  const firstUrl = resolveImageUrl(Array.isArray(product.defaultImageUrls) ? product.defaultImageUrls[0] : null);
+  const secondUrl = resolveImageUrl(Array.isArray(product.defaultImageUrls) && product.defaultImageUrls.length > 1 ? product.defaultImageUrls[1] : null);
   const image = firstUrl || fallback;
   const unavailable = !variant || variant.stock < 1;
   const wishlisted = isWishlisted(product.id);

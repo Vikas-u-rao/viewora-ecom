@@ -14,7 +14,7 @@ import { ApiProduct, ProductVariant, variantSnapshot } from "@/services/products
 import ProductImage from "@/components/ProductImage";
 
 import { formatPrice } from "@/lib/format";
-import { getFallbackImage } from "@/lib/productImage";
+import { getFallbackImage, resolveImageUrl } from "@/lib/productImage";
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -68,11 +68,12 @@ export default function ProductDetailPage() {
   const allImages = useMemo(() => {
     const list: (string | StaticImageData)[] = [];
     if (selectedVariant?.imageUrls?.length) {
-      list.push(...selectedVariant.imageUrls);
+      list.push(...selectedVariant.imageUrls.map((u) => resolveImageUrl(u) || u));
     }
     if (product?.defaultImageUrls?.length) {
       product.defaultImageUrls.forEach((img) => {
-        if (!list.includes(img)) list.push(img);
+        const resolved = resolveImageUrl(img) || img;
+        if (!list.includes(resolved)) list.push(resolved);
       });
     }
     if (list.length === 0) list.push(fallback);

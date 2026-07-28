@@ -19,7 +19,7 @@ export default function TermsPage() {
         <div className="space-y-8 text-muted-foreground leading-relaxed text-[15px]">
           <section>
             <h2 className="text-white font-serif text-xl mb-3">1. Acceptance of Terms</h2>
-            <p>By accessing and using the Viewora website (viewora.in), you agree to be bound by these Terms and Conditions. If you do not agree with any part of these terms, please do not use our website.</p>
+            <p>By accessing and using the Viewora website (viewora.in), operated by <strong>Aspire Genx Technologies Private Limited</strong>, you agree to be bound by these Terms and Conditions. Viewora is a commercial brand product of Aspire Genx Technologies Private Limited. If you do not agree with any part of these terms, please do not use our website.</p>
           </section>
 
           <section>

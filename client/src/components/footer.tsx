@@ -105,7 +105,7 @@ export default function Footer() {
               <div className="viewora-brand-subtitle">FASHION EYEWEAR</div>
             </Link>
             <div className="viewora-brand-rule" aria-hidden="true">✦</div>
-            <p className="viewora-tagline">Crafted for All Generations</p>
+            <p className="viewora-tagline">Crafted for those who never<br />settle for ordinary.</p>
             <div className="viewora-socials">
               {socialLinks.map(({ label, icon: Icon, href }) => <a className="viewora-social" href={href} key={label} target="_blank" rel="noreferrer" aria-label={label}><Icon size={21} strokeWidth={2} /></a>)}
             </div>
@@ -138,7 +138,7 @@ export default function Footer() {
           </section>
         </div>
         <div className="viewora-footer-bottom">
-          <p className="viewora-copyright">© 2026 Viewora. All rights reserved.</p>
+          <p className="viewora-copyright">© 2026 Viewora. A product of <strong>Aspire Genx Technologies Private Limited</strong>. All rights reserved.</p>
           <p className="viewora-designed">
             Designed with <Heart className="viewora-heart" /> by Viewora
           </p>
