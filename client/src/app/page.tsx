@@ -7,7 +7,7 @@ import Link from "next/link";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import NewsletterForm from "@/components/NewsletterForm";
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 
 import { ArrowRight } from "lucide-react";
 
@@ -78,6 +78,7 @@ export default function Home() {
   ];
   const [activeSlide, setActiveSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [frameApi, setFrameApi] = useState<CarouselApi>();
 
   useEffect(() => {
     if (isPaused) return;
@@ -86,6 +87,14 @@ export default function Home() {
     }, 3000);
     return () => clearInterval(timer);
   }, [slides.length, isPaused]);
+
+  useEffect(() => {
+    if (!frameApi) return;
+    const timer = setInterval(() => {
+      frameApi.scrollNext();
+    }, 2500);
+    return () => clearInterval(timer);
+  }, [frameApi]);
 
   return (
     <div className="min-h-screen bg-background text-foreground animate-fade-in duration-300">
@@ -208,7 +217,7 @@ export default function Home() {
             <h2 className="text-4xl font-normal">Shop by Frame</h2>
             <div className="h-[1px] w-24 bg-gold/40 mx-auto mt-4"></div>
           </div>
-          <Carousel opts={{ align: "start", loop: true }} className="px-4">
+          <Carousel setApi={setFrameApi} opts={{ align: "start", loop: true }} className="px-4">
             <CarouselContent>
               {frameStyles.map((s) => (
                 <CarouselItem key={s.name} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
@@ -233,8 +242,6 @@ export default function Home() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="flex -left-4 bg-background/80 border-border hover:bg-background" />
-            <CarouselNext className="flex -right-4 bg-background/80 border-border hover:bg-background" />
           </Carousel>
         </div>
       </section>
