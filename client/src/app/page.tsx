@@ -20,7 +20,7 @@ import view3 from "@/assets/view3.jpg";
 import view4 from "@/assets/view4.jpg";
 import view5 from "@/assets/view5.jpg";
 import logo from "@/assets/logo.png";
-import promoBannerNew from "@/assets/promo-banner-new.png";
+import promoBannerImg from "@/assets/promo-banner-new.png";
 
 // Import style images
 import wayfarerImg from "@/assets/styles/wayfarer.png";
@@ -277,7 +277,7 @@ export default function Home() {
           </p>
 
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif mb-8 leading-tight text-white">
-            <span className="text-gold font-semibold drop-shadow-[0_0_15px_rgba(197,160,89,0.5)]">Redefining Eyewear</span> with <span className="italic text-gold">Gold Distinction</span>
+            <span className="text-gold font-semibold drop-shadow-[0_0_15px_rgba(197,160,89,0.5)]">Redefining Eyewear</span> with <span className="italic text-gold">Gold Craftsmanship</span>
           </h2>
 
           <div className="mb-8 inline-block">
@@ -297,7 +297,7 @@ export default function Home() {
       <section className="w-full bg-black py-6 px-6">
         <div className="max-w-[800px] mx-auto overflow-hidden rounded-2xl border border-gold/20 shadow-2xl">
           <Image
-            src={promoBannerNew}
+            src={promoBannerImg}
             alt="Viewora Luxury Eyewear Collection"
             className="w-full h-auto block"
             loading="lazy"
