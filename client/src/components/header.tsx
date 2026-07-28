@@ -200,9 +200,6 @@ export default function Header() {
             height={36}
             priority
           />
-          <span className="text-[8px] sm:text-[9px] font-semibold tracking-[0.35em] text-gold/80 uppercase mt-0.5 text-center">
-            FASHION EYEWEAR
-          </span>
         </Link>
 
         <nav className="hidden md:flex items-center justify-center gap-6">
