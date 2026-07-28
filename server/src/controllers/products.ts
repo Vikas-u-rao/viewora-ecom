@@ -2,6 +2,38 @@ import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 
+const R2_CDN = 'https://pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev';
+
+/**
+ * Rewrites a relative /uploads/products/... or localhost URL to the R2 CDN absolute URL.
+ * If it's already an absolute https URL (non-localhost), returns as-is.
+ */
+function resolveUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  if (url.startsWith('https://') && !url.includes('localhost')) return url;
+  const match = url.match(/\/uploads\/products\/([^?#]+)/);
+  if (match) return `${R2_CDN}/uploads/products/${match[1]}`;
+  return url;
+}
+
+/** Resolves all image URLs in a product object returned from Prisma */
+function resolveProductImages(product: any): any {
+  return {
+    ...product,
+    defaultImageUrls: Array.isArray(product.defaultImageUrls)
+      ? product.defaultImageUrls.map((u: string) => resolveUrl(u) || u)
+      : [],
+    variants: Array.isArray(product.variants)
+      ? product.variants.map((v: any) => ({
+          ...v,
+          imageUrls: Array.isArray(v.imageUrls)
+            ? v.imageUrls.map((u: string) => resolveUrl(u) || u)
+            : [],
+        }))
+      : [],
+  };
+}
+
 export async function getProducts(req: Request, res: Response, next: NextFunction) {
   try {
     const { category, collection, search, page = '1', limit = '10' } = req.query;
@@ -85,7 +117,7 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
     ]);
 
     res.status(200).json({
-      products,
+      products: products.map(resolveProductImages),
       total,
       page: pageNum,
       pages: Math.ceil(total / limitNum),
@@ -113,7 +145,7 @@ export async function getProductBySlug(req: Request, res: Response, next: NextFu
       throw new AppError('PRODUCT_NOT_FOUND', 404, 'Product not found');
     }
 
-    res.status(200).json(product);
+    res.status(200).json(resolveProductImages(product));
   } catch (error) {
     next(error);
   }
