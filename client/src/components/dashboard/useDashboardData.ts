@@ -191,6 +191,7 @@ export function useDashboardData(accessToken: string | null, searchQuery: string
   const refreshProducts = () => setRefreshKey((k) => k + 1);
 
   return {
+    refreshProducts,
     products,
     orders,
     coupons,
