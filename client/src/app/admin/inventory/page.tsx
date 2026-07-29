@@ -65,7 +65,7 @@ const MATERIAL_OPTIONS = ["Acetate", "Titanium", "Metal", "TR90"];
 
 export default function InventoryPage() {
   const { accessToken } = useAuth();
-  const { products, fetchLoading, productsPage, productsTotalPages, setProductsPage } =
+  const { products, fetchLoading, productsPage, productsTotalPages, setProductsPage, refreshProducts, addProduct, removeProduct } =
     useDashboardData(accessToken);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -79,7 +79,6 @@ export default function InventoryPage() {
   const [createError, setCreateError] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [deletedProductIds, setDeletedProductIds] = useState<Set<string>>(new Set());
 
   const initialFormData = {
     name: "",
@@ -156,7 +155,6 @@ export default function InventoryPage() {
   };
 
   const filteredProducts = products.filter((p) => {
-    if (deletedProductIds.has(p.id)) return false;
     const q = searchQuery.toLowerCase().trim();
     const matchesSearch =
       !q ||
@@ -202,7 +200,8 @@ export default function InventoryPage() {
       });
       if (!res.ok) throw new Error("Failed to delete product");
       setDeleteConfirm(null);
-      setDeletedProductIds((prev) => new Set(prev).add(productId));
+      removeProduct(productId);
+      refreshProducts();
     } catch {
       setDeleteConfirm(null);
     } finally {
@@ -280,9 +279,11 @@ export default function InventoryPage() {
         throw new Error(data.message || "Failed to create product");
       }
 
-      // Reset modal — no page reload needed
+      // Reset modal and prepend product instantly
       setIsModalOpen(false);
       setFormData(initialFormData);
+      addProduct(data.product);
+      refreshProducts(); // background sync
     } catch (err: unknown) {
       setCreateError(err instanceof Error ? err.message : "Error creating product");
     } finally {

@@ -29,13 +29,34 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+const STORAGE_KEY_TOKEN = 'viewora_access_token';
+const STORAGE_KEY_USER = 'viewora_user';
+
+function getStoredToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(STORAGE_KEY_TOKEN);
+}
+
+function getStoredUser(): User | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY_USER);
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    localStorage.removeItem(STORAGE_KEY_USER);
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(getStoredUser);
+  const [accessToken, setAccessToken] = useState<string | null>(getStoredToken);
   const [isLoading, setIsLoading] = useState(true);
 
-  // On mount, try to refresh the token (if a refresh cookie exists)
+  // Validate session on mount via cookie refresh
   useEffect(() => {
+    let cancelled = false;
+
     const tryRefresh = async () => {
       try {
         const baseUrl = getApiBaseUrl();
@@ -43,38 +64,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           method: 'POST',
           credentials: 'include',
         });
+        if (cancelled) return;
         if (res.ok) {
           const data = await res.json();
           setAccessToken(data.accessToken);
-          // Decode user from token payload
+          localStorage.setItem(STORAGE_KEY_TOKEN, data.accessToken);
 
-          // Fetch user profile
           const profileRes = await fetch(`${baseUrl}/users/me`, {
             headers: { Authorization: `Bearer ${data.accessToken}` },
             credentials: 'include',
           });
+          if (cancelled) return;
           if (profileRes.ok) {
             const profileData = await profileRes.json();
-            setUser(profileData.user || profileData);
+            const profileUser = profileData.user || profileData;
+            setUser(profileUser);
+            localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(profileUser));
           }
+        } else if (!getStoredToken()) {
+          // Cookie refresh failed and no stored token — not logged in
+          setAccessToken(null);
+          setUser(null);
         }
       } catch {
-        // Silently fail — not logged in
+        if (!getStoredToken()) {
+          setAccessToken(null);
+          setUser(null);
+        }
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
+
     tryRefresh();
+    return () => { cancelled = true; };
   }, []);
 
   const setAuth = useCallback((u: User, token: string) => {
     setUser(u);
     setAccessToken(token);
+    localStorage.setItem(STORAGE_KEY_TOKEN, token);
+    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(u));
   }, []);
 
   const clearAuth = useCallback(() => {
     setUser(null);
     setAccessToken(null);
+    localStorage.removeItem(STORAGE_KEY_TOKEN);
+    localStorage.removeItem(STORAGE_KEY_USER);
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -87,9 +124,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     const data = await res.json();
     if (!res.ok) throw data;
-    setUser(data.user);
-    setAccessToken(data.accessToken);
-  }, []);
+    setAuth(data.user, data.accessToken);
+  }, [setAuth]);
 
   const logout = useCallback(async () => {
     try {
