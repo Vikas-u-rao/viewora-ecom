@@ -195,7 +195,6 @@ export function useDashboardData(accessToken: string | null, searchQuery: string
   const removeProduct = (id: string) => setProducts((prev) => prev.filter((p) => p.id !== id));
 
   return {
-    refreshProducts,
     products,
     orders,
     coupons,
