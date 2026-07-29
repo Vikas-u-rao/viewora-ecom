@@ -73,7 +73,7 @@ export default function AboutPage() {
             </h2>
             <div className="h-[1px] w-20 bg-gold/40" />
             <p className="text-muted-foreground font-sans leading-relaxed text-sm sm:text-base">
-              At Viewora, eyewear is more than an accessory—it is an emblem of identity. Our design philosophy bridges heritage craftsmanship with contemporary ergonomics, ensuring that every silhouette delivers effortless poise.
+              At Viewora (a brand and product of <strong>Aspire Genx Technologies Private Limited</strong>), eyewear is more than an accessory—it is an emblem of identity. Our design philosophy bridges heritage craftsmanship with contemporary ergonomics, ensuring that every silhouette delivers effortless poise.
             </p>
             <p className="text-muted-foreground font-sans leading-relaxed text-sm sm:text-base">
               From our hand-polished acetate frames to lightweight metal alloys, every element undergoes rigorous quality checks to deliver unmatched clarity, sun protection, and style.

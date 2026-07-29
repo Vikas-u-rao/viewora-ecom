@@ -39,8 +39,9 @@ COPY prisma ./prisma/
 RUN npm ci --only=production
 RUN npx prisma generate
 
-# Copy built dist files from builder stage
+# Copy built dist files and public assets from builder stage
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma/seed.js ./prisma/seed.js
 COPY --from=builder /app/prisma/cleaned_products.json ./prisma/cleaned_products.json
 

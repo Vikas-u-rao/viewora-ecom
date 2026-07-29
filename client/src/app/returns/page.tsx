@@ -19,7 +19,7 @@ export default function ReturnsPage() {
         <div className="space-y-8 text-muted-foreground leading-relaxed text-[15px]">
           <section className="border border-gold/30 bg-gold/5 p-6 rounded-sm">
             <h2 className="text-white font-serif text-xl mb-3">3-4 Day Return Window</h2>
-            <p>We accept returns within <span className="text-white font-medium">3-4 days of delivery</span> for products that are unused, undamaged, and in their original packaging with all tags intact.</p>
+            <p>Viewora (a product of <strong>Aspire Genx Technologies Private Limited</strong>) accepts returns within <span className="text-white font-medium">3-4 days of delivery</span> for products that are unused, undamaged, and in their original packaging with all tags intact.</p>
           </section>
 
           <section>

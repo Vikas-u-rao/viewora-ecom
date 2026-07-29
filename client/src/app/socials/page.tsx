@@ -30,8 +30,8 @@ const socialLinks = [
   },
   {
     name: "X (Twitter)",
-    username: "@viewora",
-    href: "https://twitter.com",
+    username: "@vieworaIndia",
+    href: "https://x.com/vieworaIndia",
     description: "Real-time updates, design announcements, and runway news.",
     icon: (
       <svg className="w-8 h-8 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -55,8 +55,8 @@ const socialLinks = [
   },
   {
     name: "YouTube",
-    username: "Viewora Eyewear TV",
-    href: "https://youtube.com",
+    username: "@vieworaIndia",
+    href: "https://www.youtube.com/@vieworaIndia",
     description: "Behind-the-scenes craftsmanship and campaign highlights.",
     icon: (
       <svg className="w-8 h-8 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -83,24 +83,24 @@ export default function SocialsPage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <Header />
 
-      <main className="flex-1 py-24 px-6 max-w-5xl mx-auto w-full">
-        <div className="text-center mb-16">
-          <p className="text-gold tracking-[0.35em] text-xs mb-4 font-medium uppercase">CONNECT WITH US</p>
-          <h1 className="font-serif text-4xl text-white font-normal mb-6">Our Social Circle</h1>
-          <p className="text-muted-foreground text-base max-w-xl mx-auto leading-relaxed font-sans">
+      <main className="flex-1 py-16 sm:py-24 px-4 sm:px-6 max-w-5xl mx-auto w-full">
+        <div className="text-center mb-12 sm:mb-16">
+          <p className="text-gold tracking-[0.35em] text-xs mb-3 sm:mb-4 font-medium uppercase">CONNECT WITH US</p>
+          <h1 className="font-serif text-3xl sm:text-4xl text-white font-normal mb-4 sm:mb-6">Our Social Circle</h1>
+          <p className="text-muted-foreground text-sm sm:text-base max-w-xl mx-auto leading-relaxed font-sans px-2">
             Step into the luxury world of Viewora. Follow our channels for exclusive style guidelines, early releases, and behind-the-scene stories.
           </p>
-          <div className="h-[1px] w-24 bg-gold/40 mx-auto mt-6"></div>
+          <div className="h-[1px] w-20 sm:w-24 bg-gold/40 mx-auto mt-6"></div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           {socialLinks.map((social) => (
             <a
               key={social.name}
               href={social.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative block p-8 border border-border bg-card/45 hover:border-gold hover:shadow-[0_0_20px_rgba(197,160,89,0.15)] transition-all duration-300 transform hover:-translate-y-1"
+              className="group relative block p-5 sm:p-8 border border-border bg-card/45 hover:border-gold hover:shadow-[0_0_20px_rgba(197,160,89,0.15)] transition-all duration-300 transform hover:-translate-y-1"
             >
               <div className="flex items-start gap-6">
                 <div className="p-3.5 bg-black border border-gold/10 group-hover:border-gold/40 transition-colors duration-300 rounded-none shrink-0">

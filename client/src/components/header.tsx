@@ -191,24 +191,61 @@ export default function Header() {
         </div>
       )}
 
-      <div className="max-w-[1400px] mx-auto px-6 h-[72px] grid grid-cols-[auto_1fr_auto] items-center gap-4">
-        <Link href="/" className="flex items-center justify-center shrink-0 leading-none group py-1 text-center" aria-label="Viewora home">
-          <Image
-            src={logoImg}
-            alt="Viewora"
-            className="h-8 sm:h-9 w-auto max-w-[130px] object-contain filter drop-shadow-md brightness-110 mx-auto"
-            width={130}
-            height={36}
-            priority
-          />
-        </Link>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 sm:h-[72px] flex items-center justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-6">
+          <Sheet>
+            <SheetTrigger asChild>
+              <button className="block md:hidden text-[#FAD6E3] hover:text-gold transition-colors p-1" aria-label="Open menu">
+                <Menu size={24} strokeWidth={1.5} />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[85vw] max-w-72 bg-[#000] border-r border-[#2E2820] p-6">
+              <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between mb-6">
+                  <Image src={logoImg} alt="Viewora" className="h-7 w-auto" style={{ width: "auto", height: "auto" }} width={80} height={80} />
+                </div>
+                <nav className="flex flex-col gap-1 overflow-y-auto">
+                  {nav.map((n) => (
+                    <SheetClose key={n.label} asChild>
+                      <Link
+                        href={n.href}
+                        className="text-sm sm:text-base tracking-[0.15em] font-semibold text-[#FAD6E3] hover:text-gold transition-colors py-3 border-b border-[#2E2820]"
+                      >
+                        {n.label}
+                      </Link>
+                    </SheetClose>
+                  ))}
+                  <SheetClose asChild>
+                    <Link
+                      href={user ? "/account/profile" : "/login"}
+                      className="text-sm sm:text-base tracking-[0.15em] font-semibold text-[#FAD6E3] hover:text-gold transition-colors py-3 border-b border-[#2E2820]"
+                    >
+                      {user ? "PROFILE" : "LOGIN"}
+                    </Link>
+                  </SheetClose>
+                </nav>
+              </div>
+            </SheetContent>
+          </Sheet>
 
-        <nav className="hidden md:flex items-center justify-center gap-6">
+          <Link href="/" className="flex items-center justify-center shrink-0 leading-none group py-1" aria-label="Viewora home">
+            <Image
+              src={logoImg}
+              alt="Viewora"
+              className="h-7 sm:h-9 w-auto max-w-[100px] sm:max-w-[130px] object-contain filter drop-shadow-md brightness-110"
+              width={130}
+              height={36}
+              priority
+            />
+          </Link>
+        </div>
+
+        <nav className="hidden md:flex items-center justify-center gap-5 lg:gap-8">
           {nav.map((n) => {
             if (n.megaCollections) {
               return (
                 <div key={n.label} className="group relative">
-                  <Link href={n.href} className={`text-base tracking-[0.15em] font-semibold transition-colors ${isActiveLink(n.href) ? "text-gold" : "text-[#FAD6E3] hover:text-gold"}`}>
+                  <Link href={n.href} className={`text-xs lg:text-sm tracking-[0.15em] font-semibold transition-colors ${isActiveLink(n.href) ? "text-gold" : "text-[#FAD6E3] hover:text-gold"}`}>
                     {n.label}
                   </Link>
                   <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[72px] z-50 bg-[#000] border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
@@ -248,7 +285,7 @@ export default function Header() {
             if (n.megaShop) {
               return (
                 <div key={n.label} className="group relative">
-                  <Link href={n.href} className={`text-base tracking-[0.15em] font-semibold transition-colors ${isActiveLink(n.href) ? "text-gold" : "text-[#FAD6E3] hover:text-gold"}`}>
+                  <Link href={n.href} className={`text-xs lg:text-sm tracking-[0.15em] font-semibold transition-colors ${isActiveLink(n.href) ? "text-gold" : "text-[#FAD6E3] hover:text-gold"}`}>
                     {n.label}
                   </Link>
                   <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[72px] z-50 bg-[#000] border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
@@ -288,70 +325,36 @@ export default function Header() {
             }
 
             return (
-              <Link key={n.label} href={n.href} className={`text-base tracking-[0.15em] font-semibold transition-colors ${isActiveLink(n.href) ? "text-gold" : "text-[#FAD6E3] hover:text-gold"}`}>
+              <Link key={n.label} href={n.href} className={`text-xs lg:text-sm tracking-[0.15em] font-semibold transition-colors ${isActiveLink(n.href) ? "text-gold" : "text-[#FAD6E3] hover:text-gold"}`}>
                 {n.label}
               </Link>
             );
           })}
         </nav>
 
-        <div className="flex items-center gap-4">
-          <Sheet>
-            <SheetTrigger asChild>
-              <button className="block md:hidden text-[#FAD6E3] hover:text-gold transition-colors" aria-label="Open menu">
-                <Menu size={22} strokeWidth={1.5} />
-              </button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-72 bg-[#000] border-l border-[#2E2820] p-6">
-              <div className="flex flex-col h-full">
-                <div className="flex items-center justify-between mb-8">
-                  <Image src={logoImg} alt="Viewora" className="h-8 w-auto" style={{ width: "auto", height: "auto" }} width={80} height={80} />
-                </div>
-                <nav className="flex flex-col gap-1">
-                  {nav.map((n) => (
-                    <SheetClose key={n.label} asChild>
-                      <Link
-                        href={n.href}
-                        className="text-base tracking-[0.15em] font-semibold text-[#FAD6E3] hover:text-gold transition-colors py-3 border-b border-[#2E2820]"
-                      >
-                        {n.label}
-                      </Link>
-                    </SheetClose>
-                  ))}
-                  <SheetClose asChild>
-                    <Link
-                      href={user ? "/account/profile" : "/login"}
-                      className="text-base tracking-[0.15em] font-semibold text-[#FAD6E3] hover:text-gold transition-colors py-3 border-b border-[#2E2820]"
-                    >
-                      {user ? "PROFILE" : "LOGIN"}
-                    </Link>
-                  </SheetClose>
-                </nav>
-              </div>
-            </SheetContent>
-          </Sheet>
+        <div className="flex items-center gap-2.5 sm:gap-4">
           <button 
             onClick={() => setShowSearch(true)} 
-            className="hover:text-gold text-[#FAD6E3] transition-colors cursor-pointer flex items-center justify-center" 
+            className="hover:text-gold text-[#FAD6E3] transition-colors cursor-pointer flex items-center justify-center p-1" 
             aria-label="Open Search"
           >
-            <Search size={28} strokeWidth={1.5} />
+            <Search className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.5} />
           </button>
-          <Link href={user ? "/account/profile" : "/login"} className="text-[#FAD6E3] hover:text-gold transition-colors" aria-label={user ? "Profile" : "Login"}>
-            <User size={28} strokeWidth={1.5} />
+          <Link href={user ? "/account/profile" : "/login"} className="text-[#FAD6E3] hover:text-gold transition-colors p-1" aria-label={user ? "Profile" : "Login"}>
+            <User className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.5} />
           </Link>
-          <Link href="/wishlist" className="relative text-[#FAD6E3] hover:text-gold transition-colors" aria-label={`Wishlist with ${wishlistCount} items`}>
-            <Heart size={28} strokeWidth={1.5} />
+          <Link href="/wishlist" className="relative text-[#FAD6E3] hover:text-gold transition-colors p-1" aria-label={`Wishlist with ${wishlistCount} items`}>
+            <Heart className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.5} />
             {wishlistCount > 0 && (
-              <span className="absolute -right-2.5 -top-2.5 min-w-5 h-5 rounded-full bg-gold px-1 text-[10px] font-bold leading-5 text-background text-center tabular-nums">
+              <span className="absolute -right-1.5 -top-1.5 min-w-4 h-4 sm:min-w-5 sm:h-5 rounded-full bg-gold px-1 text-[9px] sm:text-[10px] font-bold leading-4 sm:leading-5 text-background text-center tabular-nums">
                 {wishlistCount > 99 ? "99+" : wishlistCount}
               </span>
             )}
           </Link>
-          <Link href="/cart" className="relative text-[#FAD6E3] hover:text-gold transition-colors" aria-label={`Cart with ${cartCount} items`}>
-            <ShoppingBag size={28} strokeWidth={1.5} />
+          <Link href="/cart" className="relative text-[#FAD6E3] hover:text-gold transition-colors p-1" aria-label={`Cart with ${cartCount} items`}>
+            <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.5} />
             {cartCount > 0 && (
-              <span className="absolute -right-2.5 -top-2.5 min-w-5 h-5 rounded-full bg-gold px-1 text-[10px] font-bold leading-5 text-background text-center tabular-nums">
+              <span className="absolute -right-1.5 -top-1.5 min-w-4 h-4 sm:min-w-5 sm:h-5 rounded-full bg-gold px-1 text-[9px] sm:text-[10px] font-bold leading-4 sm:leading-5 text-background text-center tabular-nums">
                 {cartCount > 99 ? "99+" : cartCount}
               </span>
             )}

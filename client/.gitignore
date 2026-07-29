@@ -43,3 +43,6 @@ next-env.d.ts
 # local screenshots & playwright auth
 /screenshots/
 /playwright/.auth/
+
+# Sentry Config File
+.env.sentry-build-plugin

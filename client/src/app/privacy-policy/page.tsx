@@ -19,7 +19,7 @@ export default function PrivacyPolicyPage() {
         <div className="space-y-8 text-muted-foreground leading-relaxed text-[15px]">
           <section>
             <h2 className="text-white font-serif text-xl mb-3">1. Information We Collect</h2>
-            <p>We collect information you provide directly to us, such as your name, email address, phone number, shipping address, and payment information when you register or make a purchase. We also collect information about your browsing behaviour on our website to improve your experience.</p>
+            <p>Viewora is owned and operated by <strong>Aspire Genx Technologies Private Limited</strong>. We collect information you provide directly to us, such as your name, email address, phone number, shipping address, and payment information when you register or make a purchase. We also collect information about your browsing behaviour on our website to improve your experience.</p>
           </section>
 
           <section>
