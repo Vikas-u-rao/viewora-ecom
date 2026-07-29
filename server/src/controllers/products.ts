@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 
-const R2_CDN = 'https://pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev';
+const R2_CDN = process.env.R2_CDN_URL || 'https://pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev';
 
 /**
  * Rewrites a relative /uploads/products/... or localhost URL to the R2 CDN absolute URL.

@@ -2,7 +2,7 @@
 export const dynamic = "force-dynamic";
 
 import { useState } from "react";
-import { Loader2, Package, Search } from "lucide-react";
+import { Loader2, Package, Plus, Search, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useDashboardData } from "@/components/dashboard/useDashboardData";
 import { getApiBaseUrl } from "@/lib/constants";
@@ -16,6 +16,23 @@ export default function InventoryPage() {
   const [lowStockOnly, setLowStockOnly] = useState(false);
   const [editingStock, setEditingStock] = useState<Record<string, number | undefined>>({});
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Modal State for Add New Product
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    brand: "",
+    categoryName: "Eyewear",
+    description: "",
+    imageUrl: "",
+    price: "",
+    sku: "",
+    color: "",
+    size: "",
+    stock: "10",
+  });
 
   const apiUrl = getApiBaseUrl();
 
@@ -61,15 +78,86 @@ export default function InventoryPage() {
     }
   };
 
+  const handleCreateProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name.trim() || !formData.price || !formData.stock) {
+      setCreateError("Please fill in Product Name, Price, and Stock.");
+      return;
+    }
+
+    setIsCreating(true);
+    setCreateError("");
+
+    try {
+      const res = await fetch(`${apiUrl}/admin/products`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          brand: formData.brand,
+          categoryName: formData.categoryName,
+          description: formData.description,
+          imageUrl: formData.imageUrl,
+          price: Number(formData.price),
+          startingPrice: Number(formData.price),
+          sku: formData.sku || undefined,
+          color: formData.color || undefined,
+          size: formData.size || undefined,
+          stock: Number(formData.stock),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to create product");
+      }
+
+      // Reset modal and trigger refresh
+      setIsModalOpen(false);
+      setFormData({
+        name: "",
+        brand: "",
+        categoryName: "Eyewear",
+        description: "",
+        imageUrl: "",
+        price: "",
+        sku: "",
+        color: "",
+        size: "",
+        stock: "10",
+      });
+
+      // Refresh current page products
+      window.location.reload();
+    } catch (err: any) {
+      setCreateError(err.message || "Error creating product");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   return (
     <main className="flex-1 p-8 overflow-y-auto">
-      <div className="mb-8">
-        <h2 className="text-xl font-bold text-gray-900 tracking-tight">
-          Catalog & Stock Controller
-        </h2>
-        <p className="text-xs text-gray-500 mt-1">
-          Manage product inventory, variants, and stock levels
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 tracking-tight">
+            Catalog & Stock Controller
+          </h2>
+          <p className="text-xs text-gray-500 mt-1">
+            Manage product inventory, variants, and stock levels
+          </p>
+        </div>
+
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer"
+        >
+          <Plus className="size-4" />
+          <span>Add New Product</span>
+        </button>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-6">
@@ -270,6 +358,183 @@ export default function InventoryPage() {
           </div>
         )}
       </div>
+
+      {/* Add Product Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-base font-bold text-gray-900">Add New Product</h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 rounded-lg p-1"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            {createError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded-xl font-medium">
+                {createError}
+              </div>
+            )}
+
+            <form onSubmit={handleCreateProduct} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-gray-700 font-semibold mb-1">
+                  Product Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Classic Wayfarer Frame"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-1">Brand</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Viewora"
+                    value={formData.brand}
+                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-1">
+                    Category
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Eyewear / Sunglasses"
+                    value={formData.categoryName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, categoryName: e.target.value })
+                    }
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-semibold mb-1">
+                  Description
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="Brief details about material, style, UV protection..."
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-semibold mb-1">
+                  Image URL
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://images.unsplash.com/..."
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
+                />
+              </div>
+
+              <div className="pt-2 border-t font-semibold text-gray-900">
+                Initial Variant Details
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-1">
+                    Price (₹) *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    placeholder="1999"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-1">
+                    Initial Stock *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    placeholder="10"
+                    value={formData.stock}
+                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-1">SKU</label>
+                  <input
+                    type="text"
+                    placeholder="AUTO-SKU"
+                    value={formData.sku}
+                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-1">Color</label>
+                  <input
+                    type="text"
+                    placeholder="Matte Black"
+                    value={formData.color}
+                    onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-1">Size</label>
+                  <input
+                    type="text"
+                    placeholder="Medium"
+                    value={formData.size}
+                    onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 border rounded-xl text-gray-600 hover:bg-gray-50 font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isCreating}
+                  className="px-5 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-semibold flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {isCreating ? <Loader2 className="size-4 animate-spin" /> : "Save Product"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
