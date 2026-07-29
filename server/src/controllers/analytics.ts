@@ -71,7 +71,7 @@ export async function getHeatmapAnalytics(req: Request, res: Response, next: Nex
     // Col 0: Mon, Col 1: Tue, Col 2: Wed, Col 3: Thu, Col 4: Fri, Col 5: Sat, Col 6: Sun
     const matrix: number[][] = Array.from({ length: 6 }, () => Array(7).fill(0));
 
-    views.forEach((v) => {
+    views.forEach((v: { createdAt: Date }) => {
       const date = new Date(v.createdAt);
       // JS getDay(): 0 is Sun, 1 is Mon... map to Mon=0, Sun=6
       const jsDay = date.getDay();

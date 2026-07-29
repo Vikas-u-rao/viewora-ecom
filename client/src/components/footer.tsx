@@ -106,6 +106,7 @@ export default function Footer() {
             </Link>
             <div className="viewora-brand-rule" aria-hidden="true">✦</div>
             <p className="viewora-tagline">Crafted for those who never<br />settle for ordinary.</p>
+
             <div className="viewora-socials">
               {socialLinks.map(({ label, icon: Icon, href }) => <a className="viewora-social" href={href} key={label} target="_blank" rel="noreferrer" aria-label={label}><Icon size={21} strokeWidth={2} /></a>)}
             </div>

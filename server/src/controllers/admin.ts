@@ -1,5 +1,7 @@
 import { Response, NextFunction } from 'express';
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 import axios from 'axios';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
@@ -8,6 +10,7 @@ import { logger } from '../lib/logger';
 import { Prisma } from '@prisma/client';
 
 import { merchantId, saltKey, saltIndex, phonepeEnv, baseUrl } from '../lib/phonepe';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 
 // GET /api/v1/admin/orders
@@ -281,6 +284,148 @@ export async function listAllProducts(req: AuthRequest, res: Response, next: Nex
   }
 }
 
+// POST /api/v1/admin/products
+// DELETE /api/v1/admin/products/:id
+export async function deleteProduct(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+
+    const product = await prisma.product.findUnique({ where: { id } });
+    if (!product) {
+      throw new AppError('NOT_FOUND', 404, 'Product not found');
+    }
+
+    // Soft delete: set deletedAt and deactivate
+    await prisma.product.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        isActive: false,
+        variants: {
+          updateMany: {
+            where: { productId: id },
+            data: { isActive: false },
+          },
+        },
+      },
+    });
+
+    logger.info({ msg: 'Product soft-deleted', productId: id, name: product.name });
+    res.json({ success: true, message: 'Product deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function createProduct(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const {
+      name,
+      brand,
+      description,
+      categoryName,
+      categoryId,
+      imageUrl,
+      imageUrls,
+      image1,
+      image2,
+      image3,
+      image4,
+      startingPrice,
+      sku,
+      color,
+      size,
+      gender,
+      shape,
+      frameType,
+      material,
+      price,
+      stock,
+    } = req.body;
+
+    if (!name || typeof name !== 'string' || !name.trim()) {
+      throw new AppError('VALIDATION_ERROR', 400, 'Product name is required');
+    }
+
+    const itemPrice = price !== undefined && price !== null ? Number(price) : (startingPrice !== undefined ? Number(startingPrice) : 0);
+    const itemStock = stock !== undefined && stock !== null ? parseInt(String(stock), 10) : 0;
+    const itemSku = (sku && String(sku).trim()) || `SKU-${Date.now().toString(36).toUpperCase()}`;
+
+    // Collect all image URLs (up to 4)
+    const rawImages: string[] = Array.isArray(imageUrls) ? imageUrls : [image1, image2, image3, image4, imageUrl].filter(Boolean);
+    const imageArray = rawImages
+      .map((img) => (typeof img === 'string' ? img.trim() : ''))
+      .filter((img) => img.length > 0);
+
+    // Find or create category
+    let finalCategoryId = categoryId;
+    if (!finalCategoryId) {
+      const catName = categoryName && String(categoryName).trim() ? String(categoryName).trim() : 'Eyewear';
+      const catSlug = catName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      
+      const existingCat = await prisma.category.findFirst({
+        where: { OR: [{ name: { equals: catName, mode: 'insensitive' } }, { slug: catSlug }] },
+      });
+
+      if (existingCat) {
+        finalCategoryId = existingCat.id;
+      } else {
+        const newCat = await prisma.category.create({
+          data: {
+            name: catName,
+            slug: catSlug || `cat-${Date.now()}`,
+          },
+        });
+        finalCategoryId = newCat.id;
+      }
+    }
+
+    // Combine description with attributes for search matching
+    const attributeDetails = [
+      description ? description.trim() : '',
+      gender ? `Gender: ${gender}` : '',
+      shape ? `Shape: ${shape}` : '',
+      frameType ? `Frame Type: ${frameType}` : '',
+      material ? `Material: ${material}` : '',
+    ].filter(Boolean).join(' | ');
+
+    // Generate unique slug for product
+    const baseSlug = name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const uniqueSlug = `${baseSlug}-${Date.now().toString(36)}`;
+
+    const product = await prisma.product.create({
+      data: {
+        name: name.trim(),
+        slug: uniqueSlug,
+        brand: brand && String(brand).trim() ? String(brand).trim() : null,
+        description: attributeDetails || null,
+        categoryId: finalCategoryId,
+        defaultImageUrls: imageArray,
+        startingPrice: new Prisma.Decimal(itemPrice),
+        variants: {
+          create: {
+            sku: itemSku,
+            color: color && String(color).trim() ? String(color).trim() : null,
+            size: size && String(size).trim() ? String(size).trim() : null,
+            material: material && String(material).trim() ? String(material).trim() : null,
+            price: new Prisma.Decimal(itemPrice),
+            stock: itemStock,
+            imageUrls: imageArray,
+          },
+        },
+      },
+      include: {
+        category: true,
+        variants: true,
+      },
+    });
+
+    res.status(201).json({ success: true, product });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // GET /api/v1/admin/coupons
 export async function listAllCoupons(req: AuthRequest, res: Response, next: NextFunction) {
   try {
@@ -351,6 +496,61 @@ export async function deleteCoupon(req: AuthRequest, res: Response, next: NextFu
     });
 
     res.json({ message: 'Coupon invalidated successfully', coupon: updatedCoupon });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// POST /api/v1/admin/upload
+export async function uploadProductImage(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    if (!req.file) {
+      throw new AppError('VALIDATION_ERROR', 400, 'No image file uploaded');
+    }
+
+    const file = req.file;
+    const cleanOriginalName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const filename = `${Date.now()}_${cleanOriginalName}`;
+    const key = `uploads/products/${filename}`;
+
+    const R2_CDN = process.env.R2_CDN_URL || 'https://pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev';
+    const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID || 'e2158ae0625a060589cba0ccebcd3fee';
+    const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || '73fede634675f899d6412ddcaf59c06f';
+    const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY || '680700f9a92259d0188a5450a6a77f2d1e4730780024064320b531f65a8a5ac6';
+    const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || 'viewora-assets';
+
+    // Write file locally to public/uploads/products
+    const uploadDir = path.join(__dirname, '../../public/uploads/products');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    const localPath = path.join(uploadDir, filename);
+    fs.writeFileSync(localPath, file.buffer);
+
+    // Upload directly to Cloudflare R2 bucket
+    const s3Client = new S3Client({
+      region: "auto",
+      endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+      credentials: { accessKeyId: R2_ACCESS_KEY_ID, secretAccessKey: R2_SECRET_ACCESS_KEY },
+    });
+
+    await s3Client.send(
+      new PutObjectCommand({
+        Bucket: R2_BUCKET_NAME,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype || 'image/jpeg',
+      })
+    );
+    logger.info({ msg: 'Successfully uploaded image to Cloudflare R2', key });
+
+    const cdnUrl = `${R2_CDN}/uploads/products/${filename}`;
+
+    res.json({
+      success: true,
+      url: cdnUrl,
+      filename,
+    });
   } catch (error) {
     next(error);
   }

@@ -1,9 +1,12 @@
 import { PrismaClient } from "@prisma/client";
 import fs from "fs";
 import path from "path";
+import dotenv from 'dotenv';
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const prisma = new PrismaClient();
-const R2_CDN_URL = "https://pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev";
+
+const R2_CDN_URL = process.env.R2_CDN_URL || "https://pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev";
 
 export async function syncImagesToDb() {
   console.log("Starting DB image URL synchronization...");
