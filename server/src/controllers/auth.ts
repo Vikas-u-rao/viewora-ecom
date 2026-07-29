@@ -56,6 +56,7 @@ function setRefreshCookie(res: Response, token: string, expiresAt: Date) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
+    path: '/',
     expires: expiresAt,
   });
 }
@@ -564,7 +565,8 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
       res.clearCookie('refreshToken', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax', // consistent with setRefreshCookie
+        sameSite: 'lax',
+        path: '/',
       });
       throw new AppError('UNAUTHORIZED', 401, 'Token reuse detected. Session invalidated.');
     }
@@ -612,6 +614,7 @@ export async function logout(req: AuthRequest, res: Response, next: NextFunction
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
+      path: '/',
     });
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
@@ -633,6 +636,7 @@ export async function logoutAll(req: AuthRequest, res: Response, next: NextFunct
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
+      path: '/',
     });
     res.json({ message: 'Logged out from all devices successfully' });
   } catch (error) {

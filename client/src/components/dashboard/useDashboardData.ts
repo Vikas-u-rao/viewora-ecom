@@ -84,6 +84,8 @@ export interface DashboardData {
   setProductsPage: (p: number) => void;
   setOrdersPage: (p: number) => void;
   refreshProducts: () => void;
+  addProduct: (product: Product) => void;
+  removeProduct: (id: string) => void;
 }
 
 import { getApiBaseUrl } from "@/lib/constants";
@@ -189,6 +191,8 @@ export function useDashboardData(accessToken: string | null, searchQuery: string
         ];
 
   const refreshProducts = () => setRefreshKey((k) => k + 1);
+  const addProduct = (product: Product) => setProducts((prev) => [product, ...prev]);
+  const removeProduct = (id: string) => setProducts((prev) => prev.filter((p) => p.id !== id));
 
   return {
     products,
@@ -215,5 +219,8 @@ export function useDashboardData(accessToken: string | null, searchQuery: string
     ordersTotalPages,
     setProductsPage,
     setOrdersPage,
+    refreshProducts,
+    addProduct,
+    removeProduct,
   };
 }

@@ -3,35 +3,19 @@ import { NextRequest, NextResponse } from 'next/server';
 /**
  * Next.js Edge Middleware — runs before every matched route.
  *
- * Protects /admin by verifying the access token stored in the
- * Authorization header (injected by the client via localStorage/cookie).
- *
- * Since Edge middleware cannot read localStorage, we rely on the refresh
- * cookie to detect a session and then gate the admin route by role via
- * an API call. If no refresh cookie exists, redirect to /login.
- *
- * For role verification we check the refreshToken cookie existence as a
- * fast-path gate (cookie is httpOnly, so only the server sets it).
- * The actual role check happens in the admin page/API calls — the middleware
- * acts as the first line of defence to prevent unauthenticated rendering.
+ * Auth protection is handled client-side by the AuthContext (which restores
+ * sessions from localStorage). This middleware only handles redirects for
+ * routes that absolutely cannot be rendered without auth (e.g. /account,
+ * /checkout) by checking for the refreshToken cookie. The admin layout
+ * has its own client-side auth guard.
  */
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── Protect /admin routes ────────────────────────────────────────────────
+  // Auth is handled client-side by AdminLayout + AuthContext with localStorage
+  // persistence. Pass through — the React app will handle redirects if needed.
   if (pathname.startsWith('/admin')) {
-    const refreshToken = request.cookies.get('refreshToken');
-
-    if (!refreshToken) {
-      // No session at all — redirect to login
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-
-    // Session cookie exists — let the page render.
-    // The admin page itself should call the API which enforces requireAdmin.
-    // The API will return 403 if the user is not an admin.
     return NextResponse.next();
   }
 
