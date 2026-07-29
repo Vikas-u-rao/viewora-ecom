@@ -9,19 +9,33 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
+        hostname: "pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.r2.dev",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "*.imimg.com",
+        pathname: "/**",
       },
       {
         protocol: "https",
         hostname: "cdn.shopify.com",
+        pathname: "/**",
       },
       {
         protocol: "https",
         hostname: "viewora.in",
+        pathname: "/**",
       },
       {
         protocol: "https",
         hostname: "*.azurewebsites.net",
+        pathname: "/**",
       },
       {
         protocol: "http",
@@ -33,15 +47,8 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "*.r2.dev",
-      },
-      {
-        protocol: "https",
-        hostname: "pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev",
-      },
-      {
-        protocol: "https",
         hostname: "images.unsplash.com",
+        pathname: "/**",
       },
     ],
   },

@@ -88,7 +88,7 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
   return (
     <div className="group bg-[#0b0b0a] border border-transparent rounded-lg overflow-hidden hover:border-[#c9a35c] transition-colors duration-300 relative flex flex-col justify-between h-full">
       {/* Product image with wishlist button */}
-      <div className="relative bg-[#141412] p-4 flex items-center justify-center aspect-square overflow-hidden w-full h-[260px]">
+      <div className="relative bg-[#ffffff] p-6 flex items-center justify-center aspect-square overflow-hidden w-full h-[260px]">
         <Link
           href={`/products/${product.slug}`}
           className="relative w-full h-full block"
@@ -100,7 +100,7 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
                 alt={product.name}
                 fill
                 onError={() => setImgError(true)}
-                className={`object-contain p-2 transition-opacity duration-500 ease-in-out ${
+                className={`object-contain transition-opacity duration-500 ease-in-out ${
                   secondUrl && !imgError ? "group-hover:opacity-0" : ""
                 }`}
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -110,7 +110,7 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
                   src={secondUrl}
                   alt={`${product.name} secondary view`}
                   fill
-                  className="object-contain p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"
+                  className="object-contain opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 />
               )}
