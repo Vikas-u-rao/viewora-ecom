@@ -118,6 +118,6 @@ jobs:
       - name: Deploy Client Container to Azure
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'viewora-web-app'
+          app-name: 'Viewora-v2'
           publish-profile: ${{ secrets.AZURE_CLIENT_PUBLISH_PROFILE }}
           images: 'index.docker.io/vikasurao/viewora-client:latest'
