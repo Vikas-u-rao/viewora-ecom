@@ -2,7 +2,7 @@
 export const dynamic = "force-dynamic";
 
 import { useEffect, useState } from "react";
-import { DollarSign, ShoppingCart, Users, Activity, X } from "lucide-react";
+import { IndianRupee, ShoppingCart, Users, Activity, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useAuth } from "@/context/AuthContext";
 import { useDashboardData, Order } from "@/components/dashboard/useDashboardData";
@@ -202,7 +202,7 @@ export default function AdminDashboard() {
                   trend="+14.2%"
                   isPositive={true}
                   trendLabel="vs last month (Click for breakdown)"
-                  icon={<DollarSign className="size-4.5" />}
+                  icon={<IndianRupee className="size-4.5" />}
                 />
               </div>
               <div className="cursor-pointer" onClick={() => setDrillModal("orders")}>

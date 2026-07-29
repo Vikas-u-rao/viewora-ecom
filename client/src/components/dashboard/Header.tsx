@@ -36,32 +36,6 @@ export function Header({
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="flex items-center -space-x-2">
-          <div
-            className="size-7.5 rounded-full border-2 border-white bg-gray-900 flex items-center justify-center text-[10px] font-bold text-white uppercase"
-            title="Alice"
-          >
-            A
-          </div>
-          <div
-            className="size-7.5 rounded-full border-2 border-white bg-amber-500 flex items-center justify-center text-[10px] font-bold text-white uppercase"
-            title="Bob"
-          >
-            B
-          </div>
-          <div
-            className="size-7.5 rounded-full border-2 border-white bg-emerald-500 flex items-center justify-center text-[10px] font-bold text-white uppercase"
-            title="Charlotte"
-          >
-            C
-          </div>
-          <div
-            className="size-7.5 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center text-[10px] font-semibold text-gray-600"
-            title="More"
-          >
-            +2
-          </div>
-        </div>
 
         <FilterDropdown
           value={dateRange}
