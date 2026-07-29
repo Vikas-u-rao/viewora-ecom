@@ -3,8 +3,9 @@ export const dynamic = "force-dynamic";
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, Smartphone, Truck } from "lucide-react";
+import { Loader2, Plus, ShieldCheck, Truck, Check, CreditCard, Lock } from "lucide-react";
 import { toast } from "sonner";
 import Header from "@/components/header";
 import { useAuth } from "@/context/AuthContext";
@@ -12,6 +13,7 @@ import { useCart } from "@/context/CartContext";
 import { Address, AddressPayload, fetchAddressesApi, saveAddressApi } from "@/services/account";
 import { createOrderApi, orderItemsFromCart, initiatePaymentApi } from "@/services/orders";
 import { COUPON_STORAGE_KEY } from "@/services/coupons";
+import { resolveImageUrl, getFallbackImage } from "@/lib/productImage";
 
 const SHIPPING_FEE = 99;
 
@@ -139,10 +141,19 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground font-sans">
       <Header />
-      <main className="mx-auto max-w-[1200px] px-6 pt-28 pb-16">
-        <h1 className="font-serif text-4xl text-white mb-8">Checkout</h1>
+      <main className="mx-auto max-w-[1200px] px-4 sm:px-6 pt-24 sm:pt-28 pb-16">
+        <div className="flex items-center justify-between mb-8 pb-4 border-b border-border/60">
+          <div>
+            <h1 className="font-serif text-3xl sm:text-4xl text-white">Checkout</h1>
+            <p className="text-xs text-muted-foreground mt-1">Review your order details and choose payment</p>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 text-xs text-gold/90 font-medium">
+            <Lock size={14} />
+            <span>256-Bit SSL Encrypted</span>
+          </div>
+        </div>
 
         {items.length === 0 ? (
           <div className="border border-dashed border-border py-16 text-center">
@@ -150,79 +161,185 @@ export default function CheckoutPage() {
             <Link href="/shop" className="bg-gold px-6 py-3 text-xs font-bold tracking-[0.2em] text-background">CONTINUE SHOPPING</Link>
           </div>
         ) : (
-          <form onSubmit={handlePlaceOrder} className="grid gap-8 lg:grid-cols-[1fr_380px]">
+          <form onSubmit={handlePlaceOrder} className="grid gap-8 lg:grid-cols-[1fr_400px]">
             <section className="space-y-6">
-              <div className="border border-border bg-card p-5">
+              {/* Shipping Address Section */}
+              <div className="border border-border bg-card/60 p-5 sm:p-6 rounded-none">
                 <div className="mb-4 flex items-center justify-between">
-                  <h2 className="font-serif text-2xl text-white">Shipping Address</h2>
-                  <button type="button" onClick={() => setShowNewAddress((value) => !value)} className="text-gold"><Plus className="size-4" /></button>
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-gold/20 text-gold flex items-center justify-center text-xs font-bold font-mono">1</div>
+                    <h2 className="font-serif text-xl sm:text-2xl text-white">Shipping Address</h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewAddress((value) => !value)}
+                    className="text-xs font-semibold text-gold hover:text-gold-soft transition-colors flex items-center gap-1"
+                  >
+                    <Plus className="size-3.5" />
+                    <span>{showNewAddress ? "Select Saved Address" : "Add New Address"}</span>
+                  </button>
                 </div>
 
                 {addresses.length > 0 && !showNewAddress && (
                   <div className="grid gap-3 sm:grid-cols-2">
-                    {addresses.map((address) => (
-                      <button
-                        type="button"
-                        key={address.id}
-                        onClick={() => setSelectedAddressId(address.id)}
-                        className={`border p-4 text-left ${selectedAddressId === address.id ? "border-gold bg-gold/10" : "border-border"}`}
-                      >
-                        <span className="block font-medium text-white">{address.name}</span>
-                        <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">{address.line1}, {address.city}, {address.state} - {address.pincode}{address.phone ? ` | ${address.phone}` : ""}</span>
-                      </button>
-                    ))}
+                    {addresses.map((address) => {
+                      const isSelected = selectedAddressId === address.id;
+                      return (
+                        <button
+                          type="button"
+                          key={address.id}
+                          onClick={() => setSelectedAddressId(address.id)}
+                          className={`border p-4 text-left transition-all relative ${
+                            isSelected ? "border-gold bg-gold/10 shadow-[0_0_12px_rgba(197,160,89,0.15)]" : "border-border/70 hover:border-gold/50"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <span className="font-medium text-white text-sm">{address.name}</span>
+                            <div className={`w-4 h-4 rounded-full border shrink-0 mt-0.5 flex items-center justify-center ${isSelected ? "border-gold bg-gold" : "border-muted-foreground/40"}`}>
+                              {isSelected && <Check className="size-3 text-black stroke-[3]" />}
+                            </div>
+                          </div>
+                          <span className="mt-2 block text-xs leading-relaxed text-muted-foreground font-sans">
+                            {address.line1}{address.line2 ? `, ${address.line2}` : ""}, {address.city}, {address.state} - {address.pincode}
+                          </span>
+                          {address.phone && (
+                            <span className="mt-1 block text-[11px] font-mono text-gold/80">Phone: {address.phone}</span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
 
                 {showNewAddress && (
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-3 sm:grid-cols-2 pt-2">
                     {(["name", "phone", "line1", "line2", "city", "state", "pincode"] as const).map((field) => (
                       <input
                         key={field}
                         required={field !== "line2"}
-                        placeholder={field === "line1" ? "Address line 1" : field === "line2" ? "Address line 2" : field === "phone" ? "Phone number" : field[0].toUpperCase() + field.slice(1)}
+                        placeholder={field === "line1" ? "Address line 1 *" : field === "line2" ? "Address line 2 (Optional)" : field === "phone" ? "Phone number *" : `${field[0].toUpperCase() + field.slice(1)} *`}
                         value={String(addressForm[field] || "")}
                         onChange={(event) => setAddressForm((prev) => ({ ...prev, [field]: event.target.value }))}
-                        className="border border-border bg-input px-3 py-2.5 text-sm outline-none focus:border-gold"
+                        className="border border-border bg-input px-3.5 py-2.5 text-xs text-white placeholder:text-muted-foreground/60 outline-none focus:border-gold transition-colors font-sans"
                       />
                     ))}
                   </div>
                 )}
               </div>
 
-              <div className="border border-border bg-card p-5">
-                <h2 className="font-serif text-2xl text-white mb-4">Payment Method</h2>
+              {/* Payment Method Section */}
+              <div className="border border-border bg-card/60 p-5 sm:p-6 rounded-none">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-6 h-6 rounded-full bg-gold/20 text-gold flex items-center justify-center text-xs font-bold font-mono">2</div>
+                  <h2 className="font-serif text-xl sm:text-2xl text-white">Payment Method</h2>
+                </div>
+
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-4 border border-gold bg-gold/10">
-                    <Smartphone className="size-5 text-gold" />
-                    <div>
-                      <span className="text-sm font-semibold tracking-[0.15em] text-white">PhonePe</span>
-                      <p className="text-xs text-muted-foreground">UPI / Cards / Netbanking</p>
+                  <div className="p-4 border border-gold bg-gold/10 relative transition-all shadow-[0_0_15px_rgba(197,160,89,0.12)]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-4 h-4 rounded-full border-2 border-gold flex items-center justify-center bg-gold">
+                          <div className="w-1.5 h-1.5 rounded-full bg-black" />
+                        </div>
+                        <div>
+                          <span className="text-sm font-semibold tracking-[0.15em] text-white uppercase font-sans">PhonePe Payment Gateway</span>
+                          <p className="text-xs text-muted-foreground font-sans mt-0.5">Pay via UPI (GPay, PhonePe, Paytm), Cards & Netbanking</p>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold tracking-widest text-gold bg-gold/20 px-2 py-0.5 border border-gold/30 uppercase">RECOMMENDED</span>
+                    </div>
+
+                    {/* Sub Payment Options / Badges */}
+                    <div className="mt-4 pt-3 border-t border-gold/20 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground font-sans">
+                      <span className="px-2.5 py-1 bg-black/60 border border-gold/20 text-white rounded-none flex items-center gap-1.5">
+                        <span className="text-gold font-bold">UPI</span> (GPay / PhonePe / Paytm / BHIM)
+                      </span>
+                      <span className="px-2.5 py-1 bg-black/60 border border-gold/20 text-white rounded-none flex items-center gap-1.5">
+                        <CreditCard className="size-3 text-gold" /> Cards (Visa / Mastercard / RuPay)
+                      </span>
+                      <span className="px-2.5 py-1 bg-black/60 border border-gold/20 text-white rounded-none flex items-center gap-1.5">
+                        Netbanking (50+ Banks)
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
             </section>
 
-            <aside className="h-fit border border-border bg-card p-5 lg:sticky lg:top-24">
-              <h2 className="font-serif text-2xl text-white mb-5">Order Summary</h2>
-              <div className="space-y-4">
-                {availableItems.map((item) => (
-                  <div key={item.id} className="flex justify-between gap-4 text-sm">
-                    <span className="text-muted-foreground">{item.variant?.product.name} x {item.quantity}</span>
-                    <span className="text-white">{money(Number(item.variant?.price || 0) * item.quantity)}</span>
-                  </div>
-                ))}
+            {/* Order Summary Sidebar */}
+            <aside className="h-fit border border-border bg-card/80 p-5 sm:p-6 lg:sticky lg:top-24">
+              <h2 className="font-serif text-2xl text-white mb-4 pb-3 border-b border-border/60">Order Summary</h2>
+
+              <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1">
+                {availableItems.map((item) => {
+                  const product = item.variant?.product;
+                  const rawImg = item.variant?.imageUrls?.[0];
+                  const imgSrc = resolveImageUrl(rawImg) || (product ? getFallbackImage(product.slug) : null);
+                  return (
+                    <div key={item.id} className="flex items-center gap-3 py-1.5 border-b border-border/40 last:border-b-0">
+                      <div className="relative w-12 h-12 bg-white/5 border border-border shrink-0 overflow-hidden">
+                        {imgSrc && (
+                          <Image
+                            src={imgSrc}
+                            alt={product?.name || "Product"}
+                            fill
+                            className="object-contain p-1"
+                          />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs font-medium text-white truncate font-sans">{product?.name}</h4>
+                        <p className="text-[11px] text-muted-foreground font-sans">
+                          {item.variant?.color || "Standard"} • Qty: {item.quantity}
+                        </p>
+                      </div>
+                      <span className="text-xs font-semibold text-white tabular-nums shrink-0 font-sans">
+                        {money(Number(item.variant?.price || 0) * item.quantity)}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
-              <div className="mt-5 space-y-3 border-t border-border pt-4 text-sm">
-                <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{money(subtotal)}</span></div>
-                <div className="flex justify-between text-muted-foreground"><span className="flex items-center gap-1.5"><Truck className="size-3.5" />Shipping</span><span>{money(SHIPPING_FEE)}</span></div>
-                <div className="flex justify-between border-t border-border pt-3 text-xl text-white"><span>Total</span><span className="text-gold">{money(total)}</span></div>
+
+              <div className="mt-5 space-y-2.5 border-t border-border pt-4 text-xs font-sans">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Subtotal</span>
+                  <span className="text-white font-medium">{money(subtotal)}</span>
+                </div>
+                <div className="flex justify-between text-muted-foreground">
+                  <span className="flex items-center gap-1.5"><Truck className="size-3.5 text-gold" />Standard Shipping</span>
+                  <span className="text-white font-medium">{money(SHIPPING_FEE)}</span>
+                </div>
+                <div className="flex justify-between border-t border-border/60 pt-3 text-lg font-serif text-white">
+                  <span>Total Payable</span>
+                  <span className="text-gold font-serif font-bold">{money(total)}</span>
+                </div>
               </div>
-              <button disabled={placing || unavailableItems.length > 0} className="mt-6 flex w-full items-center justify-center gap-2 bg-gold py-3.5 text-xs font-bold tracking-[0.2em] text-background disabled:opacity-50">
-                {placing && <Loader2 className="size-4 animate-spin" />}
-                {placing ? "PLACING ORDER…" : "PLACE ORDER & PAY"}
+
+              <button
+                type="submit"
+                disabled={placing || unavailableItems.length > 0}
+                className="mt-6 flex w-full items-center justify-center gap-2 bg-gold py-4 text-xs font-bold tracking-[0.2em] text-background hover:bg-gold-soft transition-all duration-300 disabled:opacity-50 uppercase cursor-pointer"
+              >
+                {placing ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>REDIRECTING TO PHONEPE…</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="size-3.5 stroke-[2.5]" />
+                    <span>PLACE ORDER & PAY</span>
+                  </>
+                )}
               </button>
+
+              <div className="mt-4 pt-4 border-t border-border/40 text-center">
+                <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground font-sans">
+                  <ShieldCheck className="size-4 text-gold shrink-0" />
+                  <span>Guaranteed Safe &amp; Secure Checkout via PhonePe</span>
+                </div>
+              </div>
             </aside>
           </form>
         )}
