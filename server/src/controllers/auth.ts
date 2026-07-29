@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import { prisma } from '../lib/prisma';
+import { logAdminActivity } from '../services/adminActivity';
 import { AppError } from '../lib/AppError';
 import { AuthRequest } from '../middleware/auth';
 import { sendOtpEmail } from '../services/email';
@@ -219,6 +220,12 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     });
 
     setRefreshCookie(res, refreshToken, expiresAt);
+
+    if (user.role === 'admin') {
+      const ip = (req.headers['x-forwarded-for'] as string) || req.ip || undefined;
+      const userAgent = req.headers['user-agent'] || undefined;
+      logAdminActivity(user.id, user.email, 'ADMIN_LOGIN', 'Admin logged into console', ip, userAgent);
+    }
 
     res.json({
       user: {

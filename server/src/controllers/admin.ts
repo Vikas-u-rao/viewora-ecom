@@ -9,6 +9,7 @@ import { AuthRequest } from '../middleware/auth';
 import { logger } from '../lib/logger';
 import { Prisma } from '@prisma/client';
 
+import { logAdminActivity } from '../services/adminActivity';
 import { merchantId, saltKey, saltIndex, phonepeEnv, baseUrl } from '../lib/phonepe';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
@@ -88,6 +89,10 @@ export async function updateFulfillmentStatus(req: AuthRequest, res: Response, n
       where: { id },
       data: { fulfillmentStatus: status },
     });
+
+    if (req.userId) {
+      logAdminActivity(req.userId, 'admin', 'UPDATE_FULFILLMENT', `Order ${id} status updated to ${status}`);
+    }
 
     res.json({ order: updatedOrder });
   } catch (error) {
@@ -551,6 +556,145 @@ export async function uploadProductImage(req: AuthRequest, res: Response, next: 
       url: cdnUrl,
       filename,
     });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// GET /api/v1/admin/activity
+export async function listAdminActivity(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit || '20'), 10)));
+    const logs = await prisma.adminActivityLog.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+    res.json({ logs });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// GET /api/v1/admin/notifications
+export async function getAdminNotifications(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const [subscribers, lowStockVariants, outOfStockVariants, recentOrders] = await Promise.all([
+      prisma.subscriber.findMany({
+        orderBy: { subscribedAt: 'desc' },
+        take: 5,
+      }),
+      prisma.productVariant.findMany({
+        where: { stock: { gt: 0, lte: 5 } },
+        include: { product: true },
+        take: 5,
+      }),
+      prisma.productVariant.findMany({
+        where: { stock: 0 },
+        include: { product: true },
+        take: 5,
+      }),
+      prisma.order.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      }),
+    ]);
+
+    const notifications: Array<{
+      id: string;
+      type: 'subscriber' | 'low_stock' | 'out_of_stock' | 'order';
+      title: string;
+      message: string;
+      timestamp: Date;
+      link: string;
+    }> = [];
+
+    subscribers.forEach((s) => {
+      notifications.push({
+        id: `sub-${s.id}`,
+        type: 'subscriber',
+        title: 'New Subscriber',
+        message: `${s.email} joined newsletter`,
+        timestamp: s.subscribedAt,
+        link: '/admin/coupons',
+      });
+    });
+
+    lowStockVariants.forEach((v) => {
+      notifications.push({
+        id: `low-${v.id}`,
+        type: 'low_stock',
+        title: 'Low Stock Alert',
+        message: `${v.product.name} (${v.sku}) has only ${v.stock} left`,
+        timestamp: v.updatedAt,
+        link: '/admin/inventory',
+      });
+    });
+
+    outOfStockVariants.forEach((v) => {
+      notifications.push({
+        id: `out-${v.id}`,
+        type: 'out_of_stock',
+        title: 'Out of Stock Alert',
+        message: `${v.product.name} (${v.sku}) is out of stock`,
+        timestamp: v.updatedAt,
+        link: '/admin/inventory',
+      });
+    });
+
+    recentOrders.forEach((o) => {
+      notifications.push({
+        id: `ord-${o.id}`,
+        type: 'order',
+        title: 'New Order Received',
+        message: `Order #${o.id.slice(0, 8)} for ₹${Number(o.finalPayableAmount).toLocaleString('en-IN')}`,
+        timestamp: o.createdAt,
+        link: '/admin/orders',
+      });
+    });
+
+    notifications.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    res.json({ notifications: notifications.slice(0, 15) });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// PUT /api/v1/admin/variants/:id/stock
+export async function updateVariantStock(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+    const { stock } = req.body;
+
+    const newStock = parseInt(String(stock), 10);
+    if (isNaN(newStock) || newStock < 0) {
+      throw new AppError('VALIDATION_ERROR', 400, 'Valid non-negative stock quantity is required');
+    }
+
+    const variant = await prisma.productVariant.findUnique({
+      where: { id },
+      include: { product: true },
+    });
+
+    if (!variant) {
+      throw new AppError('NOT_FOUND', 404, 'Product variant not found');
+    }
+
+    const updatedVariant = await prisma.productVariant.update({
+      where: { id },
+      data: { stock: newStock },
+    });
+
+    if (req.userId) {
+      logAdminActivity(
+        req.userId,
+        'admin',
+        'UPDATE_STOCK',
+        `Stock for ${variant.product.name} (${variant.sku}) updated from ${variant.stock} to ${newStock}`
+      );
+    }
+
+    res.json({ variant: updatedVariant });
   } catch (error) {
     next(error);
   }

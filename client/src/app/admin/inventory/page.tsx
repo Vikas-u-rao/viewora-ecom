@@ -190,7 +190,7 @@ export default function InventoryPage() {
     }
     setActionLoading(variantId);
     try {
-      const res = await fetch(`${apiUrl}/variants/${variantId}/stock`, {
+      const res = await fetch(`${apiUrl}/admin/variants/${variantId}/stock`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

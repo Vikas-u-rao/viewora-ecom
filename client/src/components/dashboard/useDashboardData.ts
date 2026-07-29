@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 interface Variant {
   id: string;
@@ -90,7 +90,11 @@ export interface DashboardData {
 
 import { getApiBaseUrl } from "@/lib/constants";
 
-export function useDashboardData(accessToken: string | null, searchQuery: string = ""): DashboardData {
+export function useDashboardData(
+  accessToken: string | null,
+  searchQuery: string = "",
+  dateRange: string = "last-30"
+): DashboardData {
   const apiUrl = getApiBaseUrl();
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -154,41 +158,60 @@ export function useDashboardData(accessToken: string | null, searchQuery: string
     return () => { cancelled = true; };
   }, [accessToken, apiUrl, productsPage, ordersPage, searchQuery, refreshKey]);
 
-  const totalSales = orders
-    .filter((o) => o.paymentStatus === "paid")
-    .reduce((sum, o) => sum + parseFloat(o.finalPayableAmount), 0);
+  // Date Range Filtering & Metric Aggregations
+  const { filteredOrdersByDate, totalSales, uniqueCustomers, displayTopProducts } = useMemo(() => {
+    // eslint-disable-next-line react-hooks/purity
+    const now = Date.now();
+    const filtered = orders.filter((o) => {
+      if (dateRange === "all" || dateRange === "year-to-date") return true;
+      const orderDate = new Date(o.createdAt).getTime();
+      const days = dateRange === "last-7" ? 7 : dateRange === "last-90" ? 90 : 30;
+      return now - orderDate <= days * 24 * 60 * 60 * 1000;
+    });
 
-  const uniqueCustomers = Array.from(
-    new Set(
-      orders
-        .map((o) => o.user?.email || o.guestEmail || o.shippingName)
-        .filter(Boolean)
-    )
-  ).length;
+    const sales = filtered
+      .filter((o) => o.paymentStatus === "paid")
+      .reduce((sum, o) => sum + parseFloat(o.finalPayableAmount || "0"), 0);
 
-  const productSalesMap: Record<string, number> = {};
-  orders.forEach((order) => {
-    if (order.paymentStatus === "paid") {
-      order.items.forEach((item) => {
-        const name = item.variant?.product?.name || "Premium Frame";
-        productSalesMap[name] = (productSalesMap[name] || 0) + item.quantity;
-      });
-    }
-  });
+    const customers = Array.from(
+      new Set(
+        filtered
+          .map((o) => o.user?.email || o.guestEmail || o.shippingName)
+          .filter(Boolean)
+      )
+    ).length;
 
-  const topProductsSorted = Object.entries(productSalesMap)
-    .map(([name, qty]) => ({ name, qty }))
-    .sort((a, b) => b.qty - a.qty)
-    .slice(0, 3);
+    const productSalesMap: Record<string, number> = {};
+    filtered.forEach((order) => {
+      if (order.paymentStatus === "paid") {
+        order.items.forEach((item) => {
+          const name = item.variant?.product?.name || "Premium Frame";
+          productSalesMap[name] = (productSalesMap[name] || 0) + item.quantity;
+        });
+      }
+    });
 
-  const displayTopProducts =
-    topProductsSorted.length > 0
-      ? topProductsSorted
-      : [
-          { name: "Aviator Gold Classic", qty: 45 },
-          { name: "Wayfarer Onyx Polarized", qty: 32 },
-          { name: "Cat Eye Rosé Edition", qty: 28 },
-        ];
+    const topProductsSorted = Object.entries(productSalesMap)
+      .map(([name, qty]) => ({ name, qty }))
+      .sort((a, b) => b.qty - a.qty)
+      .slice(0, 3);
+
+    const topProds =
+      topProductsSorted.length > 0
+        ? topProductsSorted
+        : [
+            { name: "Aviator Gold Classic", qty: 45 },
+            { name: "Wayfarer Onyx Polarized", qty: 32 },
+            { name: "Cat Eye Rosé Edition", qty: 28 },
+          ];
+
+    return {
+      filteredOrdersByDate: filtered,
+      totalSales: sales,
+      uniqueCustomers: customers,
+      displayTopProducts: topProds,
+    };
+  }, [orders, dateRange]);
 
   const refreshProducts = () => setRefreshKey((k) => k + 1);
   const addProduct = (product: Product) => setProducts((prev) => [product, ...prev]);
@@ -196,10 +219,10 @@ export function useDashboardData(accessToken: string | null, searchQuery: string
 
   return {
     products,
-    orders,
+    orders: filteredOrdersByDate,
     coupons,
     totalSales,
-    totalOrders: orders.length,
+    totalOrders: filteredOrdersByDate.length,
     uniqueCustomers,
     topProducts: displayTopProducts,
     visitorCount: 14280,

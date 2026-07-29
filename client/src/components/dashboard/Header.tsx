@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Search, Bell, Download, Calendar, ExternalLink } from "lucide-react";
-import { NotificationBadge } from "./NotificationBadge";
+import { Search, Download, Calendar, ExternalLink } from "lucide-react";
+import { AdminNotificationsDropdown } from "@/components/admin/AdminNotificationsDropdown";
+import { useAuth } from "@/context/AuthContext";
 import { FilterDropdown } from "./FilterDropdown";
 
 export function Header({
@@ -18,6 +19,7 @@ export function Header({
   setDateRange: (range: string) => void;
   onExport: () => void;
 }) {
+  const { accessToken } = useAuth();
   return (
     <header className="h-16 border-b border-gray-200 bg-white sticky top-0 px-8 flex items-center justify-between z-20">
       <div className="flex items-center gap-4 flex-1 max-w-md">
@@ -80,10 +82,7 @@ export function Header({
           <Download className="size-3.5" /> Export
         </button>
 
-        <button className="relative size-9 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-gray-600 cursor-pointer">
-          <Bell className="size-4.5" />
-          <NotificationBadge count={1} />
-        </button>
+        <AdminNotificationsDropdown accessToken={accessToken} />
 
         <Link
           href="/"
