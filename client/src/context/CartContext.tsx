@@ -124,6 +124,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
     async (variantId: string, quantity: number = 1, variantSnapshot: CartVariant | null = null) => {
       if (!accessToken) {
         const existingIdx = items.findIndex((i) => i.variantId === variantId);
+        const existingQty = existingIdx >= 0 ? items[existingIdx].quantity : 0;
+        const stock = variantSnapshot?.stock ?? 999;
+        const targetQty = existingQty + quantity;
+        if (targetQty > stock) {
+          const msg = stock > 0
+            ? `Only ${stock} unit${stock === 1 ? '' : 's'} in stock. You already have ${existingQty} in cart.`
+            : 'This product is out of stock.';
+          toast.error(msg);
+          return;
+        }
         let newItems: CartItem[] = [];
         if (existingIdx >= 0) {
           newItems = items.map((item, idx) =>

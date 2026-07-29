@@ -185,6 +185,33 @@ export async function updateVariant(req: Request, res: Response, next: NextFunct
   }
 }
 
+export async function updateVariantStock(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+    const { stock } = req.body;
+
+    const variant = await prisma.productVariant.findUnique({ where: { id } });
+    if (!variant) {
+      throw new AppError('NOT_FOUND', 404, 'Variant not found');
+    }
+
+    const updatedVariant = await prisma.productVariant.update({
+      where: { id },
+      data: { stock },
+    });
+
+    const lowStock = stock <= 5;
+
+    res.status(200).json({
+      variant: updatedVariant,
+      lowStock,
+      status: stock === 0 ? 'out_of_stock' : lowStock ? 'low_stock' : 'in_stock',
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function deleteVariant(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
