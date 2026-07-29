@@ -91,3 +91,10 @@ export const updateVariantSchema = z.object({
   imageUrls: z.array(z.string().url('Each image must be a valid URL')).optional(),
   isActive: z.boolean().optional(),
 });
+
+export const updateVariantStockSchema = z.object({
+  stock: z.preprocess(
+    (val) => Number(val),
+    z.number().int('Stock must be an integer').min(0, 'Stock quantity cannot be negative.')
+  ),
+});

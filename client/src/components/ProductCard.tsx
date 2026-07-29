@@ -27,6 +27,8 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
   const wishlisted = isWishlisted(product.id);
 
   const cartItem = variant ? items.find((i) => i.variantId === variant.id) : null;
+  const inCartQty = cartItem?.quantity || 0;
+  const maxReached = variant ? inCartQty >= variant.stock : false;
 
   const handleDecrement = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -47,7 +49,7 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
   const handleIncrement = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!cartItem || isAdding) return;
+    if (!cartItem || isAdding || maxReached) return;
     setIsAdding(true);
     try {
       await updateQuantity(cartItem.id, cartItem.quantity + 1);
@@ -130,13 +132,19 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
           />
         </button>
 
-        {unavailable && (
+        {unavailable ? (
           <div className="absolute bottom-2 left-2 z-10">
             <span className="text-[9px] tracking-[0.15em] uppercase font-bold bg-background/80 backdrop-blur-sm border border-border/60 text-muted-foreground px-2 py-0.5">
               Sold Out
             </span>
           </div>
-        )}
+        ) : variant && variant.stock <= 5 ? (
+          <div className="absolute bottom-2 left-2 z-10">
+            <span className="text-[9px] tracking-[0.15em] uppercase font-bold bg-amber-900/80 backdrop-blur-sm border border-amber-600/60 text-amber-300 px-2 py-0.5">
+              Only {variant.stock} left
+            </span>
+          </div>
+        ) : null}
       </div>
 
       {/* Info wrap */}
@@ -169,9 +177,10 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
               <span className="text-white min-w-[14px] text-center font-bold">{cartItem.quantity}</span>
               <button
                 onClick={handleIncrement}
-                disabled={isAdding}
+                disabled={isAdding || maxReached}
                 className="text-[#c9a35c] hover:text-white px-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Increase quantity"
+                title={maxReached ? `Only ${variant?.stock} in stock` : "Increase quantity"}
               >
                 +
               </button>

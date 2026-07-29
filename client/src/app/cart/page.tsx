@@ -400,6 +400,13 @@ export default function CartPage() {
                         </button>
                       </div>
 
+                      {/* Stock notice */}
+                      {item.quantity >= maxStock && item.variant && (
+                        <p className="text-[10px] text-amber-400 mt-1">
+                          Only {maxStock} in stock
+                        </p>
+                      )}
+
                       {/* Line price */}
                       <div className="text-right shrink-0">
                         <p className="font-semibold text-sm text-foreground tabular-nums">

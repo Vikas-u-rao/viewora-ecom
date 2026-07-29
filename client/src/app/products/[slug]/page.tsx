@@ -86,6 +86,8 @@ export default function ProductDetailPage() {
   const wishlisted = product ? isWishlisted(product.id) : false;
 
   const cartItem = selectedVariant ? items.find((i) => i.variantId === selectedVariant.id) : undefined;
+  const inCartQty = cartItem?.quantity || 0;
+  const maxReached = selectedVariant ? inCartQty >= selectedVariant.stock : false;
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -206,6 +208,12 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
+            {selectedVariant && selectedVariant.stock > 0 && selectedVariant.stock <= 5 && (
+              <p className="text-xs text-amber-400 mb-3">
+                Only {selectedVariant.stock} left in stock
+              </p>
+            )}
+
             <div className="flex flex-row items-center gap-5">
               <span className="font-serif text-3xl text-gold tabular-nums">{formatPrice(selectedVariant?.price || product.startingPrice)}</span>
               <div className="flex items-center gap-2">
@@ -248,13 +256,20 @@ export default function ProductDetailPage() {
               <div className="mt-6 pt-4 border-t border-border/40">
                 <p className="text-xs text-muted-foreground tracking-wide">
                   {cartItem.quantity} in cart
-                  <button
-                    onClick={() => addToCart(selectedVariant!.id, 1, variantSnapshot(product, selectedVariant!))}
-                    className="ml-3 inline-flex items-center gap-1 text-gold hover:text-gold-soft transition-colors text-xs"
-                  >
-                    <Plus className="size-3 stroke-[2.5]" />
-                    Add more
-                  </button>
+                  {!maxReached && selectedVariant && selectedVariant.stock > 0 && (
+                    <button
+                      onClick={() => addToCart(selectedVariant.id, 1, variantSnapshot(product, selectedVariant))}
+                      className="ml-3 inline-flex items-center gap-1 text-gold hover:text-gold-soft transition-colors text-xs"
+                    >
+                      <Plus className="size-3 stroke-[2.5]" />
+                      Add more
+                    </button>
+                  )}
+                  {maxReached && (
+                    <span className="ml-3 text-amber-400 text-xs">
+                      Only {selectedVariant!.stock} in stock
+                    </span>
+                  )}
                 </p>
               </div>
             )}

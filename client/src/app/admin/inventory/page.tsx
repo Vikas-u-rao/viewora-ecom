@@ -1,8 +1,8 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import { useState } from "react";
-import { Loader2, Package, Plus, Search, Trash2, X } from "lucide-react";
+import { useState, useCallback } from "react";
+import { Loader2, Package, Plus, Search, Trash2, X, CheckCircle2, AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useDashboardData } from "@/components/dashboard/useDashboardData";
 import { getApiBaseUrl } from "@/lib/constants";
@@ -72,6 +72,7 @@ export default function InventoryPage() {
   const [lowStockOnly, setLowStockOnly] = useState(false);
   const [editingStock, setEditingStock] = useState<Record<string, number | undefined>>({});
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [stockNotification, setStockNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Modal State for Add New Product
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -102,6 +103,21 @@ export default function InventoryPage() {
 
   const [formData, setFormData] = useState(initialFormData);
   const [uploadingField, setUploadingField] = useState<string | null>(null);
+
+  const showNotification = useCallback((type: 'success' | 'error', message: string) => {
+    setStockNotification({ type, message });
+    setTimeout(() => setStockNotification(null), 3000);
+  }, []);
+
+  const getStockBadge = (stock: number) => {
+    if (stock === 0) {
+      return { label: "Out of Stock", classes: "bg-red-50 text-red-600 ring-1 ring-red-200" };
+    }
+    if (stock <= 5) {
+      return { label: "Low Stock", classes: "bg-amber-50 text-amber-700 ring-1 ring-amber-200" };
+    }
+    return { label: "In Stock", classes: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200" };
+  };
 
   const apiUrl = getApiBaseUrl();
   const R2_CDN_BASE =
@@ -161,16 +177,20 @@ export default function InventoryPage() {
       p.name.toLowerCase().includes(q) ||
       (p.brand && p.brand.toLowerCase().includes(q)) ||
       p.variants.some((v) => v.sku.toLowerCase().includes(q));
-    const matchesLowStock = !lowStockOnly || p.variants.some((v) => v.stock <= 2);
+    const matchesLowStock = !lowStockOnly || p.variants.some((v) => v.stock <= 5);
     return matchesSearch && matchesLowStock;
   });
 
   const handleUpdateStock = async (variantId: string) => {
     const stockVal = editingStock[variantId];
-    if (stockVal === undefined || stockVal < 0) return;
+    if (stockVal === undefined) return;
+    if (stockVal < 0) {
+      showNotification('error', 'Stock quantity cannot be negative.');
+      return;
+    }
     setActionLoading(variantId);
     try {
-      const res = await fetch(`${apiUrl}/variants/${variantId}`, {
+      const res = await fetch(`${apiUrl}/variants/${variantId}/stock`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -178,14 +198,19 @@ export default function InventoryPage() {
         },
         body: JSON.stringify({ stock: Number(stockVal) }),
       });
-      if (!res.ok) throw new Error("Failed to update stock");
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to update stock");
+      }
+      showNotification('success', `Stock updated to ${stockVal}`);
       setEditingStock((prev) => {
         const next = { ...prev };
         delete next[variantId];
         return next;
       });
-    } catch {
-      // silently fail
+      refreshProducts();
+    } catch (err: unknown) {
+      showNotification('error', err instanceof Error ? err.message : 'Failed to update stock');
     } finally {
       setActionLoading(null);
     }
@@ -313,6 +338,24 @@ export default function InventoryPage() {
         </button>
       </div>
 
+      {/* ── Notification Toast ── */}
+      {stockNotification && (
+        <div
+          className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-xs font-semibold transition-all animate-in slide-in-from-top-2 ${
+            stockNotification.type === 'success'
+              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+              : 'bg-red-50 text-red-800 border border-red-200'
+          }`}
+        >
+          {stockNotification.type === 'success' ? (
+            <CheckCircle2 className="size-4 shrink-0" />
+          ) : (
+            <AlertCircle className="size-4 shrink-0" />
+          )}
+          {stockNotification.message}
+        </div>
+      )}
+
       {/* ── Main Card ── */}
       <div className="flex-1 flex flex-col min-h-0 w-full max-w-full bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         {/* ── Search Bar ── */}
@@ -415,16 +458,11 @@ export default function InventoryPage() {
                         <div className="text-right font-medium text-gray-900">
                           ₹{Number(v.price).toLocaleString("en-IN")}
                         </div>
-                        <div className="text-center">
-                          {v.stock <= 2 ? (
-                            <span className="inline-flex items-center justify-center rounded bg-red-50 px-1.5 py-0.5 text-[11px] font-bold text-red-600">
-                              {v.stock}
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center justify-center rounded bg-emerald-50 px-1.5 py-0.5 text-[11px] font-bold text-emerald-700">
-                              {v.stock}
-                            </span>
-                          )}
+                        <div className="flex flex-col items-center gap-0.5">
+                          <span className="font-bold text-gray-900 text-[11px]">{v.stock}</span>
+                          <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold ${getStockBadge(v.stock).classes}`}>
+                            {getStockBadge(v.stock).label}
+                          </span>
                         </div>
                         <div className="flex items-center justify-end gap-1.5">
                           <input
@@ -478,11 +516,12 @@ export default function InventoryPage() {
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] text-gray-500 font-semibold uppercase">Stock</span>
-                          {v.stock <= 2 ? (
-                            <span className="inline-flex items-center justify-center rounded bg-red-50 px-1.5 py-0.5 text-[11px] font-bold text-red-600">{v.stock}</span>
-                          ) : (
-                            <span className="inline-flex items-center justify-center rounded bg-emerald-50 px-1.5 py-0.5 text-[11px] font-bold text-emerald-700">{v.stock}</span>
-                          )}
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-gray-900 text-[11px]">{v.stock}</span>
+                            <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold ${getStockBadge(v.stock).classes}`}>
+                              {getStockBadge(v.stock).label}
+                            </span>
+                          </div>
                         </div>
                         <div>
                           <span className="text-[10px] text-gray-500 font-semibold uppercase">Adjust Qty</span>
