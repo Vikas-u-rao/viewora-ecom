@@ -19,15 +19,21 @@ const R2_CDN =
  */
 export function resolveImageUrl(url: string | null | undefined): string | null {
   if (!url) return null;
-  // Already a valid public URL (R2, azurewebsites, etc.)
-  if (url.startsWith("https://") && !url.includes("localhost")) return url;
-  // Relative or localhost upload path — extract the filename and rewrite to R2
-  const match = url.match(/\/uploads\/products\/([^?#]+)/);
-  if (match) {
-    return `${R2_CDN}/uploads/products/${match[1]}`;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+
+  // Already a valid public R2 / external HTTPS URL (and not localhost)
+  if (trimmed.startsWith("https://") && !trimmed.includes("localhost")) {
+    return trimmed;
   }
-  // Fallback: return as-is (may still be a relative path)
-  return url;
+
+  // Extract the filename from relative, leading slash, or localhost paths
+  const cleanFilename = trimmed.replace(/^(https?:\/\/[^\/]+)?\/?(uploads\/products\/)?/, "");
+  if (cleanFilename) {
+    return `${R2_CDN}/uploads/products/${cleanFilename}`;
+  }
+
+  return trimmed;
 }
 
 /**
