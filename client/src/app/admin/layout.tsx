@@ -71,7 +71,7 @@ export default function AdminLayout({
         }}
       />
 
-      <div className="pl-64 flex-1 flex flex-col min-h-screen">
+      <div className="pl-64 flex-1 flex flex-col min-h-0 w-full max-w-full overflow-x-hidden">
         {children}
       </div>
     </div>
