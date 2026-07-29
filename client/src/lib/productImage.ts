@@ -6,7 +6,9 @@ import type { StaticImageData } from "next/image";
 
 const fallbackImages: StaticImageData[] = [p1, p2, p3, p4];
 
-const R2_CDN = "https://pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev";
+const R2_CDN =
+  process.env.NEXT_PUBLIC_R2_CDN_URL ||
+  "https://pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev";
 
 /**
  * Rewrites a product image URL:

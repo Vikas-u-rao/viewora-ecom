@@ -2,17 +2,73 @@
 export const dynamic = "force-dynamic";
 
 import { useState } from "react";
-import { Loader2, Package, Plus, Search, X } from "lucide-react";
+import { Loader2, Package, Plus, Search, Trash2, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useDashboardData } from "@/components/dashboard/useDashboardData";
 import { getApiBaseUrl } from "@/lib/constants";
 
+const BRAND_OPTIONS = [
+  "Viewora",
+  "Ray-Ban",
+  "Oakley",
+  "Gucci",
+  "Prada",
+  "Versace",
+  "Persol",
+  "Tom Ford",
+  "Cartier",
+  "Police",
+  "Carrera",
+  "Burberry",
+  "Vogue Eyewear",
+];
+
+const CATEGORY_OPTIONS = [
+  "Eyewear",
+  "Sunglasses",
+  "Optical Frames",
+  "Reading Glasses",
+  "Blue Light Glasses",
+  "Smart Eyewear",
+  "Contact Lenses",
+  "Accessories",
+];
+
+const GENDER_OPTIONS = ["Unisex", "Men", "Women"];
+
+const SHAPE_OPTIONS = [
+  "Wayfarer",
+  "Aviator",
+  "Cat Eye",
+  "Round",
+  "Rectangle",
+  "Square",
+  "Geometric",
+  "Oversized",
+];
+
+const SIZE_OPTIONS = ["Medium", "Small", "Large", "Wide Fit"];
+
+const COLOR_OPTIONS = [
+  "Black",
+  "Gold",
+  "Silver",
+  "Tortoise",
+  "Transparent",
+  "Rose Gold",
+  "Blue",
+];
+
+const FRAME_TYPE_OPTIONS = ["Full Rim", "Half Rim", "Rimless"];
+
+const MATERIAL_OPTIONS = ["Acetate", "Titanium", "Metal", "TR90"];
+
 export default function InventoryPage() {
   const { accessToken } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
   const { products, fetchLoading, productsPage, productsTotalPages, setProductsPage } =
-    useDashboardData(accessToken, searchQuery);
+    useDashboardData(accessToken);
 
+  const [searchQuery, setSearchQuery] = useState("");
   const [lowStockOnly, setLowStockOnly] = useState(false);
   const [editingStock, setEditingStock] = useState<Record<string, number | undefined>>({});
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -21,20 +77,77 @@ export default function InventoryPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState("");
-  const [formData, setFormData] = useState({
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const initialFormData = {
     name: "",
-    brand: "",
+    brand: "Viewora",
     categoryName: "Eyewear",
+    gender: "Unisex",
+    shape: "Wayfarer",
+    size: "Medium",
+    color: "Black",
+    frameType: "Full Rim",
+    material: "Acetate",
     description: "",
-    imageUrl: "",
+    image1: "",
+    image2: "",
+    image3: "",
+    image4: "",
     price: "",
-    sku: "",
-    color: "",
-    size: "",
     stock: "10",
-  });
+    sku: "",
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
+  const [uploadingField, setUploadingField] = useState<string | null>(null);
 
   const apiUrl = getApiBaseUrl();
+  const R2_CDN_BASE =
+    process.env.NEXT_PUBLIC_R2_CDN_URL ||
+    "https://pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev";
+
+  const formatR2Url = (raw: string): string => {
+    const trimmed = raw.trim();
+    if (!trimmed) return "";
+    if (trimmed.startsWith("https://") || trimmed.startsWith("http://")) {
+      return trimmed;
+    }
+    const cleanFilename = trimmed.replace(/^\/?(uploads\/products\/)?/, "");
+    return `${R2_CDN_BASE}/uploads/products/${cleanFilename}`;
+  };
+
+  const handleFileUpload = async (
+    file: File,
+    field: "image1" | "image2" | "image3" | "image4"
+  ) => {
+    setUploadingField(field);
+    try {
+      const body = new FormData();
+      body.append("image", file);
+
+      const res = await fetch(`${apiUrl}/admin/upload`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to upload image");
+
+      setFormData((prev) => ({
+        ...prev,
+        [field]: data.url,
+      }));
+    } catch (err: unknown) {
+      setCreateError(err instanceof Error ? err.message : "Image upload failed");
+    } finally {
+      setUploadingField(null);
+    }
+  };
 
   const handleSearchChange = (q: string) => {
     setSearchQuery(q);
@@ -78,10 +191,47 @@ export default function InventoryPage() {
     }
   };
 
+  const handleDeleteProduct = async (productId: string) => {
+    setDeletingId(productId);
+    try {
+      const res = await fetch(`${apiUrl}/admin/products/${productId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!res.ok) throw new Error("Failed to delete product");
+      setDeleteConfirm(null);
+      window.location.reload();
+    } catch {
+      setDeleteConfirm(null);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.price || !formData.stock) {
-      setCreateError("Please fill in Product Name, Price, and Stock.");
+
+    // Validation for all mandatory fields
+    if (
+      !formData.name.trim() ||
+      !formData.brand.trim() ||
+      !formData.categoryName.trim() ||
+      !formData.gender.trim() ||
+      !formData.shape.trim() ||
+      !formData.size.trim() ||
+      !formData.color.trim() ||
+      !formData.frameType.trim() ||
+      !formData.material.trim() ||
+      !formData.description.trim() ||
+      !formData.image1.trim() ||
+      !formData.image2.trim() ||
+      !formData.image3.trim() ||
+      !formData.image4.trim() ||
+      !formData.price ||
+      !formData.stock ||
+      !formData.sku.trim()
+    ) {
+      setCreateError("Please fill in ALL mandatory fields marked with *");
       return;
     }
 
@@ -99,13 +249,26 @@ export default function InventoryPage() {
           name: formData.name,
           brand: formData.brand,
           categoryName: formData.categoryName,
+          gender: formData.gender,
+          shape: formData.shape,
+          frameType: formData.frameType,
+          material: formData.material,
           description: formData.description,
-          imageUrl: formData.imageUrl,
+          image1: formData.image1,
+          image2: formData.image2,
+          image3: formData.image3,
+          image4: formData.image4,
+          imageUrls: [
+            formData.image1.trim(),
+            formData.image2.trim(),
+            formData.image3.trim(),
+            formData.image4.trim(),
+          ],
           price: Number(formData.price),
           startingPrice: Number(formData.price),
-          sku: formData.sku || undefined,
-          color: formData.color || undefined,
-          size: formData.size || undefined,
+          sku: formData.sku.trim(),
+          color: formData.color.trim(),
+          size: formData.size.trim(),
           stock: Number(formData.stock),
         }),
       });
@@ -117,23 +280,12 @@ export default function InventoryPage() {
 
       // Reset modal and trigger refresh
       setIsModalOpen(false);
-      setFormData({
-        name: "",
-        brand: "",
-        categoryName: "Eyewear",
-        description: "",
-        imageUrl: "",
-        price: "",
-        sku: "",
-        color: "",
-        size: "",
-        stock: "10",
-      });
+      setFormData(initialFormData);
 
       // Refresh current page products
       window.location.reload();
-    } catch (err: any) {
-      setCreateError(err.message || "Error creating product");
+    } catch (err: unknown) {
+      setCreateError(err instanceof Error ? err.message : "Error creating product");
     } finally {
       setIsCreating(false);
     }
@@ -202,13 +354,22 @@ export default function InventoryPage() {
                 key={p.id}
                 className="border border-gray-200 p-5 rounded-2xl bg-white hover:border-gray-350 transition-colors"
               >
-                <div className="mb-4">
-                  {p.brand && (
-                    <span className="text-[10px] tracking-wider text-gray-500 font-bold uppercase">
-                      {p.brand}
-                    </span>
-                  )}
-                  <h3 className="text-base text-gray-900 font-bold">{p.name}</h3>
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    {p.brand && (
+                      <span className="text-[10px] tracking-wider text-gray-500 font-bold uppercase">
+                        {p.brand}
+                      </span>
+                    )}
+                    <h3 className="text-base text-gray-900 font-bold">{p.name}</h3>
+                  </div>
+                  <button
+                    onClick={() => setDeleteConfirm(p.id)}
+                    className="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-50 cursor-pointer"
+                    title="Delete product"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
                 </div>
 
                 <div className="overflow-x-auto rounded-xl border border-gray-100 bg-gray-50/40">
@@ -248,78 +409,68 @@ export default function InventoryPage() {
                               </div>
                             </td>
                             <td className="px-3 py-3 align-middle">
-                              <div className="flex flex-col gap-1.5">
-                                {detailItems.length > 0 ? (
-                                  detailItems.map(({ label, value }) => (
-                                    <div
-                                      key={label}
-                                      className="flex items-start gap-2 rounded-lg bg-white px-2.5 py-1.5 shadow-[0_1px_0_rgba(15,23,42,0.03)]"
+                              {detailItems.length > 0 ? (
+                                <div className="flex max-w-[250px] flex-wrap items-center gap-1.5 py-1">
+                                  {detailItems.map((item) => (
+                                    <span
+                                      key={`${v.id}-${item.label}-${item.value}`}
+                                      className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-0.5 text-[11px] leading-4 text-gray-700 shadow-[0_1px_0_rgba(15,23,42,0.03)]"
                                     >
-                                      <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-500">
-                                        {label}
-                                      </span>
-                                      <span className="text-sm leading-5 text-gray-700">
-                                        {value}
-                                      </span>
-                                    </div>
-                                  ))
-                                ) : (
-                                  <div className="rounded-lg bg-white px-2.5 py-1.5 text-sm text-gray-600 shadow-[0_1px_0_rgba(15,23,42,0.03)]">
-                                    No variant details
-                                  </div>
-                                )}
-                              </div>
-                            </td>
-                            <td className="px-3 py-3 align-middle text-right">
-                              <div className="text-base font-semibold text-gray-900">
-                                ₹{Number(v.price).toLocaleString("en-IN")}
-                              </div>
-                            </td>
-                            <td className="px-3 py-3 align-middle text-center">
-                              <span
-                                className={`inline-flex min-w-[74px] items-center justify-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                                  v.stock <= 2
-                                    ? "bg-red-50 text-red-600"
-                                    : "bg-emerald-50 text-emerald-700"
-                                }`}
-                              >
-                                {v.stock <= 2 ? `${v.stock} • Low` : v.stock}
-                              </span>
-                            </td>
-                            <td className="px-3 py-3 align-middle">
-                              <div className="flex justify-end">
-                                <div className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-2.5 py-2 shadow-[0_1px_0_rgba(15,23,42,0.03)]">
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    placeholder="0"
-                                    value={editingStock[v.id] ?? ""}
-                                    onChange={(e) =>
-                                      setEditingStock({
-                                        ...editingStock,
-                                        [v.id]:
-                                          e.target.value === ""
-                                            ? undefined
-                                            : Number(e.target.value),
-                                      })
-                                    }
-                                    className="w-16 border-0 bg-transparent px-1 py-1 text-center text-xs font-semibold text-gray-800 outline-none"
-                                  />
-                                  <button
-                                    onClick={() => handleUpdateStock(v.id)}
-                                    disabled={
-                                      actionLoading === v.id ||
-                                      editingStock[v.id] === undefined
-                                    }
-                                    className="rounded-lg bg-gray-900 px-3.5 py-1.5 text-xs font-semibold text-white transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
-                                  >
-                                    {actionLoading === v.id ? (
-                                      <Loader2 className="size-3 animate-spin" />
-                                    ) : (
-                                      "Update"
-                                    )}
-                                  </button>
+                                      <span className="font-semibold text-gray-500">{item.label}:</span>
+                                      <span className="font-bold text-gray-900">{item.value}</span>
+                                    </span>
+                                  ))}
                                 </div>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
+                            </td>
+                            <td className="px-3 py-3 text-right align-middle font-medium text-gray-900">
+                              ₹{Number(v.price).toLocaleString("en-IN")}
+                            </td>
+                            <td className="px-3 py-3 text-center align-middle font-bold">
+                              {v.stock <= 2 ? (
+                                <span className="inline-flex items-center justify-center rounded-md bg-red-50 px-2 py-0.5 text-xs font-bold text-red-600">
+                                  {v.stock} (Low)
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center justify-center rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700">
+                                  {v.stock}
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-3 py-3 text-right align-middle">
+                              <div className="inline-flex items-center gap-2">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  placeholder="Qty"
+                                  value={editingStock[v.id] ?? ""}
+                                  onChange={(e) =>
+                                    setEditingStock({
+                                      ...editingStock,
+                                      [v.id]:
+                                        e.target.value === ""
+                                          ? undefined
+                                          : Number(e.target.value),
+                                    })
+                                  }
+                                  className="w-16 bg-white border border-gray-200 px-2.5 py-1 rounded-lg text-xs text-gray-800 focus:border-gray-900 outline-none text-center"
+                                />
+                                <button
+                                  onClick={() => handleUpdateStock(v.id)}
+                                  disabled={
+                                    actionLoading === v.id ||
+                                    editingStock[v.id] === undefined
+                                  }
+                                  className="bg-gray-900 hover:bg-gray-800 text-white px-3.5 py-1 rounded-lg text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                                >
+                                  {actionLoading === v.id ? (
+                                    <Loader2 className="size-3 animate-spin" />
+                                  ) : (
+                                    "Update"
+                                  )}
+                                </button>
                               </div>
                             </td>
                           </tr>
@@ -362,9 +513,14 @@ export default function InventoryPage() {
       {/* Add Product Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-base font-bold text-gray-900">Add New Product</h3>
+              <div>
+                <h3 className="text-base font-bold text-gray-900">Add New Product</h3>
+                <p className="text-[11px] text-gray-500 mt-0.5">
+                  All fields marked with <span className="text-red-500 font-bold">*</span> are mandatory.
+                </p>
+              </div>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="text-gray-400 hover:text-gray-600 rounded-lg p-1"
@@ -380,138 +536,456 @@ export default function InventoryPage() {
             )}
 
             <form onSubmit={handleCreateProduct} className="space-y-4 text-xs">
+              {/* Product Title */}
               <div>
                 <label className="block text-gray-700 font-semibold mb-1">
-                  Product Name *
+                  Product Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Classic Wayfarer Frame"
+                  placeholder="e.g. Classic Wayfarer Aviator Frame"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
                 />
               </div>
 
+              {/* Brand & Category */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-1">Brand</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Viewora"
-                    value={formData.brand}
-                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
-                  />
+                  <label className="block text-gray-700 font-semibold mb-1">
+                    Brand <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={
+                      BRAND_OPTIONS.includes(formData.brand)
+                        ? formData.brand
+                        : formData.brand === ""
+                        ? "Viewora"
+                        : "custom"
+                    }
+                    onChange={(e) => {
+                      if (e.target.value === "custom") {
+                        setFormData({ ...formData, brand: "" });
+                      } else {
+                        setFormData({ ...formData, brand: e.target.value });
+                      }
+                    }}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900 bg-white"
+                  >
+                    {BRAND_OPTIONS.map((b) => (
+                      <option key={b} value={b}>
+                        {b}
+                      </option>
+                    ))}
+                    <option value="custom">+ Add Custom Brand...</option>
+                  </select>
+                  {!BRAND_OPTIONS.includes(formData.brand) && (
+                    <input
+                      type="text"
+                      required
+                      placeholder="Enter custom brand name *"
+                      value={formData.brand}
+                      onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                      className="w-full mt-1.5 border border-gray-200 rounded-xl px-3 py-1.5 text-xs outline-none focus:border-gray-900"
+                    />
+                  )}
                 </div>
+
                 <div>
                   <label className="block text-gray-700 font-semibold mb-1">
-                    Category
+                    Category <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Eyewear / Sunglasses"
-                    value={formData.categoryName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, categoryName: e.target.value })
+                  <select
+                    value={
+                      CATEGORY_OPTIONS.includes(formData.categoryName)
+                        ? formData.categoryName
+                        : "custom"
                     }
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
-                  />
+                    onChange={(e) => {
+                      if (e.target.value === "custom") {
+                        setFormData({ ...formData, categoryName: "" });
+                      } else {
+                        setFormData({ ...formData, categoryName: e.target.value });
+                      }
+                    }}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900 bg-white"
+                  >
+                    {CATEGORY_OPTIONS.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                    <option value="custom">+ Add Custom Category...</option>
+                  </select>
+                  {!CATEGORY_OPTIONS.includes(formData.categoryName) && (
+                    <input
+                      type="text"
+                      required
+                      placeholder="Enter custom category name *"
+                      value={formData.categoryName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, categoryName: e.target.value })
+                      }
+                      className="w-full mt-1.5 border border-gray-200 rounded-xl px-3 py-1.5 text-xs outline-none focus:border-gray-900"
+                    />
+                  )}
                 </div>
               </div>
 
+              {/* Filter Attributes Dropdowns: Gender, Shape, Size */}
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-1">
+                    Gender <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.gender}
+                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900 bg-white"
+                  >
+                    {GENDER_OPTIONS.map((g) => (
+                      <option key={g} value={g}>
+                        {g}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-1">
+                    Shape & Style <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.shape}
+                    onChange={(e) => setFormData({ ...formData, shape: e.target.value })}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900 bg-white"
+                  >
+                    {SHAPE_OPTIONS.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-1">
+                    Frame Size <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.size}
+                    onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900 bg-white"
+                  >
+                    {SIZE_OPTIONS.map((sz) => (
+                      <option key={sz} value={sz}>
+                        {sz}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Filter Attributes Dropdowns: Color, Frame Type, Material */}
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-1">
+                    Frame Color <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={
+                      COLOR_OPTIONS.includes(formData.color) ? formData.color : "custom"
+                    }
+                    onChange={(e) => {
+                      if (e.target.value === "custom") {
+                        setFormData({ ...formData, color: "" });
+                      } else {
+                        setFormData({ ...formData, color: e.target.value });
+                      }
+                    }}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900 bg-white"
+                  >
+                    {COLOR_OPTIONS.map((cl) => (
+                      <option key={cl} value={cl}>
+                        {cl}
+                      </option>
+                    ))}
+                    <option value="custom">+ Custom Color...</option>
+                  </select>
+                  {!COLOR_OPTIONS.includes(formData.color) && (
+                    <input
+                      type="text"
+                      required
+                      placeholder="Custom color *"
+                      value={formData.color}
+                      onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                      className="w-full mt-1.5 border border-gray-200 rounded-xl px-3 py-1.5 text-xs outline-none focus:border-gray-900"
+                    />
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-1">
+                    Frame Type <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.frameType}
+                    onChange={(e) =>
+                      setFormData({ ...formData, frameType: e.target.value })
+                    }
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900 bg-white"
+                  >
+                    {FRAME_TYPE_OPTIONS.map((ft) => (
+                      <option key={ft} value={ft}>
+                        {ft}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-1">
+                    Material <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.material}
+                    onChange={(e) =>
+                      setFormData({ ...formData, material: e.target.value })
+                    }
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900 bg-white"
+                  >
+                    {MATERIAL_OPTIONS.map((m) => (
+                      <option key={m} value={m}>
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Description */}
               <div>
                 <label className="block text-gray-700 font-semibold mb-1">
-                  Description
+                  Description <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   rows={2}
+                  required
                   placeholder="Brief details about material, style, UV protection..."
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
                 />
               </div>
 
-              <div>
-                <label className="block text-gray-700 font-semibold mb-1">
-                  Image URL
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://images.unsplash.com/..."
-                  value={formData.imageUrl}
-                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
-                />
+              {/* 4 Image URLs ("take 4 make") */}
+              <div className="pt-2 border-t">
+                <div className="font-semibold text-gray-900 mb-2">
+                  Product Image URLs (4 Mandatory Images) <span className="text-red-500">*</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-gray-600 mb-1">
+                      Image 1 URL (Primary) <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        required
+                        placeholder="https://images.unsplash.com/..."
+                        value={formData.image1}
+                        onChange={(e) =>
+                          setFormData({ ...formData, image1: e.target.value })
+                        }
+                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
+                      />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        id="upload-image1"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file, "image1");
+                        }}
+                      />
+                      <label
+                        htmlFor="upload-image1"
+                        className="inline-flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all whitespace-nowrap"
+                      >
+                        {uploadingField === "image1" ? (
+                          <Loader2 className="size-3 animate-spin" />
+                        ) : (
+                          "Upload"
+                        )}
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 mb-1">
+                      Image 2 URL <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        required
+                        placeholder="https://images.unsplash.com/..."
+                        value={formData.image2}
+                        onChange={(e) =>
+                          setFormData({ ...formData, image2: e.target.value })
+                        }
+                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
+                      />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        id="upload-image2"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file, "image2");
+                        }}
+                      />
+                      <label
+                        htmlFor="upload-image2"
+                        className="inline-flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all whitespace-nowrap"
+                      >
+                        {uploadingField === "image2" ? (
+                          <Loader2 className="size-3 animate-spin" />
+                        ) : (
+                          "Upload"
+                        )}
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 mb-1">
+                      Image 3 URL <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        required
+                        placeholder="https://images.unsplash.com/..."
+                        value={formData.image3}
+                        onChange={(e) =>
+                          setFormData({ ...formData, image3: e.target.value })
+                        }
+                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
+                      />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        id="upload-image3"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file, "image3");
+                        }}
+                      />
+                      <label
+                        htmlFor="upload-image3"
+                        className="inline-flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all whitespace-nowrap"
+                      >
+                        {uploadingField === "image3" ? (
+                          <Loader2 className="size-3 animate-spin" />
+                        ) : (
+                          "Upload"
+                        )}
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 mb-1">
+                      Image 4 URL <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        required
+                        placeholder="https://images.unsplash.com/..."
+                        value={formData.image4}
+                        onChange={(e) =>
+                          setFormData({ ...formData, image4: e.target.value })
+                        }
+                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
+                      />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        id="upload-image4"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file, "image4");
+                        }}
+                      />
+                      <label
+                        htmlFor="upload-image4"
+                        className="inline-flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all whitespace-nowrap"
+                      >
+                        {uploadingField === "image4" ? (
+                          <Loader2 className="size-3 animate-spin" />
+                        ) : (
+                          "Upload"
+                        )}
+                      </label>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="pt-2 border-t font-semibold text-gray-900">
-                Initial Variant Details
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-gray-700 font-semibold mb-1">
-                    Price (₹) *
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    required
-                    placeholder="1999"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
-                  />
+              {/* Price, Stock, SKU */}
+              <div className="pt-2 border-t">
+                <div className="font-semibold text-gray-900 mb-2">
+                  Pricing & Stock Details
                 </div>
-                <div>
-                  <label className="block text-gray-700 font-semibold mb-1">
-                    Initial Stock *
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    required
-                    placeholder="10"
-                    value={formData.stock}
-                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-gray-700 font-semibold mb-1">SKU</label>
-                  <input
-                    type="text"
-                    placeholder="AUTO-SKU"
-                    value={formData.sku}
-                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-700 font-semibold mb-1">Color</label>
-                  <input
-                    type="text"
-                    placeholder="Matte Black"
-                    value={formData.color}
-                    onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-700 font-semibold mb-1">Size</label>
-                  <input
-                    type="text"
-                    placeholder="Medium"
-                    value={formData.size}
-                    onChange={(e) => setFormData({ ...formData, size: e.target.value })}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
-                  />
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-gray-700 font-semibold mb-1">
+                      Price (₹) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      required
+                      placeholder="1999"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 font-semibold mb-1">
+                      Initial Stock <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      required
+                      placeholder="10"
+                      value={formData.stock}
+                      onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 font-semibold mb-1">
+                      SKU <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. VIE-WAY-01"
+                      value={formData.sku}
+                      onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-gray-900"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -532,6 +1006,38 @@ export default function InventoryPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <h3 className="text-base font-bold text-gray-900">Delete Product</h3>
+            <p className="text-xs text-gray-600">
+              Are you sure you want to delete this product? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                disabled={deletingId !== null}
+                className="px-4 py-2 border rounded-xl text-gray-600 hover:bg-gray-50 font-semibold text-xs cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteProduct(deleteConfirm)}
+                disabled={deletingId !== null}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold text-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {deletingId !== null ? (
+                  <Loader2 className="size-3 animate-spin" />
+                ) : (
+                  "Delete"
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
