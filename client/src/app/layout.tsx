@@ -4,6 +4,7 @@ import "./globals.css";
 import Providers from "@/components/providers";
 import InquiryModal from "@/components/InquiryModal";
 import { PageTracker } from "@/components/PageTracker";
+import { ServiceWorkerUnregister } from "@/components/ServiceWorkerUnregister";
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-serif",
@@ -71,6 +72,7 @@ export default function RootLayout({
           Skip to main content
         </a>
         <Providers>
+          <ServiceWorkerUnregister />
           <PageTracker />
           {children}
           <InquiryModal />
