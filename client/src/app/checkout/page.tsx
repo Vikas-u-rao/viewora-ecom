@@ -13,7 +13,7 @@ import { useCart } from "@/context/CartContext";
 import { Address, AddressPayload, fetchAddressesApi, saveAddressApi } from "@/services/account";
 import { createOrderApi, orderItemsFromCart, initiatePaymentApi } from "@/services/orders";
 import { COUPON_STORAGE_KEY } from "@/services/coupons";
-import { resolveImageUrl, getFallbackImage } from "@/lib/productImage";
+import { resolveImageUrl } from "@/lib/productImage";
 
 const SHIPPING_FEE = 99;
 
@@ -268,7 +268,7 @@ export default function CheckoutPage() {
                 {availableItems.map((item) => {
                   const product = item.variant?.product;
                   const rawImg = item.variant?.imageUrls?.[0];
-                  const imgSrc = resolveImageUrl(rawImg) || (product ? getFallbackImage(product.slug) : null);
+                  const imgSrc = resolveImageUrl(rawImg);
                   return (
                     <div key={item.id} className="flex items-center gap-3 py-1.5 border-b border-border/40 last:border-b-0">
                       <div className="relative w-12 h-12 bg-white/5 border border-border shrink-0 overflow-hidden">

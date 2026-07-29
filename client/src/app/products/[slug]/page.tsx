@@ -2,7 +2,7 @@
 export const dynamic = "force-dynamic";
 
 import { useEffect, useMemo, useState } from "react";
-import { StaticImageData } from "next/image";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Heart, Loader2, ShoppingCart, Plus, Check } from "lucide-react";
@@ -14,7 +14,7 @@ import { ApiProduct, ProductVariant, variantSnapshot } from "@/services/products
 import ProductImage from "@/components/ProductImage";
 
 import { formatPrice } from "@/lib/format";
-import { getFallbackImage, resolveImageUrl } from "@/lib/productImage";
+import { resolveImageUrl } from "@/lib/productImage";
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -63,10 +63,8 @@ export default function ProductDetailPage() {
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-  const fallback = getFallbackImage(product?.slug || "");
-
   const allImages = useMemo(() => {
-    const list: (string | StaticImageData)[] = [];
+    const list: string[] = [];
     if (selectedVariant?.imageUrls?.length) {
       list.push(...selectedVariant.imageUrls.map((u) => resolveImageUrl(u) || u));
     }
@@ -76,11 +74,10 @@ export default function ProductDetailPage() {
         if (!list.includes(resolved)) list.push(resolved);
       });
     }
-    if (list.length === 0) list.push(fallback);
     return list;
-  }, [selectedVariant, product, fallback]);
+  }, [selectedVariant, product]);
 
-  const activeImage = allImages[activeImageIndex] || allImages[0] || fallback;
+  const activeImage = allImages[activeImageIndex] || allImages[0] || "";
   const unavailable = !selectedVariant || selectedVariant.stock < 1;
 
   const wishlisted = product ? isWishlisted(product.id) : false;

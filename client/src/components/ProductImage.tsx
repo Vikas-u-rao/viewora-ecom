@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { StaticImageData } from "next/image";
-import { Package } from "lucide-react";
+import { ImageOff } from "lucide-react";
 import { useState } from "react";
 
 interface ProductImageProps {
@@ -20,12 +20,13 @@ export default function ProductImage({
   className = "",
 }: ProductImageProps) {
   const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
 
   return (
     <div
-      className={`relative w-full h-full flex items-center justify-center bg-gradient-to-b from-card/80 to-card/30 ${className}`}
+      className={`relative w-full h-full flex items-center justify-center bg-[#ffffff] ${className}`}
     >
-      {src ? (
+      {src && !error ? (
         <Image
           src={src}
           alt={alt}
@@ -36,14 +37,16 @@ export default function ProductImage({
           sizes={sizes}
           priority={priority}
           onLoad={() => setLoaded(true)}
+          onError={() => setError(true)}
         />
       ) : (
-        <div className="flex h-full items-center justify-center">
-          <Package className="size-10 text-muted-foreground" strokeWidth={1.2} />
+        <div className="flex flex-col h-full items-center justify-center text-gray-400 space-y-1">
+          <ImageOff className="size-8 text-gray-300" strokeWidth={1.5} />
+          <span className="text-[10px] font-medium tracking-wide uppercase text-gray-400">No Image</span>
         </div>
       )}
 
-      {!loaded && src && (
+      {!loaded && !error && src && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="size-6 border border-gold/30 border-t-gold rounded-full animate-spin" />
         </div>

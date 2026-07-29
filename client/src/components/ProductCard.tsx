@@ -2,27 +2,26 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, Loader2, Package } from "lucide-react";
+import { Heart, Loader2, ImageOff } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { ApiProduct, variantSnapshot } from "@/services/products";
 import { formatPrice } from "@/lib/format";
-import { getFallbackImage, resolveImageUrl } from "@/lib/productImage";
+import { resolveImageUrl } from "@/lib/productImage";
 
 export default function ProductCard({ product }: { product: ApiProduct }) {
   const { items, addToCart, updateQuantity, removeItem } = useCart();
   const { isWishlisted, toggleWishlist } = useWishlist();
   const [isAdding, setIsAdding] = useState(false);
   const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const variant = product.variants.find((item) => item.stock > 0) || product.variants[0];
 
-  const fallback = getFallbackImage(product.slug);
-
   const firstUrl = resolveImageUrl(Array.isArray(product.defaultImageUrls) ? product.defaultImageUrls[0] : null);
   const secondUrl = resolveImageUrl(Array.isArray(product.defaultImageUrls) && product.defaultImageUrls.length > 1 ? product.defaultImageUrls[1] : null);
-  const image = firstUrl || fallback;
+  const hasImage = firstUrl && !imgError;
   const unavailable = !variant || variant.stock < 1;
   const wishlisted = isWishlisted(product.id);
 
@@ -82,21 +81,18 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
     }
   };
 
-  const [imgError, setImgError] = useState(false);
-  const displayImage = imgError || !image ? fallback : image;
-
   return (
     <div className="group bg-[#0b0b0a] border border-transparent rounded-lg overflow-hidden hover:border-[#c9a35c] transition-colors duration-300 relative flex flex-col justify-between h-full">
       {/* Product image with wishlist button */}
       <div className="relative bg-[#ffffff] p-6 flex items-center justify-center aspect-square overflow-hidden w-full h-[260px]">
         <Link
           href={`/products/${product.slug}`}
-          className="relative w-full h-full block"
+          className="relative w-full h-full block flex flex-col items-center justify-center"
         >
-          {displayImage ? (
+          {hasImage ? (
             <>
               <Image
-                src={displayImage}
+                src={firstUrl}
                 alt={product.name}
                 fill
                 onError={() => setImgError(true)}
@@ -116,8 +112,9 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
               )}
             </>
           ) : (
-            <div className="flex h-full items-center justify-center">
-              <Package className="size-10 text-muted-foreground" strokeWidth={1.2} />
+            <div className="flex flex-col items-center justify-center text-gray-400 space-y-1">
+              <ImageOff className="size-8 text-gray-300" strokeWidth={1.5} />
+              <span className="text-[10px] font-medium tracking-wide uppercase text-gray-400">No Image</span>
             </div>
           )}
         </Link>
