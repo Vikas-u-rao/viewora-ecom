@@ -6,7 +6,7 @@ const host = process.env.EMAIL_HOST;
 const port = parseInt(process.env.EMAIL_PORT || '587', 10);
 const user = process.env.EMAIL_USER;
 const pass = process.env.EMAIL_PASS;
-const from = process.env.EMAIL_FROM || 'noreply@viewora.in';
+const from = process.env.EMAIL_FROM || 'contact@viewora.in';
 
 // Infer secure connection (true for SSL port 465, false for STARTTLS port 587) unless explicitly overridden
 const isSecure = process.env.EMAIL_SECURE !== undefined
