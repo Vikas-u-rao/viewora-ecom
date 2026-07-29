@@ -144,15 +144,9 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-background text-foreground font-sans">
       <Header />
       <main className="mx-auto max-w-[1200px] px-4 sm:px-6 pt-24 sm:pt-28 pb-16">
-        <div className="flex items-center justify-between mb-8 pb-4 border-b border-border/60">
-          <div>
-            <h1 className="font-serif text-3xl sm:text-4xl text-white">Checkout</h1>
-            <p className="text-xs text-muted-foreground mt-1">Review your order details and choose payment</p>
-          </div>
-          <div className="hidden sm:flex items-center gap-2 text-xs text-gold/90 font-medium">
-            <Lock size={14} />
-            <span>256-Bit SSL Encrypted</span>
-          </div>
+        <div className="mb-8 pb-4 border-b border-border/60">
+          <h1 className="font-serif text-3xl sm:text-4xl text-white">Checkout</h1>
+          <p className="text-xs text-muted-foreground mt-1">Review your order details and choose payment</p>
         </div>
 
         {items.length === 0 ? (
