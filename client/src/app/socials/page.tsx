@@ -29,27 +29,13 @@ const socialLinks = [
     )
   },
   {
-    name: "X (Twitter)",
+    name: "X",
     username: "@vieworaIndia",
     href: "https://x.com/vieworaIndia",
     description: "Real-time updates, design announcements, and runway news.",
     icon: (
-      <svg className="w-8 h-8 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
-        <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
-      </svg>
-    )
-  },
-  {
-    name: "LinkedIn",
-    username: "Viewora Luxury Group",
-    href: "https://linkedin.com",
-    description: "Corporate updates, careers, and luxury industry insights.",
-    icon: (
-      <svg className="w-8 h-8 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-        <rect x="2" y="9" width="4" height="12" />
-        <circle cx="4" cy="4" r="2" />
+      <svg className="w-8 h-8 text-gold" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
       </svg>
     )
   },
