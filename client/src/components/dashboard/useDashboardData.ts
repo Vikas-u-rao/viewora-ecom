@@ -83,6 +83,7 @@ export interface DashboardData {
   ordersTotalPages: number;
   setProductsPage: (p: number) => void;
   setOrdersPage: (p: number) => void;
+  refreshProducts: () => void;
 }
 
 import { getApiBaseUrl } from "@/lib/constants";
@@ -99,6 +100,7 @@ export function useDashboardData(accessToken: string | null, searchQuery: string
   const [ordersTotalPages, setOrdersTotalPages] = useState(1);
   const [heatmapMatrix, setHeatmapMatrix] = useState<number[][] | null>(null);
   const [fetchLoading, setFetchLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -148,7 +150,7 @@ export function useDashboardData(accessToken: string | null, searchQuery: string
     };
     fetchData();
     return () => { cancelled = true; };
-  }, [accessToken, apiUrl, productsPage, ordersPage, searchQuery]);
+  }, [accessToken, apiUrl, productsPage, ordersPage, searchQuery, refreshKey]);
 
   const totalSales = orders
     .filter((o) => o.paymentStatus === "paid")
@@ -185,6 +187,8 @@ export function useDashboardData(accessToken: string | null, searchQuery: string
           { name: "Wayfarer Onyx Polarized", qty: 32 },
           { name: "Cat Eye Rosé Edition", qty: 28 },
         ];
+
+  const refreshProducts = () => setRefreshKey((k) => k + 1);
 
   return {
     products,

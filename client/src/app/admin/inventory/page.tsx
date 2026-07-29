@@ -79,6 +79,7 @@ export default function InventoryPage() {
   const [createError, setCreateError] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deletedProductIds, setDeletedProductIds] = useState<Set<string>>(new Set());
 
   const initialFormData = {
     name: "",
@@ -155,6 +156,7 @@ export default function InventoryPage() {
   };
 
   const filteredProducts = products.filter((p) => {
+    if (deletedProductIds.has(p.id)) return false;
     const q = searchQuery.toLowerCase().trim();
     const matchesSearch =
       !q ||
@@ -200,7 +202,7 @@ export default function InventoryPage() {
       });
       if (!res.ok) throw new Error("Failed to delete product");
       setDeleteConfirm(null);
-      window.location.reload();
+      setDeletedProductIds((prev) => new Set(prev).add(productId));
     } catch {
       setDeleteConfirm(null);
     } finally {
@@ -278,12 +280,9 @@ export default function InventoryPage() {
         throw new Error(data.message || "Failed to create product");
       }
 
-      // Reset modal and trigger refresh
+      // Reset modal — no page reload needed
       setIsModalOpen(false);
       setFormData(initialFormData);
-
-      // Refresh current page products
-      window.location.reload();
     } catch (err: unknown) {
       setCreateError(err instanceof Error ? err.message : "Error creating product");
     } finally {
@@ -292,223 +291,256 @@ export default function InventoryPage() {
   };
 
   return (
-    <main className="flex-1 p-8 overflow-y-auto">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 tracking-tight">
-            Catalog & Stock Controller
+    <main className="flex-1 flex flex-col min-h-0 w-full max-w-full overflow-x-hidden p-4 sm:p-6">
+      {/* ── Header ── */}
+      <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 mb-4 w-full">
+        <div className="min-w-0">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight truncate">
+            Catalog &amp; Stock Controller
           </h2>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-[10px] sm:text-[11px] text-gray-500 mt-0.5">
             Manage product inventory, variants, and stock levels
           </p>
         </div>
-
         <button
           onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer"
+          className="inline-flex items-center gap-1.5 bg-gray-900 hover:bg-gray-800 text-white text-[11px] sm:text-xs font-semibold px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-lg transition-all shadow-sm cursor-pointer shrink-0 whitespace-nowrap"
         >
-          <Plus className="size-4" />
-          <span>Add New Product</span>
+          <Plus className="size-3 sm:size-3.5" />
+          <span className="hidden sm:inline">Add New Product</span>
+          <span className="sm:hidden">Add</span>
         </button>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-6">
-        <div className="flex flex-wrap items-center gap-4 bg-gray-50 p-4 rounded-xl border border-gray-150">
-          <div className="relative flex-1 min-w-[260px]">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
+      {/* ── Main Card ── */}
+      <div className="flex-1 flex flex-col min-h-0 w-full max-w-full bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        {/* ── Search Bar ── */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 bg-gray-50 p-2.5 sm:p-3 rounded-t-xl border-b border-gray-200">
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3 sm:size-3.5 text-gray-400 pointer-events-none" />
             <input
               type="text"
               placeholder="Filter by Name, Brand, or SKU..."
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full bg-white border border-gray-200 pl-10 pr-3.5 py-2 rounded-xl text-sm focus:border-gray-900 outline-none text-gray-800 transition-colors"
+              className="w-full bg-white border border-gray-200 pl-7 sm:pl-8 pr-2.5 py-1.5 rounded-lg text-[11px] sm:text-xs focus:border-gray-900 outline-none text-gray-800 transition-colors"
             />
           </div>
-          <label className="flex items-center gap-2 text-xs font-bold text-gray-600 cursor-pointer select-none">
+          <label className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-semibold text-gray-600 cursor-pointer select-none whitespace-nowrap">
             <input
               type="checkbox"
               checked={lowStockOnly}
               onChange={(e) => setLowStockOnly(e.target.checked)}
-              className="rounded border-gray-350 text-gray-900 focus:ring-gray-900 h-4 w-4"
+              className="rounded border-gray-350 text-gray-900 focus:ring-gray-900 h-3 w-3 sm:h-3.5 sm:w-3.5"
             />
-            Low Stock Only
+            <span className="hidden xs:inline">Low Stock Only</span>
+            <span className="xs:hidden">Low</span>
           </label>
         </div>
 
+        {/* ── Product List ── */}
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 w-full max-w-full box-border">
         {fetchLoading ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-24 bg-gray-100 rounded-2xl animate-pulse" />
+              <div key={i} className="h-16 sm:h-20 bg-gray-100 rounded-xl animate-pulse" />
             ))}
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-16 border-2 border-dashed border-gray-150 rounded-xl space-y-2">
-            <Package className="size-10 text-gray-300 mx-auto" />
-            <h4 className="text-sm font-bold text-gray-700">No Products Found</h4>
-            <p className="text-xs text-gray-400">Try modifying your search or filters.</p>
+          <div className="text-center py-10 sm:py-12 border-2 border-dashed border-gray-150 rounded-xl space-y-2">
+            <Package className="size-7 sm:size-8 text-gray-300 mx-auto" />
+            <h4 className="text-xs sm:text-sm font-bold text-gray-700">No Products Found</h4>
+            <p className="text-[11px] sm:text-xs text-gray-400">Try modifying your search or filters.</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 w-full max-w-full">
             {filteredProducts.map((p) => (
-              <div
-                key={p.id}
-                className="border border-gray-200 p-5 rounded-2xl bg-white hover:border-gray-350 transition-colors"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div>
+              <div key={p.id} className="border border-gray-200 rounded-xl bg-white w-full max-w-full">
+                {/* ── Product Header ── */}
+                <div className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-2.5 border-b border-gray-100">
+                  <div className="min-w-0 flex-1 truncate">
                     {p.brand && (
-                      <span className="text-[10px] tracking-wider text-gray-500 font-bold uppercase">
+                      <span className="text-[9px] sm:text-[10px] tracking-wider text-gray-500 font-semibold uppercase">
                         {p.brand}
                       </span>
                     )}
-                    <h3 className="text-base text-gray-900 font-bold">{p.name}</h3>
+                    <h3 className="text-xs sm:text-sm font-bold text-gray-900 truncate">{p.name}</h3>
                   </div>
                   <button
                     onClick={() => setDeleteConfirm(p.id)}
-                    className="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-50 cursor-pointer"
+                    className="text-gray-400 hover:text-red-500 transition-colors p-1 rounded hover:bg-red-50 cursor-pointer shrink-0 ml-2"
                     title="Delete product"
                   >
-                    <Trash2 className="size-4" />
+                    <Trash2 className="size-3 sm:size-3.5" />
                   </button>
                 </div>
 
-                <div className="overflow-x-auto rounded-xl border border-gray-100 bg-gray-50/40">
-                  <table className="min-w-[760px] w-full table-fixed border-collapse text-left text-xs">
-                    <colgroup>
-                      <col className="w-[180px]" />
-                      <col className="w-[270px]" />
-                      <col className="w-[120px]" />
-                      <col className="w-[120px]" />
-                      <col className="w-[190px]" />
-                    </colgroup>
-                    <thead>
-                      <tr className="border-b border-gray-200 text-gray-500 font-semibold uppercase tracking-[0.16em]">
-                        <th className="px-3 py-3 text-left">SKU</th>
-                        <th className="px-3 py-3 text-left">Color & Size</th>
-                        <th className="px-3 py-3 text-right">Base Price</th>
-                        <th className="px-3 py-3 text-center">Current Stock</th>
-                        <th className="px-3 py-3 text-right">Adjust Qty</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 text-gray-700">
-                      {p.variants.map((v) => {
-                        const detailItems = [
-                          ...(v.size ? [{ label: "Size", value: v.size }] : []),
-                          ...(v.material ? [{ label: "Material", value: v.material }] : []),
-                          ...(v.color ? [{ label: "Color", value: v.color }] : []),
-                          ...(v.lensType ? [{ label: "Lens", value: v.lensType }] : []),
-                        ];
+                {/* ── Variant Rows (Desktop: grid, Mobile: stacked) ── */}
+                {p.variants.map((v) => {
+                  const detailItems = [
+                    ...(v.size ? [{ label: "Size", value: v.size }] : []),
+                    ...(v.material ? [{ label: "Material", value: v.material }] : []),
+                    ...(v.color ? [{ label: "Color", value: v.color }] : []),
+                    ...(v.lensType ? [{ label: "Lens", value: v.lensType }] : []),
+                  ];
 
-                        return (
-                          <tr key={v.id} className="align-middle hover:bg-white/70 transition-colors">
-                            <td className="px-3 py-3 align-middle">
-                              <div className="max-w-[160px] rounded-lg border border-gray-200 bg-white px-2.5 py-2 shadow-[0_1px_0_rgba(15,23,42,0.03)]">
-                                <p className="font-mono text-[11px] font-semibold leading-5 text-gray-900 break-words">
-                                  {v.sku}
-                                </p>
-                              </div>
-                            </td>
-                            <td className="px-3 py-3 align-middle">
-                              {detailItems.length > 0 ? (
-                                <div className="flex max-w-[250px] flex-wrap items-center gap-1.5 py-1">
-                                  {detailItems.map((item) => (
-                                    <span
-                                      key={`${v.id}-${item.label}-${item.value}`}
-                                      className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-0.5 text-[11px] leading-4 text-gray-700 shadow-[0_1px_0_rgba(15,23,42,0.03)]"
-                                    >
-                                      <span className="font-semibold text-gray-500">{item.label}:</span>
-                                      <span className="font-bold text-gray-900">{item.value}</span>
-                                    </span>
-                                  ))}
-                                </div>
-                              ) : (
-                                <span className="text-gray-400">-</span>
-                              )}
-                            </td>
-                            <td className="px-3 py-3 text-right align-middle font-medium text-gray-900">
-                              ₹{Number(v.price).toLocaleString("en-IN")}
-                            </td>
-                            <td className="px-3 py-3 text-center align-middle font-bold">
-                              {v.stock <= 2 ? (
-                                <span className="inline-flex items-center justify-center rounded-md bg-red-50 px-2 py-0.5 text-xs font-bold text-red-600">
-                                  {v.stock} (Low)
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center justify-center rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700">
-                                  {v.stock}
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-3 py-3 text-right align-middle">
-                              <div className="inline-flex items-center gap-2">
-                                <input
-                                  type="number"
-                                  min="0"
-                                  placeholder="Qty"
-                                  value={editingStock[v.id] ?? ""}
-                                  onChange={(e) =>
-                                    setEditingStock({
-                                      ...editingStock,
-                                      [v.id]:
-                                        e.target.value === ""
-                                          ? undefined
-                                          : Number(e.target.value),
-                                    })
-                                  }
-                                  className="w-16 bg-white border border-gray-200 px-2.5 py-1 rounded-lg text-xs text-gray-800 focus:border-gray-900 outline-none text-center"
-                                />
-                                <button
-                                  onClick={() => handleUpdateStock(v.id)}
-                                  disabled={
-                                    actionLoading === v.id ||
-                                    editingStock[v.id] === undefined
-                                  }
-                                  className="bg-gray-900 hover:bg-gray-800 text-white px-3.5 py-1 rounded-lg text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  return (
+                    <div
+                      key={v.id}
+                      className="border-b border-gray-50 last:border-b-0 hover:bg-gray-50/30 transition-colors"
+                    >
+                      {/* Desktop: horizontal grid */}
+                      <div className="hidden sm:grid sm:grid-cols-[1.5fr_2fr_0.8fr_0.8fr_1.3fr] gap-2 px-3 sm:px-4 py-2.5 items-center text-xs">
+                        <div className="min-w-0">
+                          <span className="font-mono text-[11px] font-semibold text-gray-900 break-all">{v.sku}</span>
+                        </div>
+                        <div className="min-w-0">
+                          {detailItems.length > 0 ? (
+                            <div className="flex flex-wrap items-center gap-1">
+                              {detailItems.map((item) => (
+                                <span
+                                  key={`${v.id}-${item.label}-${item.value}`}
+                                  className="inline-flex items-center gap-0.5 rounded border border-gray-200 bg-white px-1.5 py-0.5 text-[10px] text-gray-700"
                                 >
-                                  {actionLoading === v.id ? (
-                                    <Loader2 className="size-3 animate-spin" />
-                                  ) : (
-                                    "Update"
-                                  )}
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                                  <span className="font-semibold text-gray-500">{item.label}:</span>
+                                  <span className="font-semibold text-gray-900">{item.value}</span>
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </div>
+                        <div className="text-right font-medium text-gray-900">
+                          ₹{Number(v.price).toLocaleString("en-IN")}
+                        </div>
+                        <div className="text-center">
+                          {v.stock <= 2 ? (
+                            <span className="inline-flex items-center justify-center rounded bg-red-50 px-1.5 py-0.5 text-[11px] font-bold text-red-600">
+                              {v.stock}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center justify-center rounded bg-emerald-50 px-1.5 py-0.5 text-[11px] font-bold text-emerald-700">
+                              {v.stock}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <input
+                            type="number"
+                            min="0"
+                            placeholder="Qty"
+                            value={editingStock[v.id] ?? ""}
+                            onChange={(e) =>
+                              setEditingStock({
+                                ...editingStock,
+                                [v.id]: e.target.value === "" ? undefined : Number(e.target.value),
+                              })
+                            }
+                            className="w-14 bg-white border border-gray-200 px-2 py-1 rounded-lg text-[11px] text-gray-800 focus:border-gray-900 outline-none text-center"
+                          />
+                          <button
+                            onClick={() => handleUpdateStock(v.id)}
+                            disabled={actionLoading === v.id || editingStock[v.id] === undefined}
+                            className="bg-gray-900 hover:bg-gray-800 text-white px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                          >
+                            {actionLoading === v.id ? <Loader2 className="size-3 animate-spin" /> : "Update"}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Mobile: vertical stacked */}
+                      <div className="sm:hidden space-y-2 px-3 py-3 text-xs">
+                        <div>
+                          <span className="text-[10px] text-gray-500 font-semibold uppercase">SKU</span>
+                          <p className="font-mono text-[11px] font-semibold text-gray-900 break-all mt-0.5">{v.sku}</p>
+                        </div>
+                        {detailItems.length > 0 && (
+                          <div>
+                            <span className="text-[10px] text-gray-500 font-semibold uppercase">Details</span>
+                            <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                              {detailItems.map((item) => (
+                                <span
+                                  key={`${v.id}-${item.label}-${item.value}`}
+                                  className="inline-flex items-center gap-0.5 rounded border border-gray-200 bg-white px-1.5 py-0.5 text-[10px] text-gray-700"
+                                >
+                                  <span className="font-semibold text-gray-500">{item.label}:</span>
+                                  <span className="font-semibold text-gray-900">{item.value}</span>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-gray-500 font-semibold uppercase">Price</span>
+                          <span className="font-medium text-gray-900">₹{Number(v.price).toLocaleString("en-IN")}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-gray-500 font-semibold uppercase">Stock</span>
+                          {v.stock <= 2 ? (
+                            <span className="inline-flex items-center justify-center rounded bg-red-50 px-1.5 py-0.5 text-[11px] font-bold text-red-600">{v.stock}</span>
+                          ) : (
+                            <span className="inline-flex items-center justify-center rounded bg-emerald-50 px-1.5 py-0.5 text-[11px] font-bold text-emerald-700">{v.stock}</span>
+                          )}
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-gray-500 font-semibold uppercase">Adjust Qty</span>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <input
+                              type="number"
+                              min="0"
+                              placeholder="Qty"
+                              value={editingStock[v.id] ?? ""}
+                              onChange={(e) =>
+                                setEditingStock({
+                                  ...editingStock,
+                                  [v.id]: e.target.value === "" ? undefined : Number(e.target.value),
+                                })
+                              }
+                              className="w-14 bg-white border border-gray-200 px-2 py-1 rounded-lg text-[11px] text-gray-800 focus:border-gray-900 outline-none text-center"
+                            />
+                            <button
+                              onClick={() => handleUpdateStock(v.id)}
+                              disabled={actionLoading === v.id || editingStock[v.id] === undefined}
+                              className="bg-gray-900 hover:bg-gray-800 text-white px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                            >
+                              {actionLoading === v.id ? <Loader2 className="size-3 animate-spin" /> : "Update"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             ))}
           </div>
         )}
+        </div>
 
+        {/* ── Pagination ── */}
         {productsTotalPages > 1 && (
-          <div className="flex items-center justify-center gap-4 pt-6 border-t border-gray-100">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 border-t border-gray-200">
             <button
               onClick={() => setProductsPage(Math.max(1, productsPage - 1))}
               disabled={productsPage === 1}
-              className="border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 px-4.5 py-2 rounded-xl text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              className="border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
-              PREVIOUS
+              Previous
             </button>
-            <span className="text-xs text-gray-500 font-semibold">
-              Page <strong className="text-gray-900">{productsPage}</strong> of{" "}
-              {productsTotalPages}
+            <span className="text-[11px] text-gray-500 font-semibold">
+              Page <strong className="text-gray-900">{productsPage}</strong> of {productsTotalPages}
             </span>
             <button
-              onClick={() =>
-                setProductsPage(Math.min(productsTotalPages, productsPage + 1))
-              }
+              onClick={() => setProductsPage(Math.min(productsTotalPages, productsPage + 1))}
               disabled={productsPage === productsTotalPages}
-              className="border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 px-4.5 py-2 rounded-xl text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              className="border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
-              NEXT
+              Next
             </button>
           </div>
         )}
-      </div>
+        </div>
 
       {/* Add Product Modal */}
       {isModalOpen && (
