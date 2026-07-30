@@ -36,10 +36,10 @@ function resolveProductImages(product: any): any {
 
 export async function getProducts(req: Request, res: Response, next: NextFunction) {
   try {
-    const { category, collection, search, page = '1', limit = '10' } = req.query;
+    const { category, collection, brand, search, page = '1', limit = '24' } = req.query;
 
-    const pageNum = parseInt(page as string, 10);
-    const limitNum = parseInt(limit as string, 10);
+    const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit as string, 10) || 24));
     const skip = (pageNum - 1) * limitNum;
 
     // Build Prisma query filters
@@ -47,6 +47,15 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
       isActive: true,
       deletedAt: null,
     };
+
+    // Brand Filter
+    if (brand && brand !== 'all') {
+      const brandStr = (brand as string).replace(/-/g, ' ');
+      whereClause.OR = [
+        { brand: { contains: brandStr, mode: 'insensitive' } },
+        { name: { contains: brandStr, mode: 'insensitive' } },
+      ];
+    }
 
     // Category Filter by slug
     if (category) {
@@ -103,10 +112,34 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
     const [products, total] = await prisma.$transaction([
       prisma.product.findMany({
         where: whereClause,
-        include: {
-          category: true,
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          brand: true,
+          defaultImageUrls: true,
+          startingPrice: true,
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
           variants: {
             where: { isActive: true },
+            select: {
+              id: true,
+              sku: true,
+              color: true,
+              size: true,
+              lensType: true,
+              material: true,
+              price: true,
+              stock: true,
+              imageUrls: true,
+              isActive: true,
+            },
           },
         },
         skip,

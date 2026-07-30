@@ -8,8 +8,29 @@ on:
   workflow_dispatch:
 
 jobs:
+  changes:
+    name: Detect Changed Paths
+    runs-on: ubuntu-latest
+    outputs:
+      server: ${{ steps.filter.outputs.server }}
+      client: ${{ steps.filter.outputs.client }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            server:
+              - 'server/**'
+              - '.github/workflows/deploy.yml'
+            client:
+              - 'client/**'
+              - '.github/workflows/deploy.yml'
+
   build-and-test:
     name: Build & Test (Lint & Type-Check)
+    needs: changes
+    if: needs.changes.outputs.server == 'true' || needs.changes.outputs.client == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -25,6 +46,7 @@ jobs:
             client/package-lock.json
 
       - name: Validate & Build Server
+        if: needs.changes.outputs.server == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           cd server
           npm ci
@@ -32,6 +54,7 @@ jobs:
           npm run build
 
       - name: Lint & Build Client
+        if: needs.changes.outputs.client == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           cd client
           npm ci
@@ -42,8 +65,8 @@ jobs:
 
   build-and-push-server:
     name: Build & Push Server Docker Image
-    needs: build-and-test
-    if: github.event_name == 'workflow_dispatch'
+    needs: [changes, build-and-test]
+    if: (needs.changes.outputs.server == 'true' || github.event_name == 'workflow_dispatch') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -67,11 +90,13 @@ jobs:
           tags: |
             vikasurao/viewora-server:latest
             index.docker.io/vikasurao/viewora-server:latest
+          cache-from: type=gha,scope=server
+          cache-to: type=gha,mode=max,scope=server
 
   build-and-push-client:
     name: Build & Push Client Docker Image
-    needs: build-and-test
-    if: github.event_name == 'workflow_dispatch'
+    needs: [changes, build-and-test]
+    if: (needs.changes.outputs.client == 'true' || github.event_name == 'workflow_dispatch') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -95,11 +120,13 @@ jobs:
           tags: |
             vikasurao/viewora-client:latest
             index.docker.io/vikasurao/viewora-client:latest
+          cache-from: type=gha,scope=client
+          cache-to: type=gha,mode=max,scope=client
 
   deploy-server:
     name: Deploy Server to Azure Web App
-    needs: build-and-push-server
-    if: github.event_name == 'workflow_dispatch'
+    needs: [changes, build-and-push-server]
+    if: (needs.changes.outputs.server == 'true' || github.event_name == 'workflow_dispatch') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     steps:
       - name: Deploy Server Container to Azure
@@ -111,8 +138,8 @@ jobs:
 
   deploy-client:
     name: Deploy Client to Azure Web App
-    needs: build-and-push-client
-    if: github.event_name == 'workflow_dispatch'
+    needs: [changes, build-and-push-client]
+    if: (needs.changes.outputs.client == 'true' || github.event_name == 'workflow_dispatch') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     steps:
       - name: Deploy Client Container to Azure

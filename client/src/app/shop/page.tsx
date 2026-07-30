@@ -10,12 +10,13 @@ import ProductCard from "@/components/ProductCard";
 import { FilterSidebar } from "@/components/shop/FilterSidebar";
 import { ApiProduct, fetchProductsApi } from "@/services/products";
 
-const ITEMS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 24;
 
 function ShopContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [allProducts, setAllProducts] = useState<ApiProduct[]>([]);
+  const [totalProducts, setTotalProducts] = useState(0);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [productError, setProductError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -95,9 +96,12 @@ function ShopContent() {
     setIsLoadingProducts(true);
     setProductError(null);
 
-    let query = "?limit=5000";
+    let query = `?page=${currentPage}&limit=${ITEMS_PER_PAGE}`;
     if (selectedCollection !== "all") {
       query += `&collection=${selectedCollection}`;
+    }
+    if (selectedBrand !== "all") {
+      query += `&brand=${encodeURIComponent(selectedBrand)}`;
     }
     if (searchQuery) {
       query += `&search=${encodeURIComponent(searchQuery)}`;
@@ -107,6 +111,7 @@ function ShopContent() {
       .then((data) => {
         if (!cancelled) {
           setAllProducts(data.products);
+          setTotalProducts(data.total || data.products.length);
         }
       })
       .catch((error: Error) => {
@@ -119,7 +124,7 @@ function ShopContent() {
     return () => {
       cancelled = true;
     };
-  }, [selectedCollection, searchQuery]);
+  }, [currentPage, selectedCollection, selectedBrand, searchQuery]);
 
   const availableBrands = useMemo(() => {
     const brands = new Set<string>();
@@ -332,10 +337,19 @@ function ShopContent() {
     }
   }, [filteredProducts, sortBy]);
 
-  // Paginate
-  const totalPages = Math.max(1, Math.ceil(sortedProducts.length / ITEMS_PER_PAGE));
+  // Paginate using server total when available
+  const effectiveTotal = (
+    selectedPriceRange === "all" &&
+    selectedGender === "all" &&
+    selectedFrameSize === "all" &&
+    selectedFrameColor === "all" &&
+    selectedFrameType === "all" &&
+    selectedMaterial === "all"
+  ) ? totalProducts : filteredProducts.length;
+
+  const totalPages = Math.max(1, Math.ceil((effectiveTotal || allProducts.length) / ITEMS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
-  const paginatedProducts = sortedProducts.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
+  const paginatedProducts = sortedProducts;
 
   const hasFilters = selectedBrand !== "all" || activeShape !== "all" || selectedType !== "all" || selectedCollection !== "all";
 
@@ -397,7 +411,7 @@ function ShopContent() {
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8 border-b border-border pb-4">
             <div className="flex flex-col gap-1">
               <p className="text-sm text-muted-foreground tracking-wide font-sans">
-                Showing <span className="text-white font-medium">{sortedProducts.length}</span> piece{sortedProducts.length !== 1 ? "s" : ""}
+                Showing <span className="text-white font-medium">{effectiveTotal || sortedProducts.length}</span> piece{(effectiveTotal || sortedProducts.length) !== 1 ? "s" : ""}
               </p>
               {searchQuery && (
                 <p className="text-xs text-muted-foreground font-sans">

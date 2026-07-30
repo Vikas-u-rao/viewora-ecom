@@ -40,7 +40,7 @@ const CartContext = createContext<CartContextValue | null>(null);
 // ── Provider ────────────────────────────────────────────────────────────────
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const { user, accessToken } = useAuth();
+  const { user, accessToken, clearAuth } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -56,17 +56,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // ── Load cart on mount / auth change ────────────────────────────────────
 
   const loadAuthCart = useCallback(async () => {
-    if (!accessToken) return;
+    if (!user || !accessToken) return;
     setIsLoading(true);
     try {
       const serverItems = await fetchCart(accessToken);
       setItems(serverItems);
     } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-      console.error('Failed to fetch cart:', err.message);
+      const status = err?.statusCode || err?.status;
+      const is401 = status === 401 || err?.message?.includes('Token expired') || err?.message?.includes('invalid');
+      if (is401) {
+        clearAuth();
+        const stored = typeof window !== 'undefined' ? localStorage.getItem('viewora_guest_cart') : null;
+        if (stored) {
+          try { setItems(JSON.parse(stored)); } catch { setItems([]); }
+        } else {
+          setItems([]);
+        }
+      } else {
+        console.error('Failed to fetch cart:', err.message);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken]);
+  }, [user, accessToken, clearAuth]);
 
   useEffect(() => {
     const syncOrMergeCart = async () => {

@@ -37,7 +37,7 @@ const WishlistContext = createContext<WishlistContextValue | null>(null);
 // ── Provider ────────────────────────────────────────────────────────────────
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
-  const { user, accessToken } = useAuth();
+  const { user, accessToken, clearAuth } = useAuth();
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -58,18 +58,25 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   // ── Load wishlist ───────────────────────────────────────────────────────
 
   const loadWishlist = useCallback(async () => {
-    if (!accessToken) return;
+    if (!user || !accessToken) return;
     setIsLoading(true);
     try {
       const data = await fetchWishlistApi(accessToken);
       setItems(data.wishlistItems);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to load wishlist';
-      console.error('Wishlist load error:', message);
+      const status = (err as any)?.status || (err as any)?.statusCode;
+      const message = err instanceof Error ? err.message : '';
+      const is401 = status === 401 || message.includes('Token expired') || message.includes('invalid');
+      if (is401) {
+        clearAuth();
+        setItems([]);
+      } else {
+        console.error('Wishlist load error:', message || 'Failed to load wishlist');
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken]);
+  }, [user, accessToken, clearAuth]);
 
   // Load on mount / auth change
   useEffect(() => {

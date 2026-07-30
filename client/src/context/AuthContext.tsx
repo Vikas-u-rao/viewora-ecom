@@ -53,6 +53,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [accessToken, setAccessToken] = useState<string | null>(getStoredToken);
   const [isLoading, setIsLoading] = useState(true);
 
+  const clearAuth = useCallback(() => {
+    setUser(null);
+    setAccessToken(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEY_TOKEN);
+      localStorage.removeItem(STORAGE_KEY_USER);
+    }
+  }, []);
+
+  const setAuth = useCallback((u: User, token: string) => {
+    setUser(u);
+    setAccessToken(token);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY_TOKEN, token);
+      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(u));
+    }
+  }, []);
+
   // Validate session on mount via cookie refresh
   useEffect(() => {
     let cancelled = false;
@@ -80,17 +98,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const profileUser = profileData.user || profileData;
             setUser(profileUser);
             localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(profileUser));
+          } else {
+            clearAuth();
           }
-        } else if (!getStoredToken()) {
-          // Cookie refresh failed and no stored token — not logged in
-          setAccessToken(null);
-          setUser(null);
+        } else {
+          // Session expired or non-logged in visitor: clear stale tokens quietly
+          clearAuth();
         }
       } catch {
-        if (!getStoredToken()) {
-          setAccessToken(null);
-          setUser(null);
-        }
+        clearAuth();
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -98,21 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     tryRefresh();
     return () => { cancelled = true; };
-  }, []);
-
-  const setAuth = useCallback((u: User, token: string) => {
-    setUser(u);
-    setAccessToken(token);
-    localStorage.setItem(STORAGE_KEY_TOKEN, token);
-    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(u));
-  }, []);
-
-  const clearAuth = useCallback(() => {
-    setUser(null);
-    setAccessToken(null);
-    localStorage.removeItem(STORAGE_KEY_TOKEN);
-    localStorage.removeItem(STORAGE_KEY_USER);
-  }, []);
+  }, [clearAuth]);
 
   const login = useCallback(async (email: string, password: string) => {
     const baseUrl = getApiBaseUrl();
