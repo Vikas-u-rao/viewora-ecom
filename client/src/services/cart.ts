@@ -17,6 +17,7 @@ export interface CartVariant {
     name: string;
     slug: string;
     brand: string | null;
+    defaultImageUrls?: string[];
   };
 }
 

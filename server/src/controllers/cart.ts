@@ -48,6 +48,7 @@ export async function getCart(req: AuthRequest, res: Response, next: NextFunctio
             name: item.variant.product.name,
             slug: item.variant.product.slug,
             brand: item.variant.product.brand,
+            defaultImageUrls: item.variant.product.defaultImageUrls,
           }
         } : null,
       };
