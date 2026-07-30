@@ -16,18 +16,40 @@ function resolveUrl(url: string | null | undefined): string | null {
   return url;
 }
 
+/** Deduplicates image URLs by filtering out duplicate images generated during bulk asset import */
+function dedupeProductImages(urls: (string | null | undefined)[]): string[] {
+  if (!Array.isArray(urls)) return [];
+  const result: string[] = [];
+  for (const rawUrl of urls) {
+    if (!rawUrl) continue;
+    const resolved = resolveUrl(rawUrl) || rawUrl;
+    if (result.includes(resolved)) continue;
+
+    const isDuplicateSuffix = result.some((existing) => {
+      const existingBase = existing.replace(/\.(jpg|jpeg|png|webp)/i, '');
+      const currentBase = resolved.replace(/\.(jpg|jpeg|png|webp)/i, '');
+      return currentBase === `${existingBase}_1` || existingBase === `${currentBase}_1`;
+    });
+
+    if (!isDuplicateSuffix) {
+      result.push(resolved);
+    }
+  }
+  return result;
+}
+
 /** Resolves all image URLs in a product object returned from Prisma */
 function resolveProductImages(product: any): any {
   return {
     ...product,
     defaultImageUrls: Array.isArray(product.defaultImageUrls)
-      ? product.defaultImageUrls.map((u: string) => resolveUrl(u) || u)
+      ? dedupeProductImages(product.defaultImageUrls)
       : [],
     variants: Array.isArray(product.variants)
       ? product.variants.map((v: any) => ({
           ...v,
           imageUrls: Array.isArray(v.imageUrls)
-            ? v.imageUrls.map((u: string) => resolveUrl(u) || u)
+            ? dedupeProductImages(v.imageUrls)
             : [],
         }))
       : [],

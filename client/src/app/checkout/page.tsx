@@ -277,6 +277,7 @@ export default function CheckoutPage() {
                             src={imgSrc}
                             alt={product?.name || "Product"}
                             fill
+                            unoptimized
                             className="object-contain p-1"
                           />
                         )}

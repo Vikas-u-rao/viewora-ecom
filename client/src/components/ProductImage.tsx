@@ -31,6 +31,7 @@ export default function ProductImage({
           src={src}
           alt={alt}
           fill
+          unoptimized
           className={`object-contain p-3 transition-opacity duration-500 ${
             loaded ? "opacity-100" : "opacity-0"
           }`}

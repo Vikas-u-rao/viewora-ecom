@@ -63,17 +63,31 @@ export default function ProductDetailPage() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const allImages = useMemo(() => {
-    const list: string[] = [];
+    const rawList: string[] = [];
     if (selectedVariant?.imageUrls?.length) {
-      list.push(...selectedVariant.imageUrls.map((u) => resolveImageUrl(u) || u));
+      rawList.push(...selectedVariant.imageUrls.map((u) => resolveImageUrl(u) || u));
     }
     if (product?.defaultImageUrls?.length) {
       product.defaultImageUrls.forEach((img) => {
         const resolved = resolveImageUrl(img) || img;
-        if (!list.includes(resolved)) list.push(resolved);
+        if (!rawList.includes(resolved)) rawList.push(resolved);
       });
     }
-    return list;
+
+    const result: string[] = [];
+    for (const url of rawList) {
+      if (!result.includes(url)) {
+        const isDuplicateSuffix = result.some((existing) => {
+          const existingBase = existing.replace(/\.(jpg|jpeg|png|webp)/i, '');
+          const currentBase = url.replace(/\.(jpg|jpeg|png|webp)/i, '');
+          return currentBase === `${existingBase}_1` || existingBase === `${currentBase}_1`;
+        });
+        if (!isDuplicateSuffix) {
+          result.push(url);
+        }
+      }
+    }
+    return result;
   }, [selectedVariant, product]);
 
   const activeImage = allImages[activeImageIndex] || allImages[0] || "";

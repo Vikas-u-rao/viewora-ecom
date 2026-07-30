@@ -174,7 +174,7 @@ export default function OrderDetailView({ order }: { order: Order }) {
             <div key={item.id} className="flex gap-4 border border-border p-4">
               <div className="relative size-20 shrink-0 overflow-hidden bg-muted/20">
                 {image ? (
-                  <Image src={image} alt={item.variant.product.name} fill className="object-cover" sizes="80px" />
+                  <Image src={image} alt={item.variant.product.name} fill unoptimized className="object-cover" sizes="80px" />
                 ) : (
                   <div className="flex h-full items-center justify-center"><Package className="size-10 text-muted-foreground" strokeWidth={1.2} /></div>
                 )}
