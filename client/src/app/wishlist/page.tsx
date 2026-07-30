@@ -14,7 +14,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import { variantSnapshot } from "@/services/products";
 import { WishlistItem } from "@/services/wishlist";
 import ProductImage from "@/components/ProductImage";
-import { resolveImageUrl } from "@/lib/productImage";
+import { getDisplayImages } from "@/lib/productImage";
 
 function formatPrice(value: string | number) {
   return new Intl.NumberFormat("en-IN", {
@@ -36,8 +36,8 @@ function WishlistItemCard({ item, onRemove }: { item: WishlistItem; onRemove: (i
   }
   const variant = product.variants.find((v) => v.stock > 0) || product.variants[0];
 
-  const firstUrl = resolveImageUrl(Array.isArray(product.defaultImageUrls) ? product.defaultImageUrls[0] : null);
-  const image = firstUrl || "";
+  const images = getDisplayImages(product, variant);
+  const image = images[0] || "";
   const unavailable = !variant || variant.stock < 1;
 
   const handleAdd = async () => {

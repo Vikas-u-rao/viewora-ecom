@@ -13,7 +13,7 @@ import { ApiProduct, ProductVariant, variantSnapshot } from "@/services/products
 import ProductImage from "@/components/ProductImage";
 
 import { formatPrice } from "@/lib/format";
-import { resolveImageUrl } from "@/lib/productImage";
+import { getDisplayImages } from "@/lib/productImage";
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -63,31 +63,7 @@ export default function ProductDetailPage() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const allImages = useMemo(() => {
-    const rawList: string[] = [];
-    if (selectedVariant?.imageUrls?.length) {
-      rawList.push(...selectedVariant.imageUrls.map((u) => resolveImageUrl(u) || u));
-    }
-    if (product?.defaultImageUrls?.length) {
-      product.defaultImageUrls.forEach((img) => {
-        const resolved = resolveImageUrl(img) || img;
-        if (!rawList.includes(resolved)) rawList.push(resolved);
-      });
-    }
-
-    const result: string[] = [];
-    for (const url of rawList) {
-      if (!result.includes(url)) {
-        const isDuplicateSuffix = result.some((existing) => {
-          const existingBase = existing.replace(/\.(jpg|jpeg|png|webp)/i, '');
-          const currentBase = url.replace(/\.(jpg|jpeg|png|webp)/i, '');
-          return currentBase === `${existingBase}_1` || existingBase === `${currentBase}_1`;
-        });
-        if (!isDuplicateSuffix) {
-          result.push(url);
-        }
-      }
-    }
-    return result;
+    return getDisplayImages(product, selectedVariant);
   }, [selectedVariant, product]);
 
   const activeImage = allImages[activeImageIndex] || allImages[0] || "";

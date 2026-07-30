@@ -30,3 +30,33 @@ export function resolveImageUrl(url: string | null | undefined): string | null {
 
   return trimmed;
 }
+
+/**
+ * Helper function to safely extract display images for a product and selected variant:
+ * - Checks variant.imageUrls first.
+ * - Falls back to product.defaultImageUrls if variant array is empty.
+ * - Deduplicates resolved URLs.
+ */
+export function getDisplayImages(
+  product?: { defaultImageUrls?: string[] | null } | null,
+  selectedVariant?: { imageUrls?: string[] | null } | null
+): string[] {
+  const urls: string[] = [];
+
+  if (selectedVariant?.imageUrls && Array.isArray(selectedVariant.imageUrls)) {
+    selectedVariant.imageUrls.forEach((u) => {
+      const res = resolveImageUrl(u);
+      if (res && !urls.includes(res)) urls.push(res);
+    });
+  }
+
+  if (product?.defaultImageUrls && Array.isArray(product.defaultImageUrls)) {
+    product.defaultImageUrls.forEach((u) => {
+      const res = resolveImageUrl(u);
+      if (res && !urls.includes(res)) urls.push(res);
+    });
+  }
+
+  return urls;
+}
+

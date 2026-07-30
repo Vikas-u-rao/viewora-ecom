@@ -8,7 +8,7 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { ApiProduct, variantSnapshot } from "@/services/products";
 import { formatPrice } from "@/lib/format";
-import { resolveImageUrl } from "@/lib/productImage";
+import { getDisplayImages } from "@/lib/productImage";
 
 export default function ProductCard({ product }: { product: ApiProduct }) {
   const { items, addToCart, updateQuantity, removeItem } = useCart();
@@ -20,10 +20,9 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
 
   const variant = product.variants.find((item) => item.stock > 0) || product.variants[0];
 
-  const firstRaw = (Array.isArray(product.defaultImageUrls) && product.defaultImageUrls[0]) || (variant && Array.isArray(variant.imageUrls) && variant.imageUrls[0]) || null;
-  const secondRaw = (Array.isArray(product.defaultImageUrls) && product.defaultImageUrls[1]) || (variant && Array.isArray(variant.imageUrls) && variant.imageUrls[1]) || null;
-  const firstUrl = resolveImageUrl(firstRaw);
-  const secondUrl = resolveImageUrl(secondRaw);
+  const images = getDisplayImages(product, variant);
+  const firstUrl = images[0] || null;
+  const secondUrl = images[1] || null;
   const hasImage = firstUrl && !imgError;
   const hasSecondImage = Boolean(secondUrl && !secondImgError && secondUrl !== firstUrl);
   const unavailable = !variant || variant.stock < 1;
