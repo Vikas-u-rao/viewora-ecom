@@ -16,12 +16,14 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
   const [isAdding, setIsAdding] = useState(false);
   const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [secondImgError, setSecondImgError] = useState(false);
 
   const variant = product.variants.find((item) => item.stock > 0) || product.variants[0];
 
   const firstUrl = resolveImageUrl(Array.isArray(product.defaultImageUrls) ? product.defaultImageUrls[0] : null);
   const secondUrl = resolveImageUrl(Array.isArray(product.defaultImageUrls) && product.defaultImageUrls.length > 1 ? product.defaultImageUrls[1] : null);
   const hasImage = firstUrl && !imgError;
+  const hasSecondImage = Boolean(secondUrl && !secondImgError && secondUrl !== firstUrl);
   const unavailable = !variant || variant.stock < 1;
   const wishlisted = isWishlisted(product.id);
 
@@ -95,17 +97,20 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
                 src={firstUrl}
                 alt={product.name}
                 fill
+                unoptimized
                 onError={() => setImgError(true)}
                 className={`object-contain transition-opacity duration-500 ease-in-out ${
-                  secondUrl && !imgError ? "group-hover:opacity-0" : ""
+                  hasSecondImage ? "group-hover:opacity-0" : ""
                 }`}
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
-              {secondUrl && !imgError && (
+              {hasSecondImage && (
                 <Image
-                  src={secondUrl}
+                  src={secondUrl!}
                   alt={`${product.name} secondary view`}
                   fill
+                  unoptimized
+                  onError={() => setSecondImgError(true)}
                   className="object-contain opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 />
