@@ -2,15 +2,20 @@ import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 
-const R2_CDN = process.env.R2_CDN_URL || 'https://pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev';
+const R2_CDN = process.env.R2_CDN_URL || 'https://cdn.viewora.in';
 
 /**
  * Rewrites a relative /uploads/products/... or localhost URL to the R2 CDN absolute URL.
- * If it's already an absolute https URL (non-localhost), returns as-is.
+ * If it's already an absolute https URL (non-localhost), returns as-is (rewriting old R2 dev domain to cdn.viewora.in).
  */
 function resolveUrl(url: string | null | undefined): string | null {
   if (!url) return null;
-  if (url.startsWith('https://') && !url.includes('localhost')) return url;
+  if (url.startsWith('https://') && !url.includes('localhost')) {
+    if (url.includes('pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev')) {
+      return url.replace('pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev', 'cdn.viewora.in');
+    }
+    return url;
+  }
   const match = url.match(/\/uploads\/products\/([^?#]+)/);
   if (match) return `${R2_CDN}/uploads/products/${match[1]}`;
   return url;

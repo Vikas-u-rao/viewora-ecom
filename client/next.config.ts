@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
+        hostname: "cdn.viewora.in",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev",
         pathname: "/**",
       },

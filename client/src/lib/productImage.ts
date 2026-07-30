@@ -1,10 +1,10 @@
 const R2_CDN =
   process.env.NEXT_PUBLIC_R2_CDN_URL ||
-  "https://pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev";
+  "https://cdn.viewora.in";
 
 /**
  * Rewrites a product image URL:
- * - If it's already an absolute https:// URL that is NOT localhost, returns as-is.
+ * - If it's already an absolute https:// URL that is NOT localhost, returns as-is (rewriting old R2 dev domain to cdn.viewora.in).
  * - If it's a localhost URL (e.g. http://localhost:5000/uploads/...), rewrites to R2 CDN.
  * - If it's a relative /uploads/... path, rewrites to R2 CDN.
  * - If null/undefined, returns null.
@@ -16,6 +16,9 @@ export function resolveImageUrl(url: string | null | undefined): string | null {
 
   // Already a valid public R2 / external HTTPS URL (and not localhost)
   if (trimmed.startsWith("https://") && !trimmed.includes("localhost")) {
+    if (trimmed.includes("pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev")) {
+      return trimmed.replace("pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev", "cdn.viewora.in");
+    }
     return trimmed;
   }
 
