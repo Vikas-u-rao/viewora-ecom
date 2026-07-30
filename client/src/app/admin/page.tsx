@@ -184,7 +184,6 @@ export default function AdminDashboard() {
                       <span className="text-xs font-semibold text-gray-500 block">
                         {new Date(log.createdAt).toLocaleString("en-IN")}
                       </span>
-                      {log.ip && <span className="text-[10px] font-mono text-gray-400">IP: {log.ip}</span>}
                     </div>
                   </div>
                 ))}
