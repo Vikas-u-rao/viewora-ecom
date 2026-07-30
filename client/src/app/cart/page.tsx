@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import ProductImage from '@/components/ProductImage';
+import { resolveImageUrl } from '@/lib/productImage';
 
 // ── Constants ───────────────────────────────────────────────────────────────
 
@@ -272,7 +273,7 @@ export default function CartPage() {
                 {/* Image */}
                 <div className="w-20 h-20 md:w-28 md:h-28 bg-muted/30 shrink-0 relative overflow-hidden">
                   <ProductImage
-                    src={item.variant?.imageUrls?.[0] || ''}
+                    src={resolveImageUrl(item.variant?.imageUrls?.[0] || item.variant?.product?.defaultImageUrls?.[0]) || ''}
                     alt={item.variant?.product?.name || 'Product'}
                     sizes="112px"
                     className="grayscale opacity-60"
@@ -328,7 +329,7 @@ export default function CartPage() {
                     className="w-20 h-20 md:w-28 md:h-28 shrink-0 relative overflow-hidden border border-border/40 hover:border-gold/40 transition-colors"
                   >
                     <ProductImage
-                      src={item.variant?.imageUrls?.[0] || ''}
+                      src={resolveImageUrl(item.variant?.imageUrls?.[0] || item.variant?.product?.defaultImageUrls?.[0]) || ''}
                       alt={item.variant?.product?.name || 'Product'}
                       sizes="112px"
                     />

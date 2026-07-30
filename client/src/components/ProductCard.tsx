@@ -20,8 +20,10 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
 
   const variant = product.variants.find((item) => item.stock > 0) || product.variants[0];
 
-  const firstUrl = resolveImageUrl(Array.isArray(product.defaultImageUrls) ? product.defaultImageUrls[0] : null);
-  const secondUrl = resolveImageUrl(Array.isArray(product.defaultImageUrls) && product.defaultImageUrls.length > 1 ? product.defaultImageUrls[1] : null);
+  const firstRaw = (Array.isArray(product.defaultImageUrls) && product.defaultImageUrls[0]) || (variant && Array.isArray(variant.imageUrls) && variant.imageUrls[0]) || null;
+  const secondRaw = (Array.isArray(product.defaultImageUrls) && product.defaultImageUrls[1]) || (variant && Array.isArray(variant.imageUrls) && variant.imageUrls[1]) || null;
+  const firstUrl = resolveImageUrl(firstRaw);
+  const secondUrl = resolveImageUrl(secondRaw);
   const hasImage = firstUrl && !imgError;
   const hasSecondImage = Boolean(secondUrl && !secondImgError && secondUrl !== firstUrl);
   const unavailable = !variant || variant.stock < 1;
