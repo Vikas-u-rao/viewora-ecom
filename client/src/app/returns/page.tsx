@@ -3,8 +3,8 @@ import Header from '@/components/header';
 import Footer from '@/components/footer';
 
 export const metadata: Metadata = {
-  title: 'Returns & Exchange — Viewora',
-  description: 'Viewora return and exchange policy. Easy returns within 3-4 days of delivery.',
+  title: 'Refund & Cancellation Policy — Viewora',
+  description: 'Viewora refund, cancellation, and exchange policy. Easy returns within 3-4 days of delivery and 100% refund support.',
 };
 
 export default function ReturnsPage() {
@@ -13,13 +13,18 @@ export default function ReturnsPage() {
       <Header />
       <main className="flex-1 max-w-3xl mx-auto px-6 py-20 pt-36 font-sans">
         <p className="text-gold tracking-[0.3em] text-xs mb-3 font-semibold uppercase">Support</p>
-        <h1 className="font-serif text-4xl text-white mb-2">Returns &amp; Exchange</h1>
+        <h1 className="font-serif text-4xl text-white mb-2">Refund, Return &amp; Cancellation Policy</h1>
         <p className="text-muted-foreground text-sm mb-10">We stand behind every pair we sell.</p>
 
         <div className="space-y-8 text-muted-foreground leading-relaxed text-[15px]">
           <section className="border border-gold/30 bg-gold/5 p-6 rounded-sm">
-            <h2 className="text-white font-serif text-xl mb-3">3-4 Day Return Window</h2>
+            <h2 className="text-white font-serif text-xl mb-3">3-4 Day Return &amp; Refund Window</h2>
             <p>Viewora (a product of <strong>Aspire Genx Technologies Private Limited</strong>) accepts returns within <span className="text-white font-medium">3-4 days of delivery</span> for products that are unused, undamaged, and in their original packaging with all tags intact.</p>
+          </section>
+
+          <section>
+            <h2 className="text-white font-serif text-xl mb-3">Order Cancellation Policy</h2>
+            <p>Orders can be cancelled before dispatch by emailing <a href="mailto:contact@viewora.in" className="text-gold hover:underline">contact@viewora.in</a> with your Order ID. Upon cancellation before dispatch, a full 100% refund will be credited to your original payment method within <span className="text-white font-medium">5–7 business days</span> with zero cancellation charges. If your order has already been shipped, you may initiate a return upon delivery following the procedure below.</p>
           </section>
 
           <section>
@@ -34,12 +39,12 @@ export default function ReturnsPage() {
           </section>
 
           <section>
-            <h2 className="text-white font-serif text-xl mb-3">Refund Timeline</h2>
-            <p>Refunds are processed within <span className="text-white font-medium">5–7 business days</span> after we receive and inspect the returned item. The refund will be credited to your original payment method.</p>
+            <h2 className="text-white font-serif text-xl mb-3">Refund Eligibility &amp; Timeline</h2>
+            <p>Refunds are processed within <span className="text-white font-medium">5–7 business days</span> after we receive and inspect the returned item. The full amount will be credited directly to your original payment method (bank account, credit/debit card, or UPI).</p>
           </section>
 
           <section>
-            <h2 className="text-white font-serif text-xl mb-3">Non-Returnable Items</h2>
+            <h2 className="text-white font-serif text-xl mb-3">Non-Returnable / Non-Refundable Items</h2>
             <ul className="space-y-2 list-disc list-inside">
               <li>Products with visible signs of use or damage</li>
               <li>Products with missing original packaging or accessories</li>
