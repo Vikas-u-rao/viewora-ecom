@@ -89,7 +89,13 @@ async function uploadImages() {
       ? "image/webp"
       : "image/jpeg";
 
-    const keysToUpload = Array.from(new Set([keyWithSku, cleanKey, zeroKey]));
+    const sanitizeKey = (k: string) => k.replace(/[#?%&\s]+/g, "_");
+
+    const keysToUpload = Array.from(new Set([
+      sanitizeKey(keyWithSku),
+      sanitizeKey(cleanKey),
+      sanitizeKey(zeroKey)
+    ]));
 
     for (const key of keysToUpload) {
       if (existingKeys.has(key)) {
