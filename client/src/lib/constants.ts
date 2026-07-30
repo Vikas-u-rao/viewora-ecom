@@ -1,6 +1,7 @@
 /**
  * Client-side business constants.
  * Import from here instead of spreading magic numbers across components.
+ * Pipeline auto-deploy verification comment.
  */
 
 // ── Shop / Catalog ───────────────────────────────────────────────────────────
