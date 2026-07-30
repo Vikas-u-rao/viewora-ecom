@@ -64,7 +64,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       const data = await fetchWishlistApi(accessToken);
       setItems(data.wishlistItems);
     } catch (err: unknown) {
-      const status = (err as any)?.status || (err as any)?.statusCode;
+      const errObj = err as { status?: number; statusCode?: number } | null | undefined;
+      const status = errObj?.status || errObj?.statusCode;
       const message = err instanceof Error ? err.message : '';
       const is401 = status === 401 || message.includes('Token expired') || message.includes('invalid');
       if (is401) {

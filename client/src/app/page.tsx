@@ -9,8 +9,6 @@ import Footer from "@/components/footer";
 import NewsletterForm from "@/components/NewsletterForm";
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 
-import { ArrowRight } from "lucide-react";
-
 import colSun from "@/assets/col-sunglasses.jpg";
 import colOpt from "@/assets/col-optical.jpg";
 import colLtd from "@/assets/col-limited.jpg";

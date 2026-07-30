@@ -120,19 +120,6 @@ export default function InventoryPage() {
   };
 
   const apiUrl = getApiBaseUrl();
-  const R2_CDN_BASE =
-    process.env.NEXT_PUBLIC_R2_CDN_URL ||
-    "https://pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev";
-
-  const formatR2Url = (raw: string): string => {
-    const trimmed = raw.trim();
-    if (!trimmed) return "";
-    if (trimmed.startsWith("https://") || trimmed.startsWith("http://")) {
-      return trimmed;
-    }
-    const cleanFilename = trimmed.replace(/^\/?(uploads\/products\/)?/, "");
-    return `${R2_CDN_BASE}/uploads/products/${cleanFilename}`;
-  };
 
   const handleFileUpload = async (
     file: File,

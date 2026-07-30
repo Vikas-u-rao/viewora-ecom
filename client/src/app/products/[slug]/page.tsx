@@ -2,7 +2,6 @@
 export const dynamic = "force-dynamic";
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Heart, Loader2, ShoppingCart, Plus, Check } from "lucide-react";
