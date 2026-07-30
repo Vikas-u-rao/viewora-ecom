@@ -43,11 +43,9 @@ RUN npx prisma generate
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma/seed.js ./prisma/seed.js
-COPY --from=builder /app/prisma/cleaned_products.json ./prisma/cleaned_products.json
 
 # Expose backend port
 EXPOSE 5000
 
-# Start server with schema push and seed
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node prisma/seed.js && node dist/index.js"]
-
+# Start server directly without wiping database on container boot
+CMD ["sh", "-c", "node dist/index.js"]
