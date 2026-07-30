@@ -98,20 +98,22 @@ export default function ProductCard({ product }: { product: ApiProduct }) {
                 src={firstUrl}
                 alt={product.name}
                 fill
+                unoptimized
                 onError={() => setImgError(true)}
                 className={`object-contain transition-opacity duration-500 ease-in-out ${
                   hasSecondImage ? "group-hover:opacity-0" : ""
                 }`}
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
               {hasSecondImage && (
                 <Image
                   src={secondUrl!}
                   alt={`${product.name} secondary view`}
                   fill
+                  unoptimized
                   onError={() => setSecondImgError(true)}
                   className="object-contain opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 />
               )}
             </>

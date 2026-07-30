@@ -107,31 +107,24 @@ export default function Home() {
         onMouseLeave={() => setIsPaused(false)}
       >
         {/* Background Image Carousel with Smooth Crossfade */}
-        {slides.map((slide, idx) => {
-          const isVisible = idx === activeSlide;
-          const isNext = idx === (activeSlide + 1) % slides.length;
-          if (!isVisible && !isNext) return null;
-
-          return (
-            <div
-              key={idx}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                isVisible ? "opacity-75 z-0" : "opacity-0 -z-10"
-              }`}
-            >
-              <Image
-                src={slide.image}
-                alt={slide.alt}
-                fill
-                priority={idx === 0}
-                className="object-cover"
-                style={{ objectPosition: slide.focal }}
-                sizes="(max-width: 640px) 100vw, (max-width: 1200px) 100vw, 100vw"
-                quality={85}
-              />
-            </div>
-          );
-        })}
+        {slides.map((slide, idx) => (
+          <div
+            key={idx}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+              idx === activeSlide ? "opacity-75 z-0" : "opacity-0 -z-10"
+            }`}
+          >
+            <Image
+              src={slide.image}
+              alt={slide.alt}
+              fill
+              priority={idx === 0}
+              className="object-cover"
+              style={{ objectPosition: slide.focal }}
+              sizes="100vw"
+            />
+          </div>
+        ))}
 
         {/* Soft Dark Vignette Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/50" />
