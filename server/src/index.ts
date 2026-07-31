@@ -168,8 +168,22 @@ app.use('/api/v1/coupons', couponRoutes);
 app.use('/api/v1/subscribers', subscriberRoutes);
 app.use('/api/v1/analytics', trackLimiter, analyticsRoutes);
 
-// Health check
+// Health check & DB Audit
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+app.get('/api/v1/db-audit', async (_req, res) => {
+  try {
+    const notLikeCount: any = await prisma.$queryRawUnsafe(`SELECT COUNT(*) FROM products WHERE id NOT LIKE 'prod_%'`);
+    const likeCount: any = await prisma.$queryRawUnsafe(`SELECT COUNT(*) FROM products WHERE id LIKE 'prod_%'`);
+    const totalCount = await prisma.product.count();
+    res.json({
+      notLikeCount,
+      likeCount,
+      totalCount,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Centralized error handler (must be last)
 app.use(errorHandler);
