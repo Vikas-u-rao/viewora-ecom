@@ -1,7 +1,1 @@
-product_id,product_name,brand,source_field,array_index,status,url
-"2ccdc723-2e3f-4732-b1a8-d5b75ee12f50","Oakley 9469 03 Sunglass","Oakley","variantImageUrls","6","ERROR: ECONNRESET","https://cdn.viewora.in/uploads/products/SGOKLNE9403NFISC_oakley-9469-03-sunglass_6.jpg"
-"638c1dda-4138-4751-b929-019b53804cf6","Michael Kors 4030 3162 Frame","Michael Kors","defaultImageUrls","2","ERROR: ECONNRESET","https://cdn.viewora.in/uploads/products/FRMKSMK0636LFPL0_michael-kors-4030-3162-frame_2.jpg"
-"638c1dda-4138-4751-b929-019b53804cf6","Michael Kors 4030 3162 Frame","Michael Kors","defaultImageUrls","4","ERROR: ECONNRESET","https://cdn.viewora.in/uploads/products/FRMKSMK0636LFPL0_michael-kors-4030-3162-frame_4.jpg"
-"638c1dda-4138-4751-b929-019b53804cf6","Michael Kors 4030 3162 Frame","Michael Kors","defaultImageUrls","5","ERROR: ECONNRESET","https://cdn.viewora.in/uploads/products/FRMKSMK0636LFPL0_michael-kors-4030-3162-frame_5.jpg"
-"8480a0bd-b0b8-4bad-b42a-a7433fba7f86","Vogue Frame VO 5676 2726","Vogue","variantImageUrls","2","TIMEOUT","https://cdn.viewora.in/uploads/products/FRVOG5676ZEKFISE_vogue-frame-vo-5676-2726_2.jpg"
-"9ad33cb6-837a-49b5-8c66-c34d38539028","Vogue Frame VO 4340 5138","Vogue","defaultImageUrls","0","TIMEOUT","https://cdn.viewora.in/uploads/products/FRVOG4340QPMFISE_vogue-frame-vo-4340-5138.jpg"
+product_id,product_name,brand,status,url

@@ -11,6 +11,7 @@
     "prisma:studio": "npx prisma studio",
     "prisma:generate": "npx prisma generate",
     "seed": "ts-node prisma/seed.ts",
+    "sync-images": "ts-node scripts/sync-missing-images-to-r2.ts",
     "test": "jest"
   },
   "dependencies": {
