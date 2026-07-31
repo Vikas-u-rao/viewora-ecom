@@ -52,9 +52,6 @@ if (process.env.NODE_ENV === 'production') {
     'JWT_ACCESS_SECRET',
     'JWT_REFRESH_SECRET',
     'DATABASE_URL',
-    'R2_ACCOUNT_ID',
-    'R2_ACCESS_KEY_ID',
-    'R2_SECRET_ACCESS_KEY',
   ];
   const missing = requiredSecrets.filter((k) => !process.env[k]);
   if (missing.length > 0) {

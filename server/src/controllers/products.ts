@@ -73,15 +73,18 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
     const whereClause: any = {
       isActive: true,
       deletedAt: null,
+      AND: [],
     };
 
     // Brand Filter
     if (brand && brand !== 'all') {
       const brandStr = (brand as string).replace(/-/g, ' ');
-      whereClause.OR = [
-        { brand: { contains: brandStr, mode: 'insensitive' } },
-        { name: { contains: brandStr, mode: 'insensitive' } },
-      ];
+      whereClause.AND.push({
+        OR: [
+          { brand: { contains: brandStr, mode: 'insensitive' } },
+          { name: { contains: brandStr, mode: 'insensitive' } },
+        ],
+      });
     }
 
     // Category Filter by slug
@@ -96,26 +99,32 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
       const colSlug = (collection as string).toLowerCase().trim();
       
       if (colSlug === "sunglasses") {
-        whereClause.OR = [
-          { category: { slug: "sunglasses" } },
-          { name: { contains: "sunglass", mode: "insensitive" } },
-          { description: { contains: "sunglass", mode: "insensitive" } },
-          { collections: { some: { collection: { slug: colSlug } } } }
-        ];
+        whereClause.AND.push({
+          OR: [
+            { category: { slug: "sunglasses" } },
+            { name: { contains: "sunglass", mode: "insensitive" } },
+            { description: { contains: "sunglass", mode: "insensitive" } },
+            { collections: { some: { collection: { slug: colSlug } } } }
+          ],
+        });
       } else if (colSlug === "optical-frames" || colSlug === "optical") {
-        whereClause.OR = [
-          { category: { slug: { not: "sunglasses" } } },
-          { name: { contains: "frame", mode: "insensitive" } },
-          { name: { contains: "glasses", mode: "insensitive" } },
-          { collections: { some: { collection: { slug: colSlug } } } }
-        ];
+        whereClause.AND.push({
+          OR: [
+            { category: { slug: { not: "sunglasses" } } },
+            { name: { contains: "frame", mode: "insensitive" } },
+            { name: { contains: "glasses", mode: "insensitive" } },
+            { collections: { some: { collection: { slug: colSlug } } } }
+          ],
+        });
       } else if (colSlug === "limited-edition") {
-        whereClause.OR = [
-          { name: { contains: "gold", mode: "insensitive" } },
-          { name: { contains: "edition", mode: "insensitive" } },
-          { name: { contains: "luxury", mode: "insensitive" } },
-          { collections: { some: { collection: { slug: colSlug } } } }
-        ];
+        whereClause.AND.push({
+          OR: [
+            { name: { contains: "gold", mode: "insensitive" } },
+            { name: { contains: "edition", mode: "insensitive" } },
+            { name: { contains: "luxury", mode: "insensitive" } },
+            { collections: { some: { collection: { slug: colSlug } } } }
+          ],
+        });
       } else {
         whereClause.collections = {
           some: {
@@ -129,11 +138,20 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
 
     // Search Query Filter
     if (search) {
-      whereClause.OR = [
-        { name: { contains: search as string, mode: 'insensitive' } },
-        { brand: { contains: search as string, mode: 'insensitive' } },
-        { description: { contains: search as string, mode: 'insensitive' } },
-      ];
+      const searchStr = (search as string).trim();
+      if (searchStr) {
+        whereClause.AND.push({
+          OR: [
+            { name: { contains: searchStr, mode: 'insensitive' } },
+            { brand: { contains: searchStr, mode: 'insensitive' } },
+            { description: { contains: searchStr, mode: 'insensitive' } },
+          ],
+        });
+      }
+    }
+
+    if (whereClause.AND.length === 0) {
+      delete whereClause.AND;
     }
 
     const [products, total] = await prisma.$transaction([
