@@ -27,16 +27,13 @@ export default function ProductImage({
       className={`relative w-full h-full flex items-center justify-center bg-[#ffffff] ${className}`}
     >
       {src && !error ? (
-        <Image
-          src={src}
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img
+          src={typeof src === "string" ? src : src.src}
           alt={alt}
-          fill
-          unoptimized
-          className={`object-contain p-3 transition-opacity duration-500 ${
+          className={`w-full h-full object-contain p-3 transition-opacity duration-500 ${
             loaded ? "opacity-100" : "opacity-0"
           }`}
-          sizes={sizes}
-          priority={priority}
           onLoad={() => setLoaded(true)}
           onError={() => setError(true)}
         />

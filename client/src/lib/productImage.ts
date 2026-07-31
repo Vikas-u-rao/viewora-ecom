@@ -16,6 +16,9 @@ export function resolveImageUrl(url: string | null | undefined): string | null {
 
   // Already a valid public R2 / external HTTPS URL (and not localhost)
   if (trimmed.startsWith("https://") && !trimmed.includes("localhost")) {
+    if (trimmed.includes("cdn.shopify.com/s/files/1/0694/2051/5411/files/")) {
+      return trimmed.replace("https://cdn.shopify.com/s/files/1/0694/2051/5411/files/", "https://cdn.viewora.in/uploads/products/");
+    }
     if (trimmed.includes("pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev")) {
       return trimmed.replace("pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev", "cdn.viewora.in");
     }
