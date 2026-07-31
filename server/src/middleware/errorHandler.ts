@@ -21,11 +21,12 @@ export function errorHandler(
 
   // Unexpected error — log full stack, return generic response
   logger.error({ err, requestId: (req as any).requestId }, 'Unhandled error');
+  console.error("UNHANDLED API ERROR:", err);
   res.status(500).json({
     error: {
       code: 'INTERNAL_ERROR',
-      message: 'An unexpected error occurred',
-      details: [],
+      message: err.message || 'An unexpected error occurred',
+      details: process.env.NODE_ENV !== 'production' ? [err.stack] : [],
     },
   });
 }
