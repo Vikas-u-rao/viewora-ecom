@@ -176,11 +176,11 @@ app.get('/api/v1/db-audit', async (_req, res) => {
     const notLikeCount: any = await prisma.$queryRawUnsafe(`SELECT COUNT(*) FROM products WHERE id NOT LIKE 'prod_%'`);
     const likeCount: any = await prisma.$queryRawUnsafe(`SELECT COUNT(*) FROM products WHERE id LIKE 'prod_%'`);
     const totalCount = await prisma.product.count();
-    res.json({
+    res.json(JSON.parse(JSON.stringify({
       notLikeCount,
       likeCount,
       totalCount,
-    });
+    }, (_key, value) => typeof value === 'bigint' ? value.toString() : value)));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
