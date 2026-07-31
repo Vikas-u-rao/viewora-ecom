@@ -9,6 +9,7 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import * as Sentry from '@sentry/node';
 import { logger } from './lib/logger';
+import { prisma } from './lib/prisma';
 import { errorHandler } from './middleware/errorHandler';
 import { requestId } from './middleware/requestId';
 
