@@ -200,8 +200,15 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
       page: pageNum,
       pages: Math.ceil(total / limitNum),
     });
-  } catch (error) {
-    next(error);
+  } catch (error: any) {
+    console.error("GET PRODUCTS ERROR:", error);
+    res.status(500).json({
+      error: {
+        code: "PRODUCTS_FETCH_ERROR",
+        message: error?.message || String(error),
+        details: error?.stack ? [error.stack] : [],
+      },
+    });
   }
 }
 
