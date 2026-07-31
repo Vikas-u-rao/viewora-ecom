@@ -17,6 +17,11 @@ export const hasCredentials = !!(host && user && pass);
 
 export let transporter: nodemailer.Transporter | null = null;
 
+/** Strips carriage returns and newlines from input to prevent header injection */
+export function sanitizeHeaderValue(val: string): string {
+  return String(val || '').replace(/[\r\n]/g, '').trim();
+}
+
 if (hasCredentials) {
   transporter = nodemailer.createTransport({
     host,
@@ -27,8 +32,10 @@ if (hasCredentials) {
       pass,
     },
     tls: {
-      // Prevent TLS certificate validation failures commonly encountered on hosted SMTP servers
-      rejectUnauthorized: process.env.EMAIL_REJECT_UNAUTHORIZED === 'true',
+      // Prevent TLS cert validation bypass in production
+      rejectUnauthorized: process.env.EMAIL_REJECT_UNAUTHORIZED !== undefined
+        ? process.env.EMAIL_REJECT_UNAUTHORIZED === 'true'
+        : process.env.NODE_ENV === 'production',
     },
     connectionTimeout: 10000,
     greetingTimeout: 10000,
@@ -82,7 +89,7 @@ export async function sendOtpEmail(email: string, otp: string, purpose: 'signup'
     try {
       await transporter.sendMail({
         from: `"VIEWORA Support" <${from}>`,
-        to: email,
+        to: sanitizeHeaderValue(email),
         subject,
         html: htmlContent,
       });
@@ -145,7 +152,7 @@ export async function sendOrderConfirmationEmail(email: string, order: any) {
     try {
       await transporter.sendMail({
         from: `"VIEWORA Orders" <${from}>`,
-        to: email,
+        to: sanitizeHeaderValue(email),
         subject,
         html: htmlContent,
       });
@@ -201,7 +208,7 @@ export async function sendCouponExpiryReminder(email: string, couponCode: string
     try {
       await transporter.sendMail({
         from: `"VIEWORA Coupons" <${from}>`,
-        to: email,
+        to: sanitizeHeaderValue(email),
         subject,
         html: htmlContent,
       });
@@ -271,7 +278,7 @@ export async function sendSubscriptionConfirmationEmail(email: string) {
     try {
       await transporter.sendMail({
         from: `"VIEWORA Community" <${from}>`,
-        to: email,
+        to: sanitizeHeaderValue(email),
         subject,
         html: htmlContent,
       });

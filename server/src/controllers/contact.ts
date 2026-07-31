@@ -13,7 +13,7 @@ function escapeHtml(str: string): string {
 }
 
 // Reuse the shared singleton transporter from the email service
-import { transporter, hasCredentials } from '../services/email';
+import { transporter, hasCredentials, sanitizeHeaderValue } from '../services/email';
 
 const from = process.env.EMAIL_FROM || 'noreply@viewora.in';
 const contactRecipient = process.env.CONTACT_RECIPIENT_EMAIL || 'support@viewora.in';
@@ -44,7 +44,7 @@ export async function submitContact(req: Request, res: Response, next: NextFunct
 
     // Escape all user-supplied values before embedding in HTML to prevent injection
     const safeName = escapeHtml(String(name).trim());
-    const safeSubject = escapeHtml(String(subject).trim());
+    const safeSubject = sanitizeHeaderValue(escapeHtml(String(subject).trim()));
     const safeMessage = escapeHtml(String(message).trim());
 
     // Try sending email if SMTP is configured

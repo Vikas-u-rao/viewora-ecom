@@ -13,13 +13,17 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── Protect /admin routes ────────────────────────────────────────────────
-  // Auth is handled client-side by AdminLayout + AuthContext with localStorage
-  // persistence. Pass through — the React app will handle redirects if needed.
   if (pathname.startsWith('/admin')) {
+    const refreshToken = request.cookies.get('refreshToken');
+    if (!refreshToken) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
     return NextResponse.next();
   }
 
-  // ── Protect authenticated account routes ─────────────────────────────────
+  // ── Protect authenticated user routes ─────────────────────────────────
   const protectedRoutes = ['/account', '/checkout', '/wishlist'];
   if (protectedRoutes.some((route) => pathname.startsWith(route))) {
     const refreshToken = request.cookies.get('refreshToken');

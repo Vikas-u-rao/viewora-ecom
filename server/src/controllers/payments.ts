@@ -226,18 +226,16 @@ export async function paymentCallback(req: Request, res: Response, next: NextFun
         }
       }
 
+      // If payment failed, restore reserved coupon back to active
+      if (!isSuccess && payment.order.appliedCouponId) {
+        await tx.coupon.updateMany({
+          where: { id: payment.order.appliedCouponId, status: 'used' },
+          data: { status: 'active', usedAt: null },
+        });
+      }
+
       // Handle successful payment business rules (Coupon/Referral/etc.)
       if (isSuccess) {
-        // A. Mark applied coupon as used
-        if (payment.order.appliedCouponId) {
-          await tx.coupon.update({
-            where: { id: payment.order.appliedCouponId },
-            data: {
-              status: 'used',
-              usedAt: new Date(),
-            },
-          });
-        }
 
         // B. Generate 10% subtotal coupon if order subtotal >= 5000
         if (payment.order.subtotal.greaterThanOrEqualTo(5000)) {

@@ -39,6 +39,15 @@ export function startStockCleanupJob() {
             data: { stock: { increment: reservation.quantity } },
           });
 
+          // If the order was unpaid and had an applied coupon, release the coupon back to active
+          const order = await tx.order.findUnique({ where: { id: reservation.orderId } });
+          if (order && order.paymentStatus === 'pending' && order.appliedCouponId) {
+            await tx.coupon.updateMany({
+              where: { id: order.appliedCouponId, status: 'used' },
+              data: { status: 'active', usedAt: null },
+            });
+          }
+
           logger.warn({
             event: 'reservation_released',
             reservationId: reservation.id,

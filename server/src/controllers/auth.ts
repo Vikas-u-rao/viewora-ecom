@@ -395,31 +395,29 @@ export async function resendOtp(req: Request, res: Response, next: NextFunction)
       await sendOtpEmail(normalizedEmail, otp, 'signup');
     } else if (purpose === 'forgot_password') {
       const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
-      if (!user) {
-        throw new AppError('NOT_FOUND', 404, 'No account found with this email');
+      if (user) {
+        await prisma.otpVerification.upsert({
+          where: { email: normalizedEmail },
+          update: {
+            purpose: 'forgot_password',
+            otpHash: hashOtp(otp),
+            attempts: 0,
+            expiresAt,
+            name: null,
+            phone: null,
+            passwordHash: null,
+          },
+          create: {
+            email: normalizedEmail,
+            purpose: 'forgot_password',
+            otpHash: hashOtp(otp),
+            attempts: 0,
+            expiresAt,
+          },
+        });
+
+        await sendOtpEmail(normalizedEmail, otp, 'forgot_password');
       }
-
-      await prisma.otpVerification.upsert({
-        where: { email: normalizedEmail },
-        update: {
-          purpose: 'forgot_password',
-          otpHash: hashOtp(otp),
-          attempts: 0,
-          expiresAt,
-          name: null,
-          phone: null,
-          passwordHash: null,
-        },
-        create: {
-          email: normalizedEmail,
-          purpose: 'forgot_password',
-          otpHash: hashOtp(otp),
-          attempts: 0,
-          expiresAt,
-        },
-      });
-
-      await sendOtpEmail(normalizedEmail, otp, 'forgot_password');
     } else {
       throw new AppError('VALIDATION_ERROR', 400, 'Invalid purpose');
     }
@@ -445,39 +443,38 @@ export async function forgotPassword(req: Request, res: Response, next: NextFunc
 
     // Check if user exists
     const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
-    if (!user) {
-      throw new AppError('NOT_FOUND', 404, 'No account found with this email.');
+    if (user) {
+      const otp = generateOtp();
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+      // Create or update verification code
+      await prisma.otpVerification.upsert({
+        where: { email: normalizedEmail },
+        update: {
+          purpose: 'forgot_password',
+          otpHash: hashOtp(otp),
+          attempts: 0,
+          expiresAt,
+          name: null,
+          phone: null,
+          passwordHash: null,
+        },
+        create: {
+          email: normalizedEmail,
+          purpose: 'forgot_password',
+          otpHash: hashOtp(otp),
+          attempts: 0,
+          expiresAt,
+        },
+      });
+
+      // Send OTP
+      await sendOtpEmail(normalizedEmail, otp, 'forgot_password');
     }
 
-    const otp = generateOtp();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
-
-    // Create or update verification code
-    await prisma.otpVerification.upsert({
-      where: { email: normalizedEmail },
-      update: {
-        purpose: 'forgot_password',
-        otpHash: hashOtp(otp),
-        attempts: 0,
-        expiresAt,
-        name: null,
-        phone: null,
-        passwordHash: null,
-      },
-      create: {
-        email: normalizedEmail,
-        purpose: 'forgot_password',
-        otpHash: hashOtp(otp),
-        attempts: 0,
-        expiresAt,
-      },
-    });
-
-    // Send OTP
-    await sendOtpEmail(normalizedEmail, otp, 'forgot_password');
-
+    // Always return generic response to prevent user enumeration
     res.status(200).json({
-      message: 'OTP sent to email. Proceed to OTP verification.',
+      message: 'If an account exists with this email, an OTP has been sent.',
       email: normalizedEmail,
       purpose: 'forgot_password',
     });

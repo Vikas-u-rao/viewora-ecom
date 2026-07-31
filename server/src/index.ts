@@ -48,7 +48,14 @@ app.set('trust proxy', 1);
 // Fail fast in production if critical env vars are missing rather than
 // silently falling back to hardcoded/weak defaults.
 if (process.env.NODE_ENV === 'production') {
-  const requiredSecrets = ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'DATABASE_URL'];
+  const requiredSecrets = [
+    'JWT_ACCESS_SECRET',
+    'JWT_REFRESH_SECRET',
+    'DATABASE_URL',
+    'R2_ACCOUNT_ID',
+    'R2_ACCESS_KEY_ID',
+    'R2_SECRET_ACCESS_KEY',
+  ];
   const missing = requiredSecrets.filter((k) => !process.env[k]);
   if (missing.length > 0) {
     logger.error({ msg: 'FATAL: Missing required production env vars', missing });
@@ -119,10 +126,19 @@ app.use('/uploads', express.static(path.join(__dirname, '../public/uploads'), {
   immutable: true,
 }));
 
-// Stricter rate limit for auth and payments
+// Stricter rate limit for auth, order creation, and payments
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 50,
+  validate: { trustProxy: false, xForwardedForHeader: false },
+  keyGenerator: getClientIp,
+});
+
+// Stricter rate limit for order creation (prevents double-clicks & order spam)
+const orderLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { error: { code: 'RATE_LIMITED', message: 'Too many order attempts. Please wait a few minutes before trying again.', details: [] } },
   validate: { trustProxy: false, xForwardedForHeader: false },
   keyGenerator: getClientIp,
 });
@@ -146,7 +162,7 @@ app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/collections', collectionRoutes);
 app.use('/api/v1/cart', cartRoutes);
 app.use('/api/v1/wishlist', wishlistRoutes);
-app.use('/api/v1/orders', orderRoutes);
+app.use('/api/v1/orders', orderLimiter, orderRoutes);
 app.use('/api/v1/payments', authLimiter, paymentRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/contact', contactRoutes);

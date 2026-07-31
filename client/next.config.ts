@@ -83,6 +83,11 @@ const nextConfig: NextConfig = {
           { key: "X-Frame-Options", value: "DENY" },
           { key: "X-XSS-Protection", value: "1; mode=block" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
+          {
+            key: "Content-Security-Policy",
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.sentry.io https://api.phonepe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://cdn.viewora.in https://pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev https://images.unsplash.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' http://localhost:* https://*.viewora.in https://*.sentry.io https://api-preprod.phonepe.com https://api.phonepe.com; frame-ancestors 'none';",
+          },
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",

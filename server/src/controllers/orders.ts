@@ -154,6 +154,18 @@ export async function createOrder(req: AuthRequest, res: Response, next: NextFun
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
     const order = await prisma.$transaction(async (tx) => {
+      // Reserve/claim applied coupon atomically to prevent double-spending
+      if (appliedCouponId) {
+        const couponClaim = await tx.coupon.updateMany({
+          where: { id: appliedCouponId, status: 'active' },
+          data: { status: 'used', usedAt: new Date() },
+        });
+
+        if (couponClaim.count === 0) {
+          throw new AppError('VALIDATION_ERROR', 400, 'Coupon is no longer active or has already been used');
+        }
+      }
+
       // Decrement stocks & create reservations
       for (const item of itemsToProcess) {
         const updatedVariant = await tx.productVariant.update({

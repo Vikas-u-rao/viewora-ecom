@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getCollection } from "@/lib/collections";
 import Link from "next/link";
 import Header from "@/components/header";
+import Footer from "@/components/footer";
 import CollectionProductGrid from "@/components/CollectionProductGrid";
 
 interface PageProps {
@@ -16,7 +17,7 @@ export async function generateMetadata({ params }: PageProps) {
   if (!col) return {};
 
   return {
-    title: `${col.title} — Viewora`,
+    title: `${col.title} — Viewora Collections`,
     description: col.tagline,
   };
 }
@@ -32,32 +33,40 @@ export default async function CollectionPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       <Header />
-      <main className="flex-1 pt-32">
-        <div className="text-center mb-10 px-6">
-          <p className="text-gold tracking-[0.3em] text-xs mb-3 font-medium">VIEWORA</p>
-          <h1 className="font-serif text-4xl text-white">{col.title}</h1>
-          {col.tagline && <p className="text-muted-foreground text-sm mt-2 max-w-xl mx-auto">{col.tagline}</p>}
-          <div className="h-[1px] w-20 bg-gold/40 mx-auto mt-4"></div>
+
+      <main className="flex-1 pt-28 pb-20">
+        {/* Collection Hero Header */}
+        <div className="bg-gradient-to-b from-card/80 to-background border-b border-border/60 py-12 px-6 text-center mb-10">
+          <div className="max-w-[1400px] mx-auto">
+            <p className="text-gold tracking-[0.3em] text-xs font-semibold uppercase mb-3">EXCLUSIVE COLLECTION</p>
+            <h1 className="font-serif text-4xl sm:text-5xl text-white tracking-wide mb-3">{col.title}</h1>
+            {col.tagline && (
+              <p className="text-muted-foreground text-sm sm:text-base max-w-xl mx-auto font-light leading-relaxed">
+                {col.tagline}
+              </p>
+            )}
+            <div className="h-[2px] w-16 bg-gold mx-auto mt-6 rounded-full" />
+          </div>
         </div>
 
-        <section className="pb-20 px-8">
+        {/* Collection Grid Container */}
+        <section className="px-4 sm:px-8">
           <div className="max-w-[1400px] mx-auto">
-            <div className="flex items-center justify-between mb-10">
-              <p className="text-sm tracking-[0.2em] text-muted-foreground">
-                {col.products.length} PIECE{col.products.length !== 1 ? "S" : ""}
-              </p>
-              <Link href="/#collections" className="text-xs tracking-[0.2em] text-gold border-b border-gold/50 hover:border-gold pb-0.5">
-                ← ALL COLLECTIONS
+            <div className="flex items-center justify-between mb-6">
+              <Link
+                href="/#collections"
+                className="inline-flex items-center gap-2 text-xs tracking-[0.2em] font-semibold text-gold hover:text-gold-soft transition-colors uppercase"
+              >
+                &larr; ALL COLLECTIONS
               </Link>
             </div>
+
             <CollectionProductGrid collection={col.slug} />
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-border py-8 px-8 text-center text-xs tracking-[0.2em] text-muted-foreground">
-        © 2026 VIEWORA — FASHION EYEWEAR. ALL RIGHTS RESERVED.
-      </footer>
+      <Footer />
     </div>
   );
 }

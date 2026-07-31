@@ -519,10 +519,14 @@ export async function uploadProductImage(req: AuthRequest, res: Response, next: 
     const key = `uploads/products/${filename}`;
 
     const R2_CDN = process.env.R2_CDN_URL || 'https://pub-6bbb8cfdaf924bbbb21aaeeaed84a66e.r2.dev';
-    const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID || 'e2158ae0625a060589cba0ccebcd3fee';
-    const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || '73fede634675f899d6412ddcaf59c06f';
-    const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY || '680700f9a92259d0188a5450a6a77f2d1e4730780024064320b531f65a8a5ac6';
+    const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
+    const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
+    const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
     const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || 'viewora-assets';
+
+    if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY) {
+      throw new AppError('INTERNAL_ERROR', 500, 'Cloudflare R2 storage credentials are not configured on server');
+    }
 
     // Write file locally to public/uploads/products
     const uploadDir = path.join(__dirname, '../../public/uploads/products');

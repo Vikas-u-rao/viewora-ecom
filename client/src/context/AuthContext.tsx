@@ -29,13 +29,7 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const STORAGE_KEY_TOKEN = 'viewora_access_token';
 const STORAGE_KEY_USER = 'viewora_user';
-
-function getStoredToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem(STORAGE_KEY_TOKEN);
-}
 
 function getStoredUser(): User | null {
   if (typeof window === 'undefined') return null;
@@ -50,14 +44,13 @@ function getStoredUser(): User | null {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(getStoredUser);
-  const [accessToken, setAccessToken] = useState<string | null>(getStoredToken);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const clearAuth = useCallback(() => {
     setUser(null);
     setAccessToken(null);
     if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEY_TOKEN);
       localStorage.removeItem(STORAGE_KEY_USER);
     }
   }, []);
@@ -66,12 +59,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(u);
     setAccessToken(token);
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY_TOKEN, token);
       localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(u));
     }
   }, []);
 
-  // Validate session on mount via cookie refresh
+  // Validate session on mount via httpOnly cookie refresh
   useEffect(() => {
     let cancelled = false;
 
@@ -86,7 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (res.ok) {
           const data = await res.json();
           setAccessToken(data.accessToken);
-          localStorage.setItem(STORAGE_KEY_TOKEN, data.accessToken);
 
           const profileRes = await fetch(`${baseUrl}/users/me`, {
             headers: { Authorization: `Bearer ${data.accessToken}` },
@@ -102,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             clearAuth();
           }
         } else {
-          // Session expired or non-logged in visitor: clear stale tokens quietly
+          // Session expired or non-logged in visitor: clear stale session quietly
           clearAuth();
         }
       } catch {
