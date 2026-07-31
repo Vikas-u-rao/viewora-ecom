@@ -1,11 +1,11 @@
 import p1 from "@/assets/p1.jpg";
 import p2 from "@/assets/p2.jpg";
-import p3 from "@/assets/p3.png";
-import p4 from "@/assets/p4.png";
+import p3 from "@/assets/p3.webp";
+import p4 from "@/assets/p4.webp";
 import colSun from "@/assets/col-sunglasses.jpg";
 import colOpt from "@/assets/col-optical.jpg";
 import colLtd from "@/assets/col-limited.jpg";
-import cateyeImg from "@/assets/styles/cateye.png";
+import cateyeImg from "@/assets/styles/cateye.webp";
 
 import { StaticImageData } from "next/image";
 

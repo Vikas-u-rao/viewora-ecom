@@ -18,19 +18,19 @@ import view3 from "@/assets/view3.jpg";
 import view4 from "@/assets/view4.jpg";
 import view5 from "@/assets/view5.jpg";
 import logo from "@/assets/logo.png";
-import promoBannerImg from "@/assets/promo-banner-new.png";
+import promoBannerImg from "@/assets/promo-banner-new.webp";
 
 // Import style images
-import wayfarerImg from "@/assets/styles/wayfarer.png";
-import aviatorImg from "@/assets/styles/aviator.png";
-import cateyeImg from "@/assets/styles/cateye.png";
-import roundImg from "@/assets/styles/round.png";
-import rectangleImg from "@/assets/styles/rectangle.png";
-import squareImg from "@/assets/styles/square.png";
-import rimlessImg from "@/assets/styles/rimless.png";
-import semirimlessImg from "@/assets/styles/semirimless.png";
-import oversizedImg from "@/assets/styles/oversized.png";
-import geometricImg from "@/assets/styles/geometric.png";
+import wayfarerImg from "@/assets/styles/wayfarer.webp";
+import aviatorImg from "@/assets/styles/aviator.webp";
+import cateyeImg from "@/assets/styles/cateye.webp";
+import roundImg from "@/assets/styles/round.webp";
+import rectangleImg from "@/assets/styles/rectangle.webp";
+import squareImg from "@/assets/styles/square.webp";
+import rimlessImg from "@/assets/styles/rimless.webp";
+import semirimlessImg from "@/assets/styles/semirimless.webp";
+import oversizedImg from "@/assets/styles/oversized.webp";
+import geometricImg from "@/assets/styles/geometric.webp";
 
 const collections = [
   {
