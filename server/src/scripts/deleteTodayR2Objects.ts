@@ -3,10 +3,14 @@ import dotenv from 'dotenv';
 import path from 'path';
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
-const accountId = process.env.R2_ACCOUNT_ID || "e2158ae0625a060589cba0ccebcd3fee";
-const accessKeyId = process.env.R2_ACCESS_KEY_ID || "73fede634675f899d6412ddcaf59c06f";
-const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY || "680700f9a92259d0188a5450a6a77f2d1e4730780024064320b531f65a8a5ac6";
+const accountId = process.env.R2_ACCOUNT_ID;
+const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
 const bucketName = process.env.R2_BUCKET_NAME || "viewora-assets";
+
+if (!accountId || !accessKeyId || !secretAccessKey) {
+  throw new Error("Missing required R2 credentials in environment variables.");
+}
 
 const s3Client = new S3Client({
   region: "auto",
