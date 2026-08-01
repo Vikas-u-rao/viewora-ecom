@@ -20,11 +20,6 @@ import view5 from "@/assets/view5.jpg";
 import logo from "@/assets/logo.png";
 import promoBannerImg from "@/assets/promo-banner-new.webp";
 
-// Import style images
-import wayfarerImg from "@/assets/styles/wayfarer.webp";
-import aviatorImg from "@/assets/styles/aviator.webp";
-import roundImg from "@/assets/styles/round.webp";
-
 const collections = [
   {
     title: "Sunglasses",
@@ -47,9 +42,9 @@ const collections = [
 ];
 
 const frameStyles = [
-  { name: "Wayfarer", img: wayfarerImg, slug: "wayfarer" },
-  { name: "Aviator", img: aviatorImg, slug: "aviator" },
-  { name: "Round", img: roundImg, slug: "round" },
+  { name: "Wayfarer", img: "https://cdn.viewora.in/uploads/products/Rayban_New_Wayfarer_Sunglass_RB_2132_622_-_01_53118dba-7f75-4d89-8aae-0c411841736e.webp", slug: "wayfarer" },
+  { name: "Aviator", img: "https://cdn.viewora.in/uploads/products/Chimi_Sunglass_Aviator_Brown_01_f540f194-3148-45ad-8b4f-d28f5362ee73.jpg", slug: "aviator" },
+  { name: "Round", img: "https://cdn.viewora.in/uploads/products/RayBan_Round_Metal_Sunglass_RB_3447_004_71_-_01_85bd47f4-7dd1-414d-b4f9-d0a063a45698.webp", slug: "round" },
   { name: "Clubmaster", img: "https://cdn.viewora.in/uploads/products/Rayban_Clubmaster_Sunglass_RB_3016_1367_B1_-_01_00ce460e-dc20-4673-bcbe-c053c12aee03.webp", slug: "clubmaster" },
   { name: "D-Frame", img: "https://cdn.viewora.in/uploads/products/Fred_Frame_FG50002F_030_image_2_93834f8e-b854-475a-93e8-f1e5fed28c9b.jpg", slug: "d-frame" },
   { name: "Mask", img: "https://cdn.viewora.in/uploads/products/Kuboraum_Maske_Sunglass_P60_LG_HB-_01_13631edd-2b2a-4da4-ad17-9127bf490af4.webp", slug: "mask" },
