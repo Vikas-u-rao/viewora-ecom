@@ -50,6 +50,10 @@ const frameStyles = [
   { name: "Wayfarer", img: wayfarerImg, slug: "wayfarer" },
   { name: "Aviator", img: aviatorImg, slug: "aviator" },
   { name: "Round", img: roundImg, slug: "round" },
+  { name: "Clubmaster", img: "https://cdn.viewora.in/uploads/products/Rayban_Clubmaster_Sunglass_RB_3016_1367_B1_-_01_00ce460e-dc20-4673-bcbe-c053c12aee03.webp", slug: "clubmaster" },
+  { name: "D-Frame", img: "https://cdn.viewora.in/uploads/products/Fred_Frame_FG50002F_030_image_2_93834f8e-b854-475a-93e8-f1e5fed28c9b.jpg", slug: "d-frame" },
+  { name: "Mask", img: "https://cdn.viewora.in/uploads/products/Kuboraum_Maske_Sunglass_P60_LG_HB-_01_13631edd-2b2a-4da4-ad17-9127bf490af4.webp", slug: "mask" },
+  { name: "Sports", img: "https://cdn.viewora.in/uploads/products/Carrera_Sunglasses_C_Sports_03_S_I469O_images-01_704a7289-7a28-4ed2-890e-12142a6652a9.png", slug: "sports" },
 ];
 
 export default function Home() {
@@ -77,7 +81,7 @@ export default function Home() {
     if (!frameApi) return;
     const timer = setInterval(() => {
       frameApi.scrollNext();
-    }, 2500);
+    }, 4500);
     return () => clearInterval(timer);
   }, [frameApi]);
 
@@ -220,6 +224,8 @@ export default function Home() {
                     <Image
                       src={s.img}
                       alt={s.name}
+                      width={600}
+                      height={800}
                       className="w-full h-full object-contain transition-all duration-500 ease-out transform group-hover:scale-110 group-hover:-translate-y-2 filter group-hover:drop-shadow-[0_12px_20px_rgba(197,160,89,0.3)]"
                       loading="lazy"
                     />

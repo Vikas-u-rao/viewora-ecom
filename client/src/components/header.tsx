@@ -54,6 +54,19 @@ const shopMenu = [
       { label: "Mask", href: "/shop?shape=mask" },
       { label: "Sports", href: "/shop?shape=sports" }
     ]
+  },
+  {
+    title: "Shop by Brand",
+    items: [
+      { label: "Ray-Ban", href: "/shop?brand=ray-ban" },
+      { label: "Oakley", href: "/shop?brand=oakley" },
+      { label: "Carrera", href: "/shop?brand=carrera" },
+      { label: "Gucci", href: "/shop?brand=gucci" },
+      { label: "Prada", href: "/shop?brand=prada" },
+      { label: "Versace", href: "/shop?brand=versace" },
+      { label: "Tom Ford", href: "/shop?brand=tom-ford" },
+      { label: "Persol", href: "/shop?brand=persol" }
+    ]
   }
 ];
 
