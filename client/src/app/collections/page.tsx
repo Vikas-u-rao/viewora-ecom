@@ -43,10 +43,7 @@ const collectionsList = [
 const categorySpotlights = [
   { name: "Wayfarer", href: "/shop?shape=wayfarer", desc: "Classic trapezoidal design with modern bevels" },
   { name: "Aviator", href: "/shop?shape=aviator", desc: "Timeless teardrop silhouettes with double bridges" },
-  { name: "Cat Eye", href: "/shop?shape=cat-eye", desc: "Upswept feminine profiles for vintage glamour" },
   { name: "Round", href: "/shop?shape=round", desc: "Intellectual retro frames for distinguished character" },
-  { name: "Square", href: "/shop?shape=square", desc: "Architectural lines engineered for strong contours" },
-  { name: "Rimless", href: "/shop?shape=rimless", desc: "Minimalist lightness for invisible sophistication" },
 ];
 
 export default function CollectionsPage() {

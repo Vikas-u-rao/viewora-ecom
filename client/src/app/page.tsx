@@ -23,14 +23,7 @@ import promoBannerImg from "@/assets/promo-banner-new.webp";
 // Import style images
 import wayfarerImg from "@/assets/styles/wayfarer.webp";
 import aviatorImg from "@/assets/styles/aviator.webp";
-import cateyeImg from "@/assets/styles/cateye.webp";
 import roundImg from "@/assets/styles/round.webp";
-import rectangleImg from "@/assets/styles/rectangle.webp";
-import squareImg from "@/assets/styles/square.webp";
-import rimlessImg from "@/assets/styles/rimless.webp";
-import semirimlessImg from "@/assets/styles/semirimless.webp";
-import oversizedImg from "@/assets/styles/oversized.webp";
-import geometricImg from "@/assets/styles/geometric.webp";
 
 const collections = [
   {
@@ -56,14 +49,7 @@ const collections = [
 const frameStyles = [
   { name: "Wayfarer", img: wayfarerImg, slug: "wayfarer" },
   { name: "Aviator", img: aviatorImg, slug: "aviator" },
-  { name: "Cat Eye", img: cateyeImg, slug: "cat-eye" },
   { name: "Round", img: roundImg, slug: "round" },
-  { name: "Rectangle", img: rectangleImg, slug: "rectangle" },
-  { name: "Square", img: squareImg, slug: "square" },
-  { name: "Rimless", img: rimlessImg, slug: "rimless" },
-  { name: "Semi-Rimless", img: semirimlessImg, slug: "semi-rimless" },
-  { name: "Oversized", img: oversizedImg, slug: "oversized" },
-  { name: "Geometric", img: geometricImg, slug: "geometric" },
 ];
 
 export default function Home() {

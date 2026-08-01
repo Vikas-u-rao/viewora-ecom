@@ -22,7 +22,7 @@ export async function fetchProductsApi(query = "") {
   if (!res.ok) {
     throw new Error(data?.error?.message || "Failed to load products");
   }
-  return data as { products: ApiProduct[]; total: number; page: number; pages: number };
+  return data as { products: ApiProduct[]; total: number; page: number; pages: number; brands: string[] };
 }
 
 export function variantSnapshot(product: ApiProduct, variant: ProductVariant): CartVariant {

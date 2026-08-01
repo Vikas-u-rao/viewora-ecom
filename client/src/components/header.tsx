@@ -31,19 +31,15 @@ const internationalBrands = [
 const shopMenu = [
   {
     title: "Shop by Type",
-    items: ["Sunglasses", "Optical Frames", "Reading Glasses", "Blue Light Glasses"]
-  },
-  {
-    title: "Shop by Features",
-    items: ["Polarized", "UV Protected", "Anti-Glare", "Photochromic", "Lightweight Frames", "Prescription Ready"]
+    items: ["Sunglasses", "Optical Frames"]
   },
   {
     title: "Smart Eyewear",
-    items: ["Oakley Meta", "Ray-Ban Meta", "Smart Glasses"]
+    items: ["Ray-Ban Meta", "Smart Glasses"]
   },
   {
     title: "Shop by Shape",
-    items: ["Wayfarer", "Round", "Cat Eye", "Aviator", "Rectangle", "Square"]
+    items: ["Wayfarer", "Aviator", "Round"]
   }
 ];
 

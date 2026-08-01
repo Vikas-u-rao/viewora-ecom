@@ -26,9 +26,9 @@ export default function CollectionProductGrid({ collection }: CollectionProductG
   const collectionQueryParam = useMemo(() => {
     switch (collection.toLowerCase()) {
       case "sunglasses":
-        return "search=sunglass";
+        return "category=sunglasses";
       case "optical-frames":
-        return "search=optical";
+        return "category=optical-frames";
       case "limited-edition":
         return "search=gucci"; // Limited edition spotlights luxury designer frames
       default:

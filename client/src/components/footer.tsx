@@ -27,7 +27,6 @@ const quickLinks = [
   ["Shop Collection", "/shop"],
   ["Collections", "/collections"],
   ["New Arrivals", "/shop?collection=new-arrivals"],
-  ["Best Sellers", "/shop?collection=best-sellers"],
   ["About Us", "/about"],
 ];
 

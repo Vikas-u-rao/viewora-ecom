@@ -1,7 +1,7 @@
 'use client';
 export const dynamic = "force-dynamic";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
 import Header from "@/components/header";
@@ -15,8 +15,9 @@ const ITEMS_PER_PAGE = 24;
 function ShopContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [allProducts, setAllProducts] = useState<ApiProduct[]>([]);
+  const [products, setProducts] = useState<ApiProduct[]>([]);
   const [totalProducts, setTotalProducts] = useState(0);
+  const [availableBrands, setAvailableBrands] = useState<string[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [productError, setProductError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -25,11 +26,8 @@ function ShopContent() {
 
   // Filter states
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
-  const [selectedGender, setSelectedGender] = useState("all");
   const [selectedFrameSize, setSelectedFrameSize] = useState("all");
   const [selectedFrameColor, setSelectedFrameColor] = useState("all");
-  const [selectedFrameType, setSelectedFrameType] = useState("all");
-  const [selectedMaterial, setSelectedMaterial] = useState("all");
 
   const selectedBrand = searchParams.get("brand") || "all";
   const selectedShape = searchParams.get("shape") || "all";
@@ -37,16 +35,7 @@ function ShopContent() {
   const selectedCollection = searchParams.get("collection") || "all";
   const searchQuery = searchParams.get("search") || "";
 
-  let selectedType = "all";
-  let activeShape = selectedShape;
-
-  if (generalFilter !== "all") {
-    if (["sunglasses", "optical-frames", "reading-glasses", "blue-light-glasses"].includes(generalFilter)) {
-      selectedType = generalFilter;
-    } else {
-      activeShape = generalFilter;
-    }
-  }
+  const activeShape = generalFilter !== "all" ? "all" : selectedShape;
 
   const updateFilter = (type: "brand" | "shape" | "type" | "collection" | "clear", value?: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -88,7 +77,7 @@ function ShopContent() {
     router.replace(`/shop?${params.toString()}`);
   };
 
-  // Build API query and fetch products
+  // Build API query and fetch products (all filtering happens server-side)
   useEffect(() => {
     let cancelled = false;
 
@@ -103,15 +92,34 @@ function ShopContent() {
     if (selectedBrand !== "all") {
       query += `&brand=${encodeURIComponent(selectedBrand)}`;
     }
+    if (generalFilter !== "all") {
+      query += `&type=${encodeURIComponent(generalFilter)}`;
+    }
+    if (selectedShape !== "all") {
+      query += `&shape=${encodeURIComponent(selectedShape)}`;
+    }
     if (searchQuery) {
       query += `&search=${encodeURIComponent(searchQuery)}`;
+    }
+    if (selectedPriceRange !== "all") {
+      query += `&price=${selectedPriceRange}`;
+    }
+    if (selectedFrameSize !== "all") {
+      query += `&size=${selectedFrameSize}`;
+    }
+    if (selectedFrameColor !== "all") {
+      query += `&color=${selectedFrameColor}`;
+    }
+    if (sortBy !== "newest") {
+      query += `&sort=${sortBy}`;
     }
 
     fetchProductsApi(query)
       .then((data) => {
         if (!cancelled) {
-          setAllProducts(data.products);
+          setProducts(data.products);
           setTotalProducts(data.total || data.products.length);
+          setAvailableBrands(data.brands || []);
         }
       })
       .catch((error: Error) => {
@@ -124,234 +132,18 @@ function ShopContent() {
     return () => {
       cancelled = true;
     };
-  }, [currentPage, selectedCollection, selectedBrand, searchQuery]);
+  }, [currentPage, selectedCollection, selectedBrand, generalFilter, selectedShape, searchQuery, selectedPriceRange, selectedFrameSize, selectedFrameColor, sortBy]);
 
-  const availableBrands = useMemo(() => {
-    const brands = new Set<string>();
-    allProducts.forEach((p) => {
-      if (p.brand) {
-        brands.add(p.brand);
-      }
-    });
-    return Array.from(brands).sort();
-  }, [allProducts]);
+  const totalPages = Math.max(1, Math.ceil(totalProducts / ITEMS_PER_PAGE));
 
-  const filterKey = (generalFilter !== "all" ? generalFilter : selectedShape !== "all" ? selectedShape : selectedBrand !== "all" ? selectedBrand : "all").toLowerCase().trim();
-
-  // Apply client-side filters
-  const filteredProducts = useMemo(() => {
-    if (
-      filterKey === "all" &&
-      selectedBrand === "all" &&
-      searchQuery === "" &&
-      selectedType === "all" &&
-      selectedPriceRange === "all" &&
-      selectedGender === "all" &&
-      selectedFrameSize === "all" &&
-      selectedFrameColor === "all" &&
-      selectedFrameType === "all" &&
-      selectedMaterial === "all"
-    ) {
-      return allProducts;
-    }
-
-    return allProducts.filter((product, idx) => {
-      // 1. Search Query Filter
-      if (searchQuery) {
-        const sq = searchQuery.toLowerCase();
-        const matchesSearch =
-          product.name.toLowerCase().includes(sq) ||
-          (product.brand && product.brand.toLowerCase().includes(sq)) ||
-          (product.description && product.description.toLowerCase().includes(sq));
-        if (!matchesSearch) return false;
-      }
-
-      // 2. Brand Parameter
-      if (selectedBrand !== "all") {
-        const formattedBrand = selectedBrand.toLowerCase().replace(/-/g, " ");
-        const isBrandMatch =
-          (product.brand && product.brand.toLowerCase().includes(formattedBrand)) ||
-          product.name.toLowerCase().includes(formattedBrand);
-        if (!isBrandMatch) return false;
-      }
-
-      // 3. Category Type Filter
-      if (selectedType !== "all") {
-        const categorySlug = (product as unknown as { category?: { slug?: string } }).category?.slug || "";
-        if (selectedType === "sunglasses" && categorySlug !== "sunglasses" && !product.name.toLowerCase().includes("sunglass")) {
-          return false;
-        }
-        if (selectedType === "optical-frames" && categorySlug === "sunglasses" && !product.name.toLowerCase().includes("frame")) {
-          return false;
-        }
-      }
-
-      // 4. Price Range Filter
-      if (selectedPriceRange !== "all") {
-        const prices = product.variants.map((v) => Number(v.price)).filter((p) => !isNaN(p));
-        const minPrice = prices.length > 0 ? Math.min(...prices) : Number(product.startingPrice || 0);
-        if (selectedPriceRange === "under-2000" && minPrice >= 2000) return false;
-        if (selectedPriceRange === "2000-5000" && (minPrice < 2000 || minPrice > 5000)) return false;
-        if (selectedPriceRange === "5000-10000" && (minPrice < 5000 || minPrice > 10000)) return false;
-        if (selectedPriceRange === "above-10000" && minPrice <= 10000) return false;
-      }
-
-      // 5. Gender Filter
-      if (selectedGender !== "all") {
-        const str = (product.name + " " + (product.description || "")).toLowerCase();
-        if (selectedGender === "men" && !str.includes("men") && !str.includes("male") && !str.includes("unisex")) return false;
-        if (selectedGender === "women" && !str.includes("women") && !str.includes("female") && !str.includes("lady") && !str.includes("unisex")) return false;
-      }
-
-      // 6. Frame Size Filter
-      if (selectedFrameSize !== "all") {
-        const hasSize = product.variants.some((v) => (v.size || "").toLowerCase().includes(selectedFrameSize));
-        if (!hasSize) {
-          const hash = Math.abs(selectedFrameSize.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0));
-          if ((idx + hash) % 3 !== 0) return false;
-        }
-      }
-
-      // 7. Frame Color Filter
-      if (selectedFrameColor !== "all") {
-        const colorClean = selectedFrameColor.replace(/-/g, " ");
-        const hasColor = product.variants.some((v) => (v.color || "").toLowerCase().includes(colorClean)) ||
-          product.name.toLowerCase().includes(colorClean);
-        if (!hasColor) {
-          const hash = Math.abs(selectedFrameColor.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0));
-          if ((idx + hash) % 4 !== 0) return false;
-        }
-      }
-
-      // 8. Frame Type Filter
-      if (selectedFrameType !== "all") {
-        const typeClean = selectedFrameType.replace(/-/g, " ");
-        const str = (product.name + " " + (product.description || "")).toLowerCase();
-        if (!str.includes(typeClean)) {
-          const hash = Math.abs(selectedFrameType.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0));
-          if ((idx + hash) % 3 !== 0) return false;
-        }
-      }
-
-      // 9. Material Filter
-      if (selectedMaterial !== "all") {
-        const matClean = selectedMaterial.replace(/-/g, " ");
-        const str = (product.name + " " + (product.description || "")).toLowerCase();
-        if (!str.includes(matClean)) {
-          const hash = Math.abs(selectedMaterial.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0));
-          if ((idx + hash) % 3 !== 0) return false;
-        }
-      }
-
-      // 10. General Filter / Shape Parameter
-      if (filterKey !== "all" && filterKey !== selectedBrand.toLowerCase()) {
-        const pKey = filterKey.replace(/_/g, "-");
-        const cleanKey = pKey.replace(/-/g, " ");
-        const categorySlug = (product as unknown as { category?: { slug?: string } }).category?.slug || "";
-        const prodName = product.name.toLowerCase();
-        const prodBrand = (product.brand || "").toLowerCase();
-
-        // 10a. Type filters
-        if (["sunglasses", "sunglass"].includes(pKey)) {
-          return categorySlug === "sunglasses" || prodName.includes("sunglass");
-        }
-        if (["optical-frames", "eyeglasses", "reading-glasses", "blue-light-glasses", "glasses", "frame"].includes(pKey)) {
-          return categorySlug !== "sunglasses" || prodName.includes("frame") || prodName.includes("glasses");
-        }
-
-        // 10b. Feature filters
-        if (["polarized", "uv-protected"].includes(pKey)) {
-          return categorySlug === "sunglasses" || prodName.includes("sunglass");
-        }
-        if (["anti-glare", "photochromic", "lightweight-frames", "prescription-ready"].includes(pKey)) {
-          return categorySlug !== "sunglasses" || prodName.includes("frame");
-        }
-
-        // 10c. Smart Eyewear filters
-        if (pKey === "oakley-meta") {
-          return prodBrand.includes("oakley") || prodName.includes("oakley");
-        }
-        if (pKey === "ray-ban-meta") {
-          return prodBrand.includes("ray-ban") || prodBrand.includes("ray ban") || prodName.includes("ray-ban");
-        }
-        if (pKey === "smart-glasses") {
-          return prodBrand.includes("oakley") || prodBrand.includes("ray-ban") || prodBrand.includes("ray ban") || prodName.includes("smart");
-        }
-
-        // 10d. Direct Keyword / Brand Matches
-        if (prodBrand.includes(cleanKey) || prodName.includes(cleanKey) || prodName.includes(pKey)) {
-          return true;
-        }
-
-        // 10e. Shapes (Cat Eye, Wayfarer, Aviator, Round, Rectangle, Square, Rimless, etc.)
-        if (["cat-eye", "cateye", "wayfarer", "aviator", "round", "rectangle", "square", "rimless", "semi-rimless", "oversized", "geometric"].includes(pKey)) {
-          if (prodName.includes(cleanKey) || prodName.includes(pKey.replace(/-/g, ""))) {
-            return true;
-          }
-          // Deterministic bucket mapping for frame model numbers
-          const shapeHash = Math.abs(pKey.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0));
-          return (idx + shapeHash) % 5 === 0;
-        }
-
-        return prodName.includes(cleanKey) || prodBrand.includes(cleanKey);
-      }
-
-      return true;
-    });
-  }, [
-    allProducts,
-    selectedBrand,
-    selectedType,
-    filterKey,
-    searchQuery,
-    selectedPriceRange,
-    selectedGender,
-    selectedFrameSize,
-    selectedFrameColor,
-    selectedFrameType,
-    selectedMaterial,
-  ]);
-
-  // Client-side sort
-  const sortedProducts = useMemo(() => {
-    const arr = [...filteredProducts];
-    switch (sortBy) {
-      case "price-asc":
-        return arr.sort((a, b) => {
-          const aPrice = Math.min(...a.variants.map((v) => Number(v.price)));
-          const bPrice = Math.min(...b.variants.map((v) => Number(v.price)));
-          return aPrice - bPrice;
-        });
-      case "price-desc":
-        return arr.sort((a, b) => {
-          const aPrice = Math.min(...a.variants.map((v) => Number(v.price)));
-          const bPrice = Math.min(...b.variants.map((v) => Number(v.price)));
-          return bPrice - aPrice;
-        });
-      case "name-asc":
-        return arr.sort((a, b) => a.name.localeCompare(b.name));
-      case "name-desc":
-        return arr.sort((a, b) => b.name.localeCompare(a.name));
-      default: // newest
-        return arr;
-    }
-  }, [filteredProducts, sortBy]);
-
-  // Paginate using server total when available
-  const effectiveTotal = (
-    selectedPriceRange === "all" &&
-    selectedGender === "all" &&
-    selectedFrameSize === "all" &&
-    selectedFrameColor === "all" &&
-    selectedFrameType === "all" &&
-    selectedMaterial === "all"
-  ) ? totalProducts : filteredProducts.length;
-
-  const totalPages = Math.max(1, Math.ceil((effectiveTotal || allProducts.length) / ITEMS_PER_PAGE));
-  const safePage = Math.min(currentPage, totalPages);
-  const paginatedProducts = sortedProducts;
-
-  const hasFilters = selectedBrand !== "all" || activeShape !== "all" || selectedType !== "all" || selectedCollection !== "all";
+  const hasFilters =
+    selectedBrand !== "all" ||
+    activeShape !== "all" ||
+    generalFilter !== "all" ||
+    selectedCollection !== "all" ||
+    selectedPriceRange !== "all" ||
+    selectedFrameSize !== "all" ||
+    selectedFrameColor !== "all";
 
   return (
     <div className="max-w-[1400px] mx-auto px-6 py-10">
@@ -370,8 +162,6 @@ function ShopContent() {
           <FilterSidebar
             selectedPriceRange={selectedPriceRange}
             setSelectedPriceRange={(val) => { setSelectedPriceRange(val); setCurrentPage(1); }}
-            selectedGender={selectedGender}
-            setSelectedGender={(val) => { setSelectedGender(val); setCurrentPage(1); }}
             selectedShape={selectedShape}
             setSelectedShape={(val) => updateFilter("shape", val)}
             selectedFrameSize={selectedFrameSize}
@@ -380,29 +170,14 @@ function ShopContent() {
             setSelectedBrand={(val) => updateFilter("brand", val)}
             selectedFrameColor={selectedFrameColor}
             setSelectedFrameColor={(val) => { setSelectedFrameColor(val); setCurrentPage(1); }}
-            selectedFrameType={selectedFrameType}
-            setSelectedFrameType={(val) => { setSelectedFrameType(val); setCurrentPage(1); }}
-            selectedMaterial={selectedMaterial}
-            setSelectedMaterial={(val) => { setSelectedMaterial(val); setCurrentPage(1); }}
             availableBrands={availableBrands}
             onClearAll={() => {
               setSelectedPriceRange("all");
-              setSelectedGender("all");
               setSelectedFrameSize("all");
               setSelectedFrameColor("all");
-              setSelectedFrameType("all");
-              setSelectedMaterial("all");
               updateFilter("clear");
             }}
-            hasActiveFilters={
-              hasFilters ||
-              selectedPriceRange !== "all" ||
-              selectedGender !== "all" ||
-              selectedFrameSize !== "all" ||
-              selectedFrameColor !== "all" ||
-              selectedFrameType !== "all" ||
-              selectedMaterial !== "all"
-            }
+            hasActiveFilters={hasFilters}
           />
         </aside>
 
@@ -411,7 +186,7 @@ function ShopContent() {
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8 border-b border-border pb-4">
             <div className="flex flex-col gap-1">
               <p className="text-sm text-muted-foreground tracking-wide font-sans">
-                Showing <span className="text-white font-medium">{effectiveTotal || sortedProducts.length}</span> piece{(effectiveTotal || sortedProducts.length) !== 1 ? "s" : ""}
+                Showing <span className="text-white font-medium">{totalProducts}</span> piece{totalProducts !== 1 ? "s" : ""}
               </p>
               {searchQuery && (
                 <p className="text-xs text-muted-foreground font-sans">
@@ -448,10 +223,10 @@ function ShopContent() {
               <h3 className="text-xl font-serif text-white mb-2">Products could not load</h3>
               <p className="text-muted-foreground text-sm font-sans">{productError}</p>
             </div>
-          ) : paginatedProducts.length > 0 ? (
+          ) : products.length > 0 ? (
             <>
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-                {paginatedProducts.map((p) => (
+                {products.map((p) => (
                   <ProductCard key={p.id} product={p} />
                 ))}
               </div>
@@ -461,17 +236,17 @@ function ShopContent() {
                 <div className="flex items-center justify-center gap-4 mt-12">
                   <button
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={safePage <= 1}
+                    disabled={currentPage <= 1}
                     className="flex items-center gap-1 border border-border px-4 py-2 text-xs tracking-wider text-muted-foreground hover:text-white hover:border-gold transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <ChevronLeft className="size-3.5" /> PREV
                   </button>
                   <span className="text-sm text-muted-foreground tabular-nums">
-                    {safePage} / {totalPages}
+                    {currentPage} / {totalPages}
                   </span>
                   <button
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={safePage >= totalPages}
+                    disabled={currentPage >= totalPages}
                     className="flex items-center gap-1 border border-border px-4 py-2 text-xs tracking-wider text-muted-foreground hover:text-white hover:border-gold transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                   >
                     NEXT <ChevronRight className="size-3.5" />
