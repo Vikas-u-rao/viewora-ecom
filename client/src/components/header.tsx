@@ -24,22 +24,36 @@ const nav = [
 
 const internationalBrands = [
   "Ray-Ban", "Oakley", "Gucci", "Prada",
-  "Versace", "Persol", "Tom Ford", "Cartier",
-  "Police", "Carrera", "Burberry", "Vogue Eyewear"
+  "Versace", "Persol", "Tom Ford", "Emporio Armani",
+  "Police", "Carrera", "Burberry", "Vogue"
 ];
 
 const shopMenu = [
   {
     title: "Shop by Type",
-    items: ["Sunglasses", "Optical Frames"]
+    items: [
+      { label: "Sunglasses", href: "/shop?filter=sunglasses" },
+      { label: "Optical Frames", href: "/shop?filter=optical-frames" }
+    ]
   },
   {
     title: "Smart Eyewear",
-    items: ["Ray-Ban Meta", "Smart Glasses"]
+    items: [
+      { label: "Ray-Ban Meta", href: "/shop?brand=ray-ban-meta" },
+      { label: "Smart Glasses", href: "/shop?filter=smart-glasses" }
+    ]
   },
   {
     title: "Shop by Shape",
-    items: ["Wayfarer", "Aviator", "Round"]
+    items: [
+      { label: "Wayfarer", href: "/shop?shape=wayfarer" },
+      { label: "Aviator", href: "/shop?shape=aviator" },
+      { label: "Round", href: "/shop?shape=round" },
+      { label: "Clubmaster", href: "/shop?shape=clubmaster" },
+      { label: "D-Frame", href: "/shop?shape=d-frame" },
+      { label: "Mask", href: "/shop?shape=mask" },
+      { label: "Sports", href: "/shop?shape=sports" }
+    ]
   }
 ];
 
@@ -292,12 +306,12 @@ export default function Header() {
                             <h4 className="font-serif text-gold text-xl font-bold mb-4 leading-snug">{cat.title}</h4>
                             <ul className="space-y-2.5 mb-4">
                               {cat.items.map((item) => (
-                                <li key={item}>
+                                <li key={item.label}>
                                   <Link
-                                    href={`/shop?filter=${item.toLowerCase().replace(' ', '-')}`}
+                                    href={item.href}
                                     className="text-base text-[#FAD6E3] font-medium hover:text-gold hover:translate-x-0.5 transition-all duration-200 inline-block"
                                   >
-                                    {item}
+                                    {item.label}
                                   </Link>
                                 </li>
                               ))}

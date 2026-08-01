@@ -44,6 +44,10 @@ const categorySpotlights = [
   { name: "Wayfarer", href: "/shop?shape=wayfarer", desc: "Classic trapezoidal design with modern bevels" },
   { name: "Aviator", href: "/shop?shape=aviator", desc: "Timeless teardrop silhouettes with double bridges" },
   { name: "Round", href: "/shop?shape=round", desc: "Intellectual retro frames for distinguished character" },
+  { name: "Clubmaster", href: "/shop?shape=clubmaster", desc: "Retro browline frames fusing acetate and metal" },
+  { name: "D-Frame", href: "/shop?shape=d-frame", desc: "Bold sculpted fronts with dramatic angular edges" },
+  { name: "Mask", href: "/shop?shape=mask", desc: "Wraparound sporty shields for total coverage" },
+  { name: "Sports", href: "/shop?shape=sports", desc: "Performance-focused frames built for movement" },
 ];
 
 export default function CollectionsPage() {

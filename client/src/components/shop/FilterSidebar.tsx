@@ -115,6 +115,10 @@ export function FilterSidebar({
                 { label: "Wayfarer", value: "wayfarer" },
                 { label: "Aviator", value: "aviator" },
                 { label: "Round", value: "round" },
+                { label: "Clubmaster", value: "clubmaster" },
+                { label: "D-Frame", value: "d-frame" },
+                { label: "Mask", value: "mask" },
+                { label: "Sports", value: "sports" },
               ].map((s) => (
                 <label key={s.value} className="flex items-center gap-2.5 text-xs text-gray-300 cursor-pointer hover:text-white transition-colors">
                   <input
