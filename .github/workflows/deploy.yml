@@ -89,7 +89,9 @@ jobs:
           push: true
           tags: |
             vikasurao/viewora-server:latest
+            vikasurao/viewora-server:${{ github.sha }}
             index.docker.io/vikasurao/viewora-server:latest
+            index.docker.io/vikasurao/viewora-server:${{ github.sha }}
           cache-from: type=gha,scope=server
           cache-to: type=gha,mode=max,scope=server
 
@@ -119,7 +121,9 @@ jobs:
           push: true
           tags: |
             vikasurao/viewora-client:latest
+            vikasurao/viewora-client:${{ github.sha }}
             index.docker.io/vikasurao/viewora-client:latest
+            index.docker.io/vikasurao/viewora-client:${{ github.sha }}
           cache-from: type=gha,scope=client
           cache-to: type=gha,mode=max,scope=client
 
@@ -134,7 +138,7 @@ jobs:
         with:
           app-name: 'viewora-api-app'
           publish-profile: ${{ secrets.AZURE_SERVER_PUBLISH_PROFILE }}
-          images: 'index.docker.io/vikasurao/viewora-server:latest'
+          images: 'index.docker.io/vikasurao/viewora-server:${{ github.sha }}'
 
   deploy-client:
     name: Deploy Client to Azure Web App
@@ -147,4 +151,4 @@ jobs:
         with:
           app-name: 'Viewora-v2'
           publish-profile: ${{ secrets.AZURE_CLIENT_PUBLISH_PROFILE }}
-          images: 'index.docker.io/vikasurao/viewora-client:latest'
+          images: 'index.docker.io/vikasurao/viewora-client:${{ github.sha }}'
