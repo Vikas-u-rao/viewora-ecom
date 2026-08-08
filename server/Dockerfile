@@ -47,5 +47,5 @@ COPY --from=builder /app/prisma/seed.js ./prisma/seed.js
 # Expose backend port
 EXPOSE 5000
 
-# Start server directly without wiping database on container boot
-CMD ["sh", "-c", "node dist/index.js"]
+# Run Prisma migrations then start the server
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]

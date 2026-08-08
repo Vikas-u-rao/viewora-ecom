@@ -14,6 +14,7 @@ import {
   listAdminActivity,
   getAdminNotifications,
   updateVariantStock,
+  migrateFromSupabase,
 } from '../controllers/admin';
 import { authenticate, requireAdmin } from '../middleware/auth';
 
@@ -36,5 +37,9 @@ router.delete('/coupons/:id', deleteCoupon);
 router.get('/activity', listAdminActivity);
 router.get('/notifications', getAdminNotifications);
 router.put('/variants/:id/stock', updateVariantStock);
+
+// One-time DB migration endpoint — protected by MIGRATION_SECRET header only (no admin JWT)
+// Remove this route after migration to Azure is confirmed complete
+router.post('/migrate-from-supabase', (req, res, next) => migrateFromSupabase(req as any, res, next));
 
 export default router;

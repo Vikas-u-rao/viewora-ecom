@@ -703,3 +703,145 @@ export async function updateVariantStock(req: AuthRequest, res: Response, next: 
     next(error);
   }
 }
+
+// POST /api/v1/admin/migrate-from-supabase
+// One-time endpoint to migrate all data from Supabase → Azure PostgreSQL.
+// Protected by MIGRATION_SECRET header token (not admin JWT) so it can be
+// called before users exist in the new database.
+// DELETE this endpoint after migration is confirmed complete.
+export async function migrateFromSupabase(req: AuthRequest, res: Response, next: NextFunction) {
+  const secret = process.env.MIGRATION_SECRET;
+  if (!secret) {
+    return res.status(503).json({ error: 'Migration endpoint not configured (no MIGRATION_SECRET)' });
+  }
+  const provided = req.headers['x-migration-secret'];
+  if (provided !== secret) {
+    return res.status(403).json({ error: 'Forbidden: invalid migration secret' });
+  }
+
+  const SUPABASE_URL =
+    'postgresql://postgres.vkguwrqdeknmvpfcwgyp:viewora-dev2026@aws-1-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true';
+  const AZURE_URL = process.env.DATABASE_URL!;
+  const BATCH_SIZE = 100;
+
+  const { PrismaClient } = await import('@prisma/client');
+  const src = new PrismaClient({ datasources: { db: { url: SUPABASE_URL } } });
+  const tgt = new PrismaClient({ datasources: { db: { url: AZURE_URL } } });
+
+  res.setHeader('Content-Type', 'text/plain');
+  res.setHeader('Transfer-Encoding', 'chunked');
+
+  const write = (msg: string) => {
+    res.write(`[${new Date().toISOString()}] ${msg}\n`);
+    logger.info(msg);
+  };
+
+  async function migTable<T extends Record<string, unknown>>(
+    name: string,
+    fetchFn: () => Promise<T[]>,
+    insertFn: (b: T[]) => Promise<{ count: number }>
+  ) {
+    const rows = await fetchFn();
+    if (!rows.length) { write(`  ${name}: 0 rows — skipped`); return; }
+    let done = 0;
+    for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+      await insertFn(rows.slice(i, i + BATCH_SIZE));
+      done += Math.min(BATCH_SIZE, rows.length - i);
+    }
+    write(`  OK ${name}: ${done} rows`);
+  }
+
+  try {
+    write('=== Supabase → Azure Migration Starting ===');
+    await src.$connect();
+    write('Connected to Supabase');
+    await tgt.$connect();
+    write('Connected to Azure');
+
+    write('Clearing Azure tables...');
+    for (const t of [
+      'admin_activity_logs','page_views','payment_callback_logs','stock_reservations',
+      'refunds','payments','order_items','orders','referrals','coupons',
+      'otp_verifications','wishlist_items','cart_items','refresh_tokens',
+      'subscribers','addresses','users','product_collections','product_variants',
+      'products','collections','categories',
+    ]) {
+      await tgt.$executeRawUnsafe(`TRUNCATE TABLE ${t} CASCADE`);
+    }
+    write('Azure tables cleared');
+
+    await migTable('categories', () => src.category.findMany(), (b) => tgt.category.createMany({ data: b, skipDuplicates: true }));
+    await migTable('collections', () => src.collection.findMany(), (b) => tgt.collection.createMany({ data: b, skipDuplicates: true }));
+    await migTable('products', () => src.product.findMany(), (b) => tgt.product.createMany({ data: b, skipDuplicates: true }));
+    await migTable('product_variants', () => src.productVariant.findMany(), (b) => tgt.productVariant.createMany({ data: b, skipDuplicates: true }));
+    await migTable('product_collections', () => src.productCollection.findMany(), (b) => tgt.productCollection.createMany({ data: b, skipDuplicates: true }));
+    await migTable('users', () => src.user.findMany(), (b) => tgt.user.createMany({ data: b, skipDuplicates: true }));
+    await migTable('addresses', () => src.address.findMany(), (b) => tgt.address.createMany({ data: b, skipDuplicates: true }));
+    await migTable('refresh_tokens', () => src.refreshToken.findMany(), (b) => tgt.refreshToken.createMany({ data: b, skipDuplicates: true }));
+
+    // Coupons: 2-pass to break circular FK with orders
+    const coupons = await src.coupon.findMany();
+    if (coupons.length) {
+      const pass1 = coupons.map(({ sourceOrderId: _o, ...rest }) => rest);
+      for (let i = 0; i < pass1.length; i += BATCH_SIZE) await tgt.coupon.createMany({ data: pass1.slice(i, i + BATCH_SIZE), skipDuplicates: true });
+      write(`  OK coupons pass-1: ${coupons.length} rows`);
+    }
+
+    await migTable('orders', () => src.order.findMany(), (b) => tgt.order.createMany({ data: b, skipDuplicates: true }));
+
+    if (coupons.length) {
+      const withSrc = coupons.filter((c) => c.sourceOrderId);
+      for (const c of withSrc) await tgt.coupon.update({ where: { id: c.id }, data: { sourceOrderId: c.sourceOrderId } });
+      if (withSrc.length) write(`  Patched ${withSrc.length} coupons.sourceOrderId`);
+    }
+
+    await migTable('order_items', () => src.orderItem.findMany(), (b) => tgt.orderItem.createMany({ data: b, skipDuplicates: true }));
+    await migTable('payments', () => src.payment.findMany(), (b) => tgt.payment.createMany({ data: b, skipDuplicates: true }));
+    await migTable('refunds', () => src.refund.findMany(), (b) => tgt.refund.createMany({ data: b, skipDuplicates: true }));
+    await migTable('stock_reservations', () => src.stockReservation.findMany(), (b) => tgt.stockReservation.createMany({ data: b, skipDuplicates: true }));
+    await migTable('payment_callback_logs', () => src.paymentCallbackLog.findMany(), (b) => tgt.paymentCallbackLog.createMany({ data: b, skipDuplicates: true }));
+    await migTable('cart_items', () => src.cartItem.findMany(), (b) => tgt.cartItem.createMany({ data: b, skipDuplicates: true }));
+    await migTable('wishlist_items', () => src.wishlistItem.findMany(), (b) => tgt.wishlistItem.createMany({ data: b, skipDuplicates: true }));
+    await migTable('subscribers', () => src.subscriber.findMany(), (b) => tgt.subscriber.createMany({ data: b, skipDuplicates: true }));
+    await migTable('otp_verifications', () => src.otpVerification.findMany(), (b) => tgt.otpVerification.createMany({ data: b, skipDuplicates: true }));
+    await migTable('referrals', () => src.referral.findMany(), (b) => tgt.referral.createMany({ data: b, skipDuplicates: true }));
+    await migTable('page_views', () => src.pageView.findMany(), (b) => tgt.pageView.createMany({ data: b, skipDuplicates: true }));
+    await migTable('admin_activity_logs', () => src.adminActivityLog.findMany(), (b) => tgt.adminActivityLog.createMany({ data: b, skipDuplicates: true }));
+
+    // Verification
+    write('');
+    write('=== VERIFICATION ===');
+    const checks: [string, Promise<number>, Promise<number>][] = [
+      ['categories', src.category.count(), tgt.category.count()],
+      ['collections', src.collection.count(), tgt.collection.count()],
+      ['products', src.product.count(), tgt.product.count()],
+      ['product_variants', src.productVariant.count(), tgt.productVariant.count()],
+      ['users', src.user.count(), tgt.user.count()],
+      ['orders', src.order.count(), tgt.order.count()],
+      ['subscribers', src.subscriber.count(), tgt.subscriber.count()],
+    ];
+    let allOk = true;
+    for (const [name, sp, tp] of checks) {
+      const [s, t] = await Promise.all([sp, tp]);
+      const ok = s === t;
+      if (!ok) allOk = false;
+      write(`  ${ok ? 'MATCH' : 'MISMATCH'} ${name}: Supabase=${s} Azure=${t}`);
+    }
+    if (allOk) {
+      write('');
+      write('SUCCESS: All counts match. Migration complete!');
+    } else {
+      write('');
+      write('WARNING: Some counts mismatch — investigate before relying on Azure DB');
+    }
+
+    await src.$disconnect();
+    await tgt.$disconnect();
+    res.end();
+  } catch (err: any) {
+    write(`ERROR: ${err.message}`);
+    await src.$disconnect().catch(() => {});
+    await tgt.$disconnect().catch(() => {});
+    res.end();
+  }
+}
