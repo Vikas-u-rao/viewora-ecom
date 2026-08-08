@@ -14,16 +14,11 @@ import {
   listAdminActivity,
   getAdminNotifications,
   updateVariantStock,
-  migrateFromSupabase,
 } from '../controllers/admin';
 import { authenticate, requireAdmin } from '../middleware/auth';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
-
-// One-time DB migration endpoint — protected by MIGRATION_SECRET header only (no admin JWT)
-// Place BEFORE router.use(authenticate) so it doesn't require a user JWT when the database is empty
-router.post('/migrate-from-supabase', (req, res, next) => migrateFromSupabase(req as any, res, next));
 
 // Apply auth + admin middleware to remaining admin routes
 router.use(authenticate, requireAdmin);
