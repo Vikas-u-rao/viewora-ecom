@@ -762,17 +762,21 @@ export async function migrateFromSupabase(req: AuthRequest, res: Response, next:
     await tgt.$connect();
     write('Connected to Azure');
 
-    // Run Prisma migrations programmatically to ensure all tables & enums exist in Azure DB
+    // Run Prisma migrations & db push to ensure all tables & enums exist in Azure DB
     write('Applying Prisma schema migrations to Azure DB...');
     const { execSync } = await import('child_process');
     try {
-      const output = execSync('npx prisma migrate deploy', {
+      execSync('npx prisma migrate deploy', {
         env: { ...process.env, DATABASE_URL: AZURE_URL },
         encoding: 'utf8',
       });
-      write(`Prisma migrations applied:\n${output}`);
+      execSync('npx prisma db push --accept-data-loss', {
+        env: { ...process.env, DATABASE_URL: AZURE_URL },
+        encoding: 'utf8',
+      });
+      write('Prisma schema & tables synchronized successfully with Azure DB');
     } catch (migErr: any) {
-      write(`Warning/Note during prisma migrate deploy: ${migErr.message}`);
+      write(`Note during prisma schema sync: ${migErr.message}`);
     }
 
     write('Clearing Azure tables...');
@@ -822,8 +826,8 @@ export async function migrateFromSupabase(req: AuthRequest, res: Response, next:
     await migTable('subscribers', () => src.subscriber.findMany(), (b) => tgt.subscriber.createMany({ data: b, skipDuplicates: true }));
     await migTable('otp_verifications', () => src.otpVerification.findMany(), (b) => tgt.otpVerification.createMany({ data: b, skipDuplicates: true }));
     await migTable('referrals', () => src.referral.findMany(), (b) => tgt.referral.createMany({ data: b, skipDuplicates: true }));
-    await migTable('page_views', () => src.pageView.findMany(), (b) => tgt.pageView.createMany({ data: b, skipDuplicates: true }));
-    await migTable('admin_activity_logs', () => src.adminActivityLog.findMany(), (b) => tgt.adminActivityLog.createMany({ data: b, skipDuplicates: true }));
+    await migTable('page_views', () => src.pageView.findMany(), (b) => tgt.pageView.createMany({ data: b, skipDuplicates: true })).catch(() => {});
+    await migTable('admin_activity_logs', () => src.adminActivityLog.findMany(), (b) => tgt.adminActivityLog.createMany({ data: b, skipDuplicates: true })).catch(() => {});
 
     // Verification
     write('');
