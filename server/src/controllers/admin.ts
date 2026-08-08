@@ -803,7 +803,7 @@ export async function migrateFromSupabase(req: AuthRequest, res: Response, next:
     await migTable('payments', () => src.payment.findMany(), (b) => tgt.payment.createMany({ data: b, skipDuplicates: true }));
     await migTable('refunds', () => src.refund.findMany(), (b) => tgt.refund.createMany({ data: b, skipDuplicates: true }));
     await migTable('stock_reservations', () => src.stockReservation.findMany(), (b) => tgt.stockReservation.createMany({ data: b, skipDuplicates: true }));
-    await migTable('payment_callback_logs', () => src.paymentCallbackLog.findMany(), (b) => tgt.paymentCallbackLog.createMany({ data: b, skipDuplicates: true }));
+    await migTable('payment_callback_logs', () => src.paymentCallbackLog.findMany(), (b) => tgt.paymentCallbackLog.createMany({ data: b as any, skipDuplicates: true }));
     await migTable('cart_items', () => src.cartItem.findMany(), (b) => tgt.cartItem.createMany({ data: b, skipDuplicates: true }));
     await migTable('wishlist_items', () => src.wishlistItem.findMany(), (b) => tgt.wishlistItem.createMany({ data: b, skipDuplicates: true }));
     await migTable('subscribers', () => src.subscriber.findMany(), (b) => tgt.subscriber.createMany({ data: b, skipDuplicates: true }));

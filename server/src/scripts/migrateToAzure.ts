@@ -1,4 +1,4 @@
-﻿import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 // Credentials loaded from environment — never hardcode secrets in source files.
 // Set these in your shell before running:
@@ -122,7 +122,7 @@ async function main() {
   await migrateTable('payments', () => source.payment.findMany(), (b) => target.payment.createMany({ data: b, skipDuplicates: true }));
   await migrateTable('refunds', () => source.refund.findMany(), (b) => target.refund.createMany({ data: b, skipDuplicates: true }));
   await migrateTable('stock_reservations', () => source.stockReservation.findMany(), (b) => target.stockReservation.createMany({ data: b, skipDuplicates: true }));
-  await migrateTable('payment_callback_logs', () => source.paymentCallbackLog.findMany(), (b) => target.paymentCallbackLog.createMany({ data: b, skipDuplicates: true }));
+  await migrateTable('payment_callback_logs', () => source.paymentCallbackLog.findMany(), (b) => target.paymentCallbackLog.createMany({ data: b as any, skipDuplicates: true }));
   await migrateTable('cart_items', () => source.cartItem.findMany(), (b) => target.cartItem.createMany({ data: b, skipDuplicates: true }));
   await migrateTable('wishlist_items', () => source.wishlistItem.findMany(), (b) => target.wishlistItem.createMany({ data: b, skipDuplicates: true }));
   await migrateTable('subscribers', () => source.subscriber.findMany(), (b) => target.subscriber.createMany({ data: b, skipDuplicates: true }));
