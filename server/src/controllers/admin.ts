@@ -719,9 +719,13 @@ export async function migrateFromSupabase(req: AuthRequest, res: Response, next:
     return res.status(403).json({ error: 'Forbidden: invalid migration secret' });
   }
 
-  const SUPABASE_URL =
-    'postgresql://postgres.vkguwrqdeknmvpfcwgyp:viewora-dev2026@aws-1-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true';
+  // Source URL read from env — never hardcode credentials in source files
+  const SUPABASE_URL = process.env.SUPABASE_DATABASE_URL;
   const AZURE_URL = process.env.DATABASE_URL!;
+
+  if (!SUPABASE_URL) {
+    return res.status(503).json({ error: 'SUPABASE_DATABASE_URL env var not set on this server' });
+  }
   const BATCH_SIZE = 100;
 
   const { PrismaClient } = await import('@prisma/client');

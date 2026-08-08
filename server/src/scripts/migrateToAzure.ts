@@ -1,10 +1,20 @@
 ﻿import { PrismaClient } from '@prisma/client';
 
-const SUPABASE_URL =
-  'postgresql://postgres.vkguwrqdeknmvpfcwgyp:viewora-dev2026@aws-1-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true';
+// Credentials loaded from environment — never hardcode secrets in source files.
+// Set these in your shell before running:
+//   $env:SUPABASE_DATABASE_URL = "postgresql://..."
+//   $env:DATABASE_URL = "postgresql://..."   (already set for Azure)
+const SUPABASE_URL = process.env.SUPABASE_DATABASE_URL;
+const AZURE_URL = process.env.DATABASE_URL;
 
-const AZURE_URL =
-  'postgresql://irionyjobo:VieworaDbPassword123!@v-server1.postgres.database.azure.com:5432/v-database?sslmode=require';
+if (!SUPABASE_URL) {
+  console.error('ERROR: SUPABASE_DATABASE_URL env var is not set. Aborting.');
+  process.exit(1);
+}
+if (!AZURE_URL) {
+  console.error('ERROR: DATABASE_URL env var is not set. Aborting.');
+  process.exit(1);
+}
 
 const source = new PrismaClient({ datasources: { db: { url: SUPABASE_URL } } });
 const target = new PrismaClient({ datasources: { db: { url: AZURE_URL } } });
@@ -34,7 +44,7 @@ async function migrateTable<T extends Record<string, unknown>>(
     inserted += batch.length;
     process.stdout.write(`\r  ${tableName}: ${inserted}/${rows.length} rows...`);
   }
-  console.log(`\r  ${tableName}: ${inserted} rows migrated`);
+  console.log(`\r  OK ${tableName}: ${inserted} rows migrated`);
 }
 
 async function main() {
