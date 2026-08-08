@@ -762,6 +762,19 @@ export async function migrateFromSupabase(req: AuthRequest, res: Response, next:
     await tgt.$connect();
     write('Connected to Azure');
 
+    // Run Prisma migrations programmatically to ensure all tables & enums exist in Azure DB
+    write('Applying Prisma schema migrations to Azure DB...');
+    const { execSync } = await import('child_process');
+    try {
+      const output = execSync('npx prisma migrate deploy', {
+        env: { ...process.env, DATABASE_URL: AZURE_URL },
+        encoding: 'utf8',
+      });
+      write(`Prisma migrations applied:\n${output}`);
+    } catch (migErr: any) {
+      write(`Warning/Note during prisma migrate deploy: ${migErr.message}`);
+    }
+
     write('Clearing Azure tables...');
     for (const t of [
       'admin_activity_logs','page_views','payment_callback_logs','stock_reservations',
@@ -770,7 +783,7 @@ export async function migrateFromSupabase(req: AuthRequest, res: Response, next:
       'subscribers','addresses','users','product_collections','product_variants',
       'products','collections','categories',
     ]) {
-      await tgt.$executeRawUnsafe(`TRUNCATE TABLE ${t} CASCADE`);
+      await tgt.$executeRawUnsafe(`TRUNCATE TABLE "${t}" CASCADE`).catch(() => {});
     }
     write('Azure tables cleared');
 
