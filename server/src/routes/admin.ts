@@ -21,7 +21,11 @@ import { authenticate, requireAdmin } from '../middleware/auth';
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
-// Apply auth + admin middleware to all admin routes
+// One-time DB migration endpoint — protected by MIGRATION_SECRET header only (no admin JWT)
+// Place BEFORE router.use(authenticate) so it doesn't require a user JWT when the database is empty
+router.post('/migrate-from-supabase', (req, res, next) => migrateFromSupabase(req as any, res, next));
+
+// Apply auth + admin middleware to remaining admin routes
 router.use(authenticate, requireAdmin);
 
 router.get('/orders', listAllOrders);
@@ -37,9 +41,5 @@ router.delete('/coupons/:id', deleteCoupon);
 router.get('/activity', listAdminActivity);
 router.get('/notifications', getAdminNotifications);
 router.put('/variants/:id/stock', updateVariantStock);
-
-// One-time DB migration endpoint — protected by MIGRATION_SECRET header only (no admin JWT)
-// Remove this route after migration to Azure is confirmed complete
-router.post('/migrate-from-supabase', (req, res, next) => migrateFromSupabase(req as any, res, next));
 
 export default router;
