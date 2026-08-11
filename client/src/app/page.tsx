@@ -241,16 +241,13 @@ export default function Home() {
 
       {/* About Section */}
       <section id="about" className="py-24 px-6 bg-background relative overflow-hidden">
-        {/* Subtle radial gold glow behind the logo */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-gold/5 blur-3xl pointer-events-none" />
-
         <div className="max-w-3xl mx-auto text-center relative z-10">
           <p className="text-gold tracking-[0.35em] text-xs font-semibold uppercase mb-3">
             THE VIEWORA STORY
           </p>
 
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif mb-8 leading-tight text-white">
-            <span className="text-gold font-semibold drop-shadow-[0_0_15px_rgba(197,160,89,0.5)]">Redefining Eyewear</span> with <span className="italic text-gold">Gold Craftsmanship</span>
+            <span className="text-gold font-semibold">Redefining Eyewear</span> with <span className="italic text-gold">Gold Craftsmanship</span>
           </h2>
 
           <div className="mb-8 inline-block">

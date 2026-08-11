@@ -55,7 +55,7 @@ export default function AboutPage() {
         <div className="relative z-10 max-w-4xl mx-auto text-center pt-8">
           <p className="text-gold tracking-[0.4em] text-xs mb-4 font-semibold uppercase">THE VIEWORA STORY</p>
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal leading-tight text-white mb-6">
-            <span className="text-gold font-semibold drop-shadow-[0_0_15px_rgba(197,160,89,0.5)]">Redefining Eyewear</span> with <span className="text-gold font-bold italic">Gold</span> Craftsmanship
+            <span className="text-gold font-semibold">Redefining Eyewear</span> with <span className="text-gold font-bold italic">Gold</span> Craftsmanship
           </h1>
           <p className="text-base sm:text-lg text-white/80 leading-relaxed font-sans max-w-2xl mx-auto font-light">
             Founded with a passion for architectural precision and haute couture aesthetics, Viewora creates luxury frames that transform how you see the world.

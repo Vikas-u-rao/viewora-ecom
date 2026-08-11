@@ -2,6 +2,7 @@
 export const dynamic = "force-dynamic";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { IndianRupee, ShoppingCart, Users, Activity, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useAuth } from "@/context/AuthContext";
@@ -148,6 +149,12 @@ export default function AdminDashboard() {
               <Activity className="size-3.5" />
               Activity Log ({activityLogs.length})
             </button>
+            <Link
+              href="/admin/editorial-collections"
+              className="px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 text-amber-700 hover:text-amber-900 hover:bg-amber-50 border border-amber-200/60"
+            >
+              The Edit CMS →
+            </Link>
           </div>
         </div>
 

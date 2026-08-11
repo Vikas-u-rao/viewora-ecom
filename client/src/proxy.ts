@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
  * /checkout) by checking for the refreshToken cookie. The admin layout
  * has its own client-side auth guard.
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── Protect /admin routes ────────────────────────────────────────────────

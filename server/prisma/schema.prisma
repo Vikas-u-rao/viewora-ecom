@@ -162,14 +162,43 @@ model Product {
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
 
-  category      Category            @relation(fields: [categoryId], references: [id])
-  variants      ProductVariant[]
-  collections   ProductCollection[]
-  wishlistItems WishlistItem[]
+  category             Category                     @relation(fields: [categoryId], references: [id])
+  variants             ProductVariant[]
+  collections          ProductCollection[]
+  editorialCollections EditorialCollectionProduct[]
+  wishlistItems        WishlistItem[]
 
   @@index([slug])
   @@index([categoryId])
   @@map("products")
+}
+
+model EditorialCollection {
+  id             String                       @id @default(uuid())
+  title          String
+  slug           String                       @unique
+  description    String?
+  editorialIntro String?                      @map("editorial_intro")
+  heroImage      String?                      @map("hero_image")
+  status         String                       @default("published")
+  displayOrder   Int                          @default(0) @map("display_order")
+  createdAt      DateTime                     @default(now()) @map("created_at")
+  updatedAt      DateTime                     @updatedAt @map("updated_at")
+  products       EditorialCollectionProduct[]
+
+  @@map("editorial_collections")
+}
+
+model EditorialCollectionProduct {
+  collectionId String @map("collection_id")
+  productId    String @map("product_id")
+  displayOrder Int    @default(0) @map("display_order")
+
+  collection EditorialCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  product    Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, productId])
+  @@map("editorial_collection_products")
 }
 
 model ProductVariant {
