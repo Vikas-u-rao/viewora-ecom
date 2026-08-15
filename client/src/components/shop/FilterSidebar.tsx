@@ -116,9 +116,8 @@ export function FilterSidebar({
                 { label: "Aviator", value: "aviator" },
                 { label: "Round", value: "round" },
                 { label: "Clubmaster", value: "clubmaster" },
-                { label: "D-Frame", value: "d-frame" },
-                { label: "Mask", value: "mask" },
-                { label: "Sports", value: "sports" },
+                { label: "Square", value: "square" },
+                { label: "Rectangle", value: "rectangle" },
               ].map((s) => (
                 <label key={s.value} className="flex items-center gap-2.5 text-xs text-gray-300 cursor-pointer hover:text-white transition-colors">
                   <input
@@ -189,7 +188,7 @@ export function FilterSidebar({
                 />
                 <span className={selectedBrand === "all" ? "text-gold font-medium" : ""}>All Brands</span>
               </label>
-              {availableBrands.map((brandName) => {
+              {(availableBrands && availableBrands.length > 0 ? availableBrands : ["Ray-Ban", "Oakley", "Police", "Fastrack", "Diesel"]).map((brandName) => {
                 const bVal = brandName.toLowerCase().replace(/ /g, "-");
                 return (
                   <label key={brandName} className="flex items-center gap-2.5 text-xs text-gray-300 cursor-pointer hover:text-white transition-colors">

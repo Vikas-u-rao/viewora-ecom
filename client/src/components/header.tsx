@@ -57,9 +57,8 @@ const shopMenu = [
       { label: "Aviator", href: "/shop?shape=aviator" },
       { label: "Round", href: "/shop?shape=round" },
       { label: "Clubmaster", href: "/shop?shape=clubmaster" },
-      { label: "D-Frame", href: "/shop?shape=d-frame" },
-      { label: "Mask", href: "/shop?shape=mask" },
-      { label: "Sports", href: "/shop?shape=sports" }
+      { label: "Square", href: "/shop?shape=square" },
+      { label: "Rectangle", href: "/shop?shape=rectangle" }
     ]
   },
   {
@@ -67,12 +66,9 @@ const shopMenu = [
     items: [
       { label: "Ray-Ban", href: "/shop?brand=ray-ban" },
       { label: "Oakley", href: "/shop?brand=oakley" },
-      { label: "Carrera", href: "/shop?brand=carrera" },
-      { label: "Gucci", href: "/shop?brand=gucci" },
-      { label: "Prada", href: "/shop?brand=prada" },
-      { label: "Versace", href: "/shop?brand=versace" },
-      { label: "Tom Ford", href: "/shop?brand=tom-ford" },
-      { label: "Persol", href: "/shop?brand=persol" }
+      { label: "Police", href: "/shop?brand=police" },
+      { label: "Fastrack", href: "/shop?brand=fastrack" },
+      { label: "Diesel", href: "/shop?brand=diesel" }
     ]
   }
 ];
