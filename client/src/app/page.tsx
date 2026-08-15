@@ -46,9 +46,8 @@ const frameStyles = [
   { name: "Aviator", img: "https://cdn.viewora.in/uploads/products/Chimi_Sunglass_Aviator_Brown_01_f540f194-3148-45ad-8b4f-d28f5362ee73.jpg", slug: "aviator" },
   { name: "Round", img: "https://cdn.viewora.in/uploads/products/RayBan_Round_Metal_Sunglass_RB_3447_004_71_-_01_85bd47f4-7dd1-414d-b4f9-d0a063a45698.webp", slug: "round" },
   { name: "Clubmaster", img: "https://cdn.viewora.in/uploads/products/Rayban_Clubmaster_Sunglass_RB_3016_1367_B1_-_01_00ce460e-dc20-4673-bcbe-c053c12aee03.webp", slug: "clubmaster" },
-  { name: "D-Frame", img: "https://cdn.viewora.in/uploads/products/Fred_Frame_FG50002F_030_image_2_93834f8e-b854-475a-93e8-f1e5fed28c9b.jpg", slug: "d-frame" },
-  { name: "Mask", img: "https://cdn.viewora.in/uploads/products/Kuboraum_Maske_Sunglass_P60_LG_HB-_01_13631edd-2b2a-4da4-ad17-9127bf490af4.webp", slug: "mask" },
-  { name: "Sports", img: "https://cdn.viewora.in/uploads/products/Carrera_Sunglasses_C_Sports_03_S_I469O_images-01_704a7289-7a28-4ed2-890e-12142a6652a9.png", slug: "sports" },
+  { name: "Square", img: "https://cdn.viewora.in/uploads/products/fastrack_P429BK2IEV_1.jpg", slug: "square" },
+  { name: "Rectangle", img: "https://cdn.viewora.in/uploads/products/fastrack_FT1515UFA6LGRV_1.jpg", slug: "rectangle" },
 ];
 
 export default function Home() {
