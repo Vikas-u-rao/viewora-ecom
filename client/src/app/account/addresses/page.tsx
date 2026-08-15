@@ -89,7 +89,7 @@ export default function AccountAddressesPage() {
       await saveAddressApi(accessToken, {
         ...form,
         name: form.name.trim(),
-        phone: form.phone.trim(),
+        phone: (form.phone || "").trim(),
         line1: form.line1.trim(),
         line2: form.line2?.trim() || null,
         city: form.city.trim(),

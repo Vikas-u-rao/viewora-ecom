@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Package, Truck, CheckCircle2, Clock } from "lucide-react";
+import { Package, Truck, CheckCircle2, Clock, Loader2 } from "lucide-react";
 import { Order } from "@/services/orders";
 
 function money(value: string | number) {

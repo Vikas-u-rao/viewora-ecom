@@ -24,10 +24,13 @@ import {
   Bookmark
 } from 'lucide-react';
 
+import { AddressPayload } from '@/services/account';
+
 interface Address {
   id: string;
   label?: string | null;
   name: string;
+  phone?: string | null;
   line1: string;
   line2?: string | null;
   city: string;
@@ -61,9 +64,10 @@ export default function ProfilePage() {
   // Address Modal/Form State
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
-  const [addressForm, setAddressForm] = useState({
+  const [addressForm, setAddressForm] = useState<AddressPayload>({
     label: 'Home',
     name: '',
+    phone: '',
     line1: '',
     line2: '',
     city: '',
@@ -176,10 +180,12 @@ export default function ProfilePage() {
 
   // Open address modal for adding new
   const openAddAddressModal = () => {
+    if (!user) return;
     setEditingAddressId(null);
     setAddressForm({
       label: 'Home',
       name: user.name || '',
+      phone: user.phone || '',
       line1: '',
       line2: '',
       city: '',
@@ -197,6 +203,7 @@ export default function ProfilePage() {
     setAddressForm({
       label: address.label || 'Home',
       name: address.name,
+      phone: address.phone || '',
       line1: address.line1,
       line2: address.line2 || '',
       city: address.city,
@@ -234,9 +241,9 @@ export default function ProfilePage() {
     const payload = {
       label: addressForm.label,
       name: addressForm.name.trim(),
-      phone: addressForm.phone.trim(),
+      phone: (addressForm.phone || '').trim(),
       line1: addressForm.line1.trim(),
-      line2: addressForm.line2.trim() || null,
+      line2: (addressForm.line2 || '').trim() || null,
       city: addressForm.city.trim(),
       state: addressForm.state.trim(),
       pincode: addressForm.pincode.trim(),
