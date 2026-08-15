@@ -22,6 +22,7 @@ import {
 } from "@/services/orders";
 import { COUPON_STORAGE_KEY } from "@/services/coupons";
 import { resolveImageUrl } from "@/lib/productImage";
+import type { RazorpayGlobal, RazorpayConstructor, RazorpayPaymentFailedResponse } from "@/lib/razorpay";
 
 const SHIPPING_FEE = 99;
 
@@ -140,7 +141,8 @@ export default function CheckoutPage() {
       await clearCart();
 
       // 2. Initiate Razorpay Payment
-      if (typeof window !== "undefined" && !(window as any).Razorpay) {
+      const rzpWindow = window as RazorpayGlobal;
+      if (!rzpWindow.Razorpay) {
         await new Promise<boolean>((resolve) => {
           const script = document.createElement("script");
           script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -190,10 +192,10 @@ export default function CheckoutPage() {
             );
             toast.success("Payment verified successfully!");
             router.push(`/order-confirmation/${order.id}`);
-          } catch (err: any) {
+          } catch (err: unknown) {
             setPaymentProcessingState(null);
             setPlacing(false);
-            toast.error(err?.message || "Payment verification failed. Please check order status.");
+            toast.error(err instanceof Error ? err.message : "Payment verification failed. Please check order status.");
             router.push(`/payment/status?orderId=${order.id}`);
           }
         },
@@ -207,8 +209,8 @@ export default function CheckoutPage() {
         },
       };
 
-      const rzp = new (window as any).Razorpay(options);
-      rzp.on("payment.failed", (response: any) => {
+      const rzp = new (rzpWindow.Razorpay as RazorpayConstructor)(options);
+      rzp.on("payment.failed", (response: RazorpayPaymentFailedResponse) => {
         setPaymentProcessingState(null);
         setPlacing(false);
         toast.error(response?.error?.description || "Payment failed. Please try again.");

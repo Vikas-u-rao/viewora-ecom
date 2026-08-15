@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect, useSyncExternalStore, Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -79,15 +79,15 @@ export default function Header() {
   const { wishlistCount } = useWishlist();
   const router = useRouter();
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
   const [showSearch, setShowSearch] = useState(false);
   const [searchVal, setSearchVal] = useState("");
   const [searchResults, setSearchResults] = useState<ApiProduct[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const isActiveLink = (href: string) => {
     if (href === "/") return pathname === "/";
