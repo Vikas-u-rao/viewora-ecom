@@ -57,12 +57,18 @@ if (hasCredentials) {
  * Sends an OTP to the user's email address.
  * Falls back to logging to console in development environment if credentials are not configured.
  */
-export async function sendOtpEmail(email: string, otp: string, purpose: 'signup' | 'forgot_password') {
+export async function sendOtpEmail(email: string, otp: string, purpose: 'signup' | 'forgot_password' | 'email_change') {
   const subject = purpose === 'signup'
     ? 'Verify Your Account - VIEWORA'
-    : 'Reset Your Password - VIEWORA';
+    : purpose === 'forgot_password'
+    ? 'Reset Your Password - VIEWORA'
+    : 'Verify Email Change - VIEWORA';
 
-  const actionText = purpose === 'signup' ? 'verify your account' : 'reset your password';
+  const actionText = purpose === 'signup'
+    ? 'verify your account'
+    : purpose === 'forgot_password'
+    ? 'reset your password'
+    : 'verify your new email address';
 
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #ffffff; color: #333333;">
@@ -104,7 +110,7 @@ export async function sendOtpEmail(email: string, otp: string, purpose: 'signup'
   }
 }
 
-function logOtpToConsole(email: string, otp: string, purpose: 'signup' | 'forgot_password') {
+function logOtpToConsole(email: string, otp: string, purpose: 'signup' | 'forgot_password' | 'email_change') {
   logger.info('\n' + '='.repeat(60) + 
     `\n[DEVELOPMENT FALLBACK] OTP FOR EMAIL: ${email}\nPURPOSE: ${purpose}\nOTP CODE: ${otp}\n` + 
     '='.repeat(60) + '\n'

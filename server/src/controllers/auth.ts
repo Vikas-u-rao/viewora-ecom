@@ -528,6 +528,11 @@ export async function resetPassword(req: Request, res: Response, next: NextFunct
       data: { passwordHash },
     });
 
+    // Invalidate all active sessions / refresh tokens for this user
+    await prisma.refreshToken.deleteMany({
+      where: { userId: user.id },
+    });
+
     res.status(200).json({
       message: 'Password updated successfully.',
     });

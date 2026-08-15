@@ -391,15 +391,8 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
       pages: Math.ceil(total / limitNum),
       brands,
     });
-  } catch (error: any) {
-    console.error("GET PRODUCTS ERROR:", error);
-    res.status(500).json({
-      error: {
-        code: "PRODUCTS_FETCH_ERROR",
-        message: error?.message || String(error),
-        details: error?.stack ? [error.stack] : [],
-      },
-    });
+  } catch (error) {
+    next(error);
   }
 }
 

@@ -6,6 +6,9 @@ import {
   addAddress,
   updateAddress,
   deleteAddress,
+  requestEmailChange,
+  verifyEmailChange,
+  deleteAccount,
 } from '../controllers/users';
 import { getMyCoupons, getMyReferrals } from '../controllers/coupons';
 import { authenticate } from '../middleware/auth';
@@ -18,6 +21,10 @@ router.use(authenticate);
 
 router.get('/me', getProfile);
 router.patch('/me', validateBody(updateProfileSchema), updateProfile);
+router.delete('/me', deleteAccount);
+
+router.post('/me/email-change/request', requestEmailChange);
+router.post('/me/email-change/verify', verifyEmailChange);
 
 router.get('/me/addresses', getAddresses);
 router.post('/me/addresses', validateBody(addressSchema), addAddress);
