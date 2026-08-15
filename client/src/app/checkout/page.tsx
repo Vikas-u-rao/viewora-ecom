@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Plus, ShieldCheck, Truck, Check, CreditCard, Lock, Zap } from "lucide-react";
 import { toast } from "sonner";
 import Header from "@/components/header";
+import AddressFormFields from "@/components/AddressFormFields";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { Address, AddressPayload, fetchAddressesApi, saveAddressApi } from "@/services/account";
@@ -98,9 +99,19 @@ export default function CheckoutPage() {
       toast.error("Remove unavailable items before checkout.");
       return;
     }
-    if (showNewAddress && (!payloadAddress.shippingName || !payloadAddress.shippingLine1 || !payloadAddress.shippingCity || !payloadAddress.shippingState || !payloadAddress.shippingPincode)) {
-      toast.error("Please complete the shipping address.");
-      return;
+    if (showNewAddress) {
+      if (!payloadAddress.shippingName || !payloadAddress.shippingLine1 || !payloadAddress.shippingCity || !payloadAddress.shippingState || !payloadAddress.shippingPincode) {
+        toast.error("Please complete all required shipping address fields.");
+        return;
+      }
+      if (!/^\d{10}$/.test((addressForm.phone || "").trim())) {
+        toast.error("Phone number must be exactly 10 digits.");
+        return;
+      }
+      if (!/^\d{6}$/.test((addressForm.pincode || "").trim())) {
+        toast.error("Pincode must be exactly 6 digits.");
+        return;
+      }
     }
 
     setPlacing(true);
@@ -323,17 +334,12 @@ export default function CheckoutPage() {
                 )}
 
                 {showNewAddress && (
-                  <div className="grid gap-3 sm:grid-cols-2 pt-2">
-                    {(["name", "phone", "line1", "line2", "city", "state", "pincode"] as const).map((field) => (
-                      <input
-                        key={field}
-                        required={field !== "line2"}
-                        placeholder={field === "line1" ? "Address line 1 *" : field === "line2" ? "Address line 2 (Optional)" : field === "phone" ? "Phone number *" : `${field[0].toUpperCase() + field.slice(1)} *`}
-                        value={String(addressForm[field] || "")}
-                        onChange={(event) => setAddressForm((prev) => ({ ...prev, [field]: event.target.value }))}
-                        className="border border-border bg-input px-3.5 py-2.5 text-xs text-white placeholder:text-muted-foreground/60 outline-none focus:border-gold transition-colors font-sans"
-                      />
-                    ))}
+                  <div className="pt-2">
+                    <AddressFormFields
+                      form={addressForm}
+                      onChange={(updated) => setAddressForm(updated)}
+                      isCompact
+                    />
                   </div>
                 )}
               </div>
