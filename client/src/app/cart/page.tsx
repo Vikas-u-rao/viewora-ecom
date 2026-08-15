@@ -472,9 +472,6 @@ export default function CartPage() {
                   APPLY
                 </button>
               </div>
-              <p className="text-[10px] text-muted-foreground/60 mt-2 italic">
-                Coupon rewards launching soon — complete orders over ₹5,000 to earn yours.
-              </p>
             </div>
 
             {/* Summary */}

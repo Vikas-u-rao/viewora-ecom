@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { prisma } from '../lib/prisma';
 import { logger } from '../lib/logger';
 
 // Create a mail transporter using environment variables
@@ -118,39 +119,145 @@ function logOtpToConsole(email: string, otp: string, purpose: 'signup' | 'forgot
 }
 
 export async function sendOrderConfirmationEmail(email: string, order: any) {
-  const subject = `Order Confirmed! - VIEWORA (Order #${order.id.slice(0, 8).toUpperCase()})`;
+  const orderShortId = order.id ? order.id.slice(0, 8).toUpperCase() : 'VIEWORA';
+  const subject = `Order Confirmed! - VIEWORA (Order #${orderShortId})`;
 
-  const itemsList = (order.items || []).map((item: any) => {
-    const name = item.variant?.product?.name || 'Eyewear';
+  // Resolve applied coupon code
+  let appliedCouponCode = order.appliedCoupon?.code || null;
+  if (!appliedCouponCode && order.appliedCouponId) {
+    try {
+      const cpn = await prisma.coupon.findUnique({ where: { id: order.appliedCouponId } });
+      appliedCouponCode = cpn?.code || null;
+    } catch {
+      // ignore
+    }
+  }
+
+  // Resolve any post-payment reward coupon earned on this order
+  let earnedCoupon = order.earnedCoupon || null;
+  if (!earnedCoupon && order.id) {
+    try {
+      earnedCoupon = await prisma.coupon.findFirst({
+        where: { sourceOrderId: order.id, status: 'active' },
+      });
+    } catch {
+      // ignore
+    }
+  }
+
+  const itemsRows = (order.items || []).map((item: any) => {
+    const name = item.variant?.product?.name || item.skuSnapshot || 'Eyewear Frame';
     const sku = item.skuSnapshot || item.variant?.sku || '';
-    const qty = item.quantity;
-    const price = Number(item.priceAtPurchase).toLocaleString('en-IN');
-    return `<li>${name} (${sku}) - Qty: ${qty} @ ₹${price}</li>`;
+    const color = item.variant?.color ? ` (${item.variant.color})` : '';
+    const qty = item.quantity || 1;
+    const price = Number(item.priceAtPurchase || 0).toLocaleString('en-IN');
+    const total = (Number(item.priceAtPurchase || 0) * qty).toLocaleString('en-IN');
+    return `
+      <tr>
+        <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #333333;">
+          <strong>${name}</strong>${color}
+          ${sku ? `<br><span style="font-size: 12px; color: #888888; font-family: monospace;">SKU: ${sku}</span>` : ''}
+        </td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; text-align: center; color: #555555;">${qty}</td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; text-align: right; color: #333333; font-family: monospace;">₹${price}</td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; text-align: right; color: #333333; font-weight: bold; font-family: monospace;">₹${total}</td>
+      </tr>
+    `;
   }).join('');
 
-  const htmlContent = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #ffffff; color: #333333;">
-      <div style="text-align: center; margin-bottom: 20px;">
-        <h1 style="color: #d4af37; margin: 0; font-family: 'Playfair Display', Georgia, serif;">VIEWORA</h1>
-        <p style="font-size: 12px; letter-spacing: 2px; color: #888888; margin: 5px 0 0 0; text-transform: uppercase;">Premium Fashion Eyewear</p>
-      </div>
-      <hr style="border: 0; border-top: 1px solid #f0f0f0; margin-bottom: 20px;">
-      <h2 style="font-size: 20px; color: #333333; margin-top: 0;">Your Order has been Confirmed!</h2>
-      <p style="font-size: 15px; line-height: 1.5; color: #555555;">Hello,</p>
-      <p style="font-size: 15px; line-height: 1.5; color: #555555;">We are pleased to inform you that your payment was successful and your order has been received.</p>
-      
-      <h3>Order Details</h3>
-      <p><strong>Order ID:</strong> ${order.id}</p>
-      <p><strong>Amount Paid:</strong> ₹${Number(order.finalPayableAmount).toLocaleString('en-IN')}</p>
-      
-      <h4>Items:</h4>
-      <ul>
-        ${itemsList}
-      </ul>
+  const discountVal = Number(order.discountAmount || 0);
+  const subtotalVal = Number(order.subtotal || 0);
+  const shippingVal = Number(order.shippingFee || 0);
+  const finalVal = Number(order.finalPayableAmount || 0);
 
-      <p style="font-size: 15px; line-height: 1.5; color: #555555;">We will notify you once your order is shipped.</p>
-      <hr style="border: 0; border-top: 1px solid #f0f0f0; margin: 20px 0;">
-      <p style="font-size: 12px; color: #999999; text-align: center; margin: 0;">&copy; 2026 VIEWORA. All rights reserved.</p>
+  const couponRow = discountVal > 0 ? `
+    <tr>
+      <td colspan="3" style="padding: 6px 0; text-align: right; color: #d4af37; font-size: 14px;">
+        <strong>Coupon Discount ${appliedCouponCode ? `(${appliedCouponCode})` : ''}:</strong>
+      </td>
+      <td style="padding: 6px 0; text-align: right; color: #d4af37; font-size: 14px; font-weight: bold; font-family: monospace;">-₹${discountVal.toLocaleString('en-IN')}</td>
+    </tr>
+  ` : '';
+
+  const rewardCouponBanner = earnedCoupon ? `
+    <div style="margin: 25px 0; padding: 18px; background-color: #faf6eb; border: 1px dashed #d4af37; border-radius: 6px; text-align: center;">
+      <span style="font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #b8860b; font-weight: bold; display: block; margin-bottom: 4px;">Exclusive Reward Earned</span>
+      <h3 style="margin: 0 0 8px 0; color: #222222; font-family: 'Playfair Display', Georgia, serif; font-size: 18px;">You've unlocked a 10% Discount Coupon!</h3>
+      <p style="margin: 0 0 12px 0; font-size: 13px; color: #666666;">Use this coupon code on your next luxury purchase at Viewora:</p>
+      <div style="display: inline-block; background-color: #ffffff; border: 1px solid #d4af37; padding: 8px 20px; font-family: monospace; font-size: 18px; font-weight: bold; color: #d4af37; letter-spacing: 2px;">
+        ${earnedCoupon.code}
+      </div>
+      <p style="margin: 8px 0 0 0; font-size: 11px; color: #999999;">Valid for 90 days from today.</p>
+    </div>
+  ` : '';
+
+  const shippingAddressText = [
+    order.shippingName,
+    order.shippingLine1,
+    order.shippingLine2,
+    order.shippingCity,
+    order.shippingState ? `${order.shippingState} - ${order.shippingPincode || ''}` : order.shippingPincode
+  ].filter(Boolean).join(', ');
+
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; border: 1px solid #e5e5e5; border-radius: 8px; background-color: #ffffff; color: #333333;">
+      <div style="text-align: center; margin-bottom: 25px;">
+        <h1 style="color: #d4af37; margin: 0; font-family: 'Playfair Display', Georgia, serif; letter-spacing: 3px; font-size: 28px;">VIEWORA</h1>
+        <p style="font-size: 11px; letter-spacing: 2.5px; color: #888888; margin: 5px 0 0 0; text-transform: uppercase;">Luxury & Designer Eyewear</p>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid #eeeeee; margin-bottom: 20px;">
+
+      <h2 style="font-size: 20px; color: #1a1a1a; margin-top: 0; font-family: 'Playfair Display', Georgia, serif;">Thank You for Your Order!</h2>
+      <p style="font-size: 14px; line-height: 1.6; color: #555555;">Hello,</p>
+      <p style="font-size: 14px; line-height: 1.6; color: #555555;">Your payment has been successfully processed and your order <strong>#${orderShortId}</strong> is confirmed. We are carefully preparing your eyewear for dispatch.</p>
+
+      ${rewardCouponBanner}
+
+      <div style="margin: 20px 0; padding: 15px; background-color: #fcfcfc; border: 1px solid #f0f0f0; border-radius: 4px;">
+        <p style="margin: 0 0 6px 0; font-size: 13px;"><strong>Order ID:</strong> <span style="font-family: monospace; color: #555555;">${order.id}</span></p>
+        <p style="margin: 0 0 6px 0; font-size: 13px;"><strong>Payment Status:</strong> <span style="color: #2e7d32; font-weight: bold; text-transform: uppercase;">PAID</span></p>
+        ${shippingAddressText ? `<p style="margin: 0; font-size: 13px;"><strong>Delivery Address:</strong> <span style="color: #555555;">${shippingAddressText}</span></p>` : ''}
+      </div>
+
+      <h3 style="font-size: 16px; color: #222222; margin: 25px 0 10px 0; border-bottom: 2px solid #d4af37; padding-bottom: 6px;">Order Summary</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+        <thead>
+          <tr style="border-bottom: 1px solid #e0e0e0;">
+            <th style="text-align: left; padding: 8px 0; font-size: 12px; text-transform: uppercase; color: #888888;">Item</th>
+            <th style="text-align: center; padding: 8px 0; font-size: 12px; text-transform: uppercase; color: #888888;">Qty</th>
+            <th style="text-align: right; padding: 8px 0; font-size: 12px; text-transform: uppercase; color: #888888;">Price</th>
+            <th style="text-align: right; padding: 8px 0; font-size: 12px; text-transform: uppercase; color: #888888;">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsRows}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" style="padding: 8px 0 4px 0; text-align: right; color: #666666; font-size: 14px;">Subtotal:</td>
+            <td style="padding: 8px 0 4px 0; text-align: right; color: #333333; font-size: 14px; font-family: monospace;">₹${subtotalVal.toLocaleString('en-IN')}</td>
+          </tr>
+          ${couponRow}
+          <tr>
+            <td colspan="3" style="padding: 4px 0; text-align: right; color: #666666; font-size: 14px;">Shipping Fee:</td>
+            <td style="padding: 4px 0; text-align: right; color: #333333; font-size: 14px; font-family: monospace;">${shippingVal === 0 ? 'FREE' : `₹${shippingVal.toLocaleString('en-IN')}`}</td>
+          </tr>
+          <tr style="border-top: 2px solid #222222;">
+            <td colspan="3" style="padding: 10px 0; text-align: right; color: #111111; font-size: 16px; font-weight: bold;">Total Amount Paid:</td>
+            <td style="padding: 10px 0; text-align: right; color: #d4af37; font-size: 18px; font-weight: bold; font-family: monospace;">₹${finalVal.toLocaleString('en-IN')}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <p style="font-size: 13px; line-height: 1.6; color: #666666; margin-top: 20px;">
+        We will notify you via email with tracking details as soon as your parcel is handed over to our courier partner.
+      </p>
+
+      <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 25px 0 15px 0;">
+      <p style="font-size: 11px; color: #aaaaaa; text-align: center; margin: 0;">
+        &copy; 2026 VIEWORA Luxury Eyewear. All rights reserved. &bull; <a href="https://viewora.in" style="color: #d4af37; text-decoration: none;">viewora.in</a>
+      </p>
     </div>
   `;
 
@@ -162,20 +269,22 @@ export async function sendOrderConfirmationEmail(email: string, order: any) {
         subject,
         html: htmlContent,
       });
-      logger.info({ msg: `Order confirmation email sent to ${email}`, orderId: order.id });
+      logger.info({ msg: `Order confirmation email sent to ${email}`, orderId: order.id, appliedCoupon: appliedCouponCode, earnedCoupon: earnedCoupon?.code });
     } catch (error) {
       logger.error({ msg: `Failed to send order confirmation email to ${email}`, error, orderId: order.id });
-      logOrderToConsole(email, order);
+      logOrderToConsole(email, order, appliedCouponCode, earnedCoupon);
     }
   } else {
-    logOrderToConsole(email, order);
+    logOrderToConsole(email, order, appliedCouponCode, earnedCoupon);
   }
 }
 
-function logOrderToConsole(email: string, order: any) {
+function logOrderToConsole(email: string, order: any, appliedCouponCode?: string | null, earnedCoupon?: any) {
   logger.info('\n' + '='.repeat(60) + 
-    `\n[DEVELOPMENT FALLBACK] ORDER CONFIRMATION FOR EMAIL: ${email}\nORDER ID: ${order.id}\nAMOUNT: ₹${order.finalPayableAmount}\n` + 
-    '='.repeat(60) + '\n'
+    `\n[DEVELOPMENT FALLBACK] ORDER CONFIRMATION FOR EMAIL: ${email}\nORDER ID: ${order.id}\nAMOUNT: ₹${order.finalPayableAmount}` +
+    (appliedCouponCode ? `\nAPPLIED COUPON: ${appliedCouponCode} (Discount: ₹${order.discountAmount})` : '') +
+    (earnedCoupon ? `\nEARNED REWARD COUPON: ${earnedCoupon.code}` : '') +
+    '\n' + '='.repeat(60) + '\n'
   );
 }
 

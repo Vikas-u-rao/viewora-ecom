@@ -9,6 +9,7 @@ import Header from "@/components/header";
 import OrderDetailView from "@/components/OrderDetailView";
 import { useAuth } from "@/context/AuthContext";
 import { fetchOrderApi, Order } from "@/services/orders";
+import { COUPON_STORAGE_KEY } from "@/services/coupons";
 
 function PaymentStatusBadge({ status }: { status: string }) {
   const colorMap: Record<string, string> = {
@@ -35,6 +36,13 @@ export default function OrderConfirmationPage() {
   const [estimatedDelivery] = useState(() =>
     new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN"),
   );
+
+  // Clear any applied coupon once order confirmation is reached
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(COUPON_STORAGE_KEY);
+    }
+  }, []);
 
   useEffect(() => {
     if (!id || authLoading) return;
