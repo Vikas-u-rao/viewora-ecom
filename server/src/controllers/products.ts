@@ -171,20 +171,23 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
       } else if (colSlug === "limited-edition") {
         whereClause.AND.push({
           OR: [
+            { collections: { some: { collection: { slug: colSlug } } } },
+            { editorialCollections: { some: { collection: { slug: colSlug } } } },
             { name: { contains: "gold", mode: "insensitive" } },
             { name: { contains: "edition", mode: "insensitive" } },
             { name: { contains: "luxury", mode: "insensitive" } },
-            { collections: { some: { collection: { slug: colSlug } } } }
+            { name: { contains: "aviator", mode: "insensitive" } },
+            { name: { contains: "titanium", mode: "insensitive" } },
+            { startingPrice: { gte: 3000 } },
           ],
         });
       } else {
-        whereClause.collections = {
-          some: {
-            collection: {
-              slug: colSlug,
-            },
-          },
-        };
+        whereClause.AND.push({
+          OR: [
+            { collections: { some: { collection: { slug: colSlug } } } },
+            { editorialCollections: { some: { collection: { slug: colSlug } } } },
+          ],
+        });
       }
     }
 
