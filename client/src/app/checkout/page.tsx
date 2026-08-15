@@ -49,7 +49,7 @@ export default function CheckoutPage() {
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const [addressForm, setAddressForm] = useState<AddressPayload>({ ...emptyAddress });
   const [showNewAddress, setShowNewAddress] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"razorpay" | "phonepe">("razorpay");
+  const paymentMethod = "razorpay";
   const [placing, setPlacing] = useState(false);
   const [paymentProcessingState, setPaymentProcessingState] = useState<"preparing" | "verifying" | null>(null);
 
@@ -139,92 +139,82 @@ export default function CheckoutPage() {
       localStorage.removeItem(COUPON_STORAGE_KEY);
       await clearCart();
 
-      // 2. Handle Payment method
-      if (paymentMethod === "razorpay") {
-        // Ensure Razorpay SDK script is loaded
-        if (typeof window !== "undefined" && !(window as any).Razorpay) {
-          await new Promise<boolean>((resolve) => {
-            const script = document.createElement("script");
-            script.src = "https://checkout.razorpay.com/v1/checkout.js";
-            script.async = true;
-            script.onload = () => resolve(true);
-            script.onerror = () => resolve(false);
-            document.body.appendChild(script);
-          });
-        }
-
-        setPaymentProcessingState("preparing");
-        const razorpayOrder = await createRazorpayOrderApi(order.id, accessToken);
-        toast.dismiss("payment-process");
-
-        const selectedAddress = addresses.find((a) => a.id === addressId) || addressForm;
-
-        const options = {
-          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || razorpayOrder.keyId,
-          amount: razorpayOrder.amount,
-          currency: razorpayOrder.currency || "INR",
-          name: "Viewora Luxury Eyewear",
-          description: `Order #${order.id.slice(0, 8)}`,
-          order_id: razorpayOrder.razorpayOrderId,
-          prefill: {
-            name: selectedAddress.name || user?.name || "",
-            email: user?.email || "",
-            contact: selectedAddress.phone || "",
-          },
-          theme: {
-            color: "#c5a059",
-          },
-          handler: async (response: {
-            razorpay_payment_id: string;
-            razorpay_order_id: string;
-            razorpay_signature: string;
-          }) => {
-            setPaymentProcessingState("verifying");
-            try {
-              await verifyRazorpayPaymentApi(
-                {
-                  orderId: order.id,
-                  razorpay_order_id: response.razorpay_order_id,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature,
-                },
-                accessToken
-              );
-              toast.success("Payment verified successfully!");
-              router.push(`/order-confirmation/${order.id}`);
-            } catch (err: any) {
-              setPaymentProcessingState(null);
-              setPlacing(false);
-              toast.error(err?.message || "Payment verification failed. Please check order status.");
-              router.push(`/payment/status?orderId=${order.id}`);
-            }
-          },
-          modal: {
-            ondismiss: () => {
-              setPaymentProcessingState(null);
-              setPlacing(false);
-              toast.info("Payment cancelled. You can retry paying anytime.");
-              router.push(`/payment/status?orderId=${order.id}&status=cancelled`);
-            },
-          },
-        };
-
-        const rzp = new (window as any).Razorpay(options);
-        rzp.on("payment.failed", (response: any) => {
-          setPaymentProcessingState(null);
-          setPlacing(false);
-          toast.error(response?.error?.description || "Payment failed. Please try again.");
-          router.push(`/payment/status?orderId=${order.id}&status=failed`);
+      // 2. Initiate Razorpay Payment
+      if (typeof window !== "undefined" && !(window as any).Razorpay) {
+        await new Promise<boolean>((resolve) => {
+          const script = document.createElement("script");
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.async = true;
+          script.onload = () => resolve(true);
+          script.onerror = () => resolve(false);
+          document.body.appendChild(script);
         });
-        rzp.open();
-      } else {
-        // PhonePe flow
-        setPaymentProcessingState("preparing");
-        toast.loading("Redirecting to PhonePe…", { id: "payment-redirect" });
-        const { redirectUrl } = await initiatePaymentApi(order.id, accessToken);
-        toast.dismiss("payment-redirect");
-        window.location.href = redirectUrl;
       }
+
+      setPaymentProcessingState("preparing");
+      const razorpayOrder = await createRazorpayOrderApi(order.id, accessToken);
+      toast.dismiss("payment-process");
+
+      const selectedAddress = addresses.find((a) => a.id === addressId) || addressForm;
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || razorpayOrder.keyId,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency || "INR",
+        name: "Viewora Luxury Eyewear",
+        description: `Order #${order.id.slice(0, 8)}`,
+        order_id: razorpayOrder.razorpayOrderId,
+        prefill: {
+          name: selectedAddress.name || user?.name || "",
+          email: user?.email || "",
+          contact: selectedAddress.phone || "",
+        },
+        theme: {
+          color: "#c5a059",
+        },
+        handler: async (response: {
+          razorpay_payment_id: string;
+          razorpay_order_id: string;
+          razorpay_signature: string;
+        }) => {
+          setPaymentProcessingState("verifying");
+          try {
+            await verifyRazorpayPaymentApi(
+              {
+                orderId: order.id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              },
+              accessToken
+            );
+            toast.success("Payment verified successfully!");
+            router.push(`/order-confirmation/${order.id}`);
+          } catch (err: any) {
+            setPaymentProcessingState(null);
+            setPlacing(false);
+            toast.error(err?.message || "Payment verification failed. Please check order status.");
+            router.push(`/payment/status?orderId=${order.id}`);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setPaymentProcessingState(null);
+            setPlacing(false);
+            toast.info("Payment cancelled. You can retry paying anytime.");
+            router.push(`/payment/status?orderId=${order.id}&status=cancelled`);
+          },
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on("payment.failed", (response: any) => {
+        setPaymentProcessingState(null);
+        setPlacing(false);
+        toast.error(response?.error?.description || "Payment failed. Please try again.");
+        router.push(`/payment/status?orderId=${order.id}&status=failed`);
+      });
+      rzp.open();
     } catch (error) {
       toast.dismiss("payment-process");
       toast.dismiss("payment-redirect");
@@ -352,63 +342,36 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="space-y-3">
-                  {/* Razorpay Option (Recommended) */}
+                  {/* Razorpay Option */}
                   <div
-                    onClick={() => setPaymentMethod("razorpay")}
-                    className={`p-4 border cursor-pointer relative transition-all ${paymentMethod === "razorpay"
-                        ? "border-gold bg-gold/10 shadow-[0_0_15px_rgba(197,160,89,0.12)]"
-                        : "border-border/70 hover:border-gold/50 bg-card/40"
-                      }`}
+                    className="p-4 border border-gold bg-gold/10 shadow-[0_0_15px_rgba(197,160,89,0.12)] relative transition-all"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === "razorpay" ? "border-gold bg-gold" : "border-muted-foreground/40"
-                          }`}>
-                          {paymentMethod === "razorpay" && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
+                        <div className="w-4 h-4 rounded-full border-2 border-gold bg-gold flex items-center justify-center">
+                          <div className="w-1.5 h-1.5 rounded-full bg-black" />
                         </div>
                         <div>
                           <span className="text-sm font-semibold tracking-[0.15em] text-white uppercase font-sans flex items-center gap-1.5">
-                            Razorpay Secure <Zap className="size-3.5 text-gold fill-gold" />
+                            Razorpay Secure Gateway <Zap className="size-3.5 text-gold fill-gold" />
                           </span>
-                          <p className="text-xs text-muted-foreground font-sans mt-0.5">Pay via UPI (GPay, PhonePe, Paytm), Cards, Netbanking & Wallets</p>
+                          <p className="text-xs text-muted-foreground font-sans mt-0.5">Pay via Instant UPI (GPay, PhonePe, Paytm), Cards, Netbanking & Wallets</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold tracking-widest text-gold bg-gold/20 px-2 py-0.5 border border-gold/30 uppercase">RECOMMENDED</span>
+                      <span className="text-[10px] font-bold tracking-widest text-gold bg-gold/20 px-2 py-0.5 border border-gold/30 uppercase">SECURE</span>
                     </div>
 
                     {/* Sub Payment Options / Badges */}
                     <div className="mt-4 pt-3 border-t border-gold/20 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground font-sans">
                       <span className="px-2.5 py-1 bg-black/60 border border-gold/20 text-white rounded-none flex items-center gap-1.5">
-                        <span className="text-gold font-bold">UPI</span> (GPay / PhonePe / Paytm)
+                        <span className="text-gold font-bold">UPI</span> (GPay / PhonePe / Paytm / BHIM)
                       </span>
                       <span className="px-2.5 py-1 bg-black/60 border border-gold/20 text-white rounded-none flex items-center gap-1.5">
                         <CreditCard className="size-3 text-gold" /> Cards (Debit & Credit)
                       </span>
                       <span className="px-2.5 py-1 bg-black/60 border border-gold/20 text-white rounded-none flex items-center gap-1.5">
-                        Netbanking (50+ Banks)
+                        Netbanking (50+ Indian Banks)
                       </span>
-                    </div>
-                  </div>
-
-                  {/* PhonePe Option */}
-                  <div
-                    onClick={() => setPaymentMethod("phonepe")}
-                    className={`p-4 border cursor-pointer relative transition-all ${paymentMethod === "phonepe"
-                        ? "border-gold bg-gold/10 shadow-[0_0_15px_rgba(197,160,89,0.12)]"
-                        : "border-border/70 hover:border-gold/50 bg-card/40"
-                      }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === "phonepe" ? "border-gold bg-gold" : "border-muted-foreground/40"
-                          }`}>
-                          {paymentMethod === "phonepe" && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
-                        </div>
-                        <div>
-                          <span className="text-sm font-semibold tracking-[0.15em] text-white uppercase font-sans">PhonePe Payment Gateway</span>
-                          <p className="text-xs text-muted-foreground font-sans mt-0.5">Pay via PhonePe standard checkout</p>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>

@@ -91,7 +91,7 @@ function PaymentStatusContent() {
             <p className="text-muted-foreground">
               {status === "pending" && attempts > 0
                 ? `Still checking… (attempt ${attempts}/${maxAttempts})`
-                : "Please wait while we confirm your payment with PhonePe."}
+                : "Please wait while we confirm your payment status."}
             </p>
             {status === "pending" && attempts >= maxAttempts && (
               <div className="mt-6 space-y-4">

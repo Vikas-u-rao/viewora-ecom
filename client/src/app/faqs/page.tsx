@@ -18,7 +18,7 @@ const faqs = [
   },
   {
     q: 'What payment methods do you accept?',
-    a: 'We accept UPI, credit cards (Visa, Mastercard, Amex), debit cards, and net banking via PhonePe.',
+    a: 'We accept UPI, credit cards (Visa, Mastercard, Amex), debit cards, and net banking via Razorpay.',
   },
   {
     q: 'How long does delivery take?',
