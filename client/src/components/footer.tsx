@@ -25,7 +25,6 @@ const SANS = "var(--font-sans), Arial, sans-serif";
 const quickLinks = [
   ["Home", "/"],
   ["Shop Catalog", "/shop"],
-  ["The Edit", "/the-edit"],
   ["New Arrivals", "/shop?collection=new-arrivals"],
   ["About Us", "/about"],
 ];

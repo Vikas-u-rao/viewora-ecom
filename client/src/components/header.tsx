@@ -22,7 +22,6 @@ import view1 from "@/assets/view1.jpg";
 const nav = [
   { label: "HOME", href: "/" },
   { label: "ABOUT", href: "/about" },
-  { label: "THE EDIT", href: "/the-edit", megaEdit: true },
   { label: "SHOP", href: "/shop", megaShop: true },
   { label: "SOCIALS", href: "/socials" },
 ];
@@ -252,25 +251,6 @@ export default function Header() {
                           {n.label}
                         </Link>
                       </SheetClose>
-                      {n.megaEdit && (
-                        <div className="pl-2 py-2 border-b border-[#2E2820]/60 flex flex-col gap-1 bg-white/5 rounded-lg my-1.5">
-                          {editorialStories.map((story) => (
-                            <SheetClose key={story.title} asChild>
-                              <Link
-                                href={story.href}
-                                className="group/mob py-2 px-3 rounded-md hover:bg-white/10 transition-all flex items-center justify-between w-full cursor-pointer text-left"
-                              >
-                                <span className="font-serif text-xs font-medium text-gold group-hover/mob:text-gold-soft transition-colors">
-                                  {story.title}
-                                </span>
-                                <span className="text-gold text-xs font-sans group-hover/mob:translate-x-1 transition-transform">
-                                  &rarr;
-                                </span>
-                              </Link>
-                            </SheetClose>
-                          ))}
-                        </div>
-                      )}
                     </Fragment>
                   ))}
                   <SheetClose asChild>
@@ -300,84 +280,6 @@ export default function Header() {
 
         <nav className="hidden md:flex items-center justify-center gap-5 lg:gap-8">
           {nav.map((n) => {
-            if (n.megaEdit) {
-              return (
-                <div key={n.label} className="group relative">
-                  <Link href={n.href} className={`text-xs lg:text-sm tracking-[0.15em] font-semibold transition-colors ${isActiveLink(n.href) ? "text-gold" : "text-[#FAD6E3] hover:text-gold"}`}>
-                    {n.label}
-                  </Link>
-                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 fixed left-0 right-0 top-[72px] z-50 bg-[#000]/98 backdrop-blur-xl border-t border-b border-gold/30 shadow-2xl transition-all duration-300">
-                    <div className="max-w-[1400px] mx-auto px-8 py-8">
-                      <div className="grid grid-cols-12 gap-8 items-center">
-                        {/* Left: Curated Stories List */}
-                        <div className="col-span-7 pr-6 border-r border-[#2E2820] text-left">
-                          <div className="mb-4">
-                            <p className="text-gold tracking-[0.3em] text-xs font-semibold uppercase mb-1">THE VIEWORA EDIT</p>
-                            <h4 className="font-serif text-2xl text-[#FAD6E3] font-normal">Curated Stories</h4>
-                            <div className="h-[1px] w-12 bg-gold/35 mt-2"></div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
-                            {editorialStories.map((story) => (
-                              <Link
-                                key={story.title}
-                                href={story.href}
-                                className="group/item block p-3 rounded-lg bg-white/[0.02] hover:bg-white/5 border border-transparent hover:border-gold/20 transition-all duration-200 cursor-pointer"
-                              >
-                                <h5 className="font-serif text-base text-gold group-hover/item:text-gold-soft transition-colors font-medium mb-1 flex items-center justify-between">
-                                  <span>{story.title}</span>
-                                  <span className="text-xs font-sans text-gold group-hover/item:translate-x-1 transition-transform inline-block">
-                                    &rarr;
-                                  </span>
-                                </h5>
-                                <p className="text-xs text-[#FAD6E3]/70 font-sans leading-relaxed line-clamp-2 font-light">
-                                  {story.desc}
-                                </p>
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Right: Featured Editorial Spotlight */}
-                        <div className="col-span-5 flex flex-col justify-between">
-                          <Link
-                            href="/the-edit/quiet-luxury"
-                            className="group/spotlight relative block overflow-hidden rounded-xl border border-gold/20 bg-black shadow-2xl aspect-[16/10]"
-                          >
-                            <Image
-                              src={colLtd}
-                              alt="Quiet Luxury Editorial"
-                              width={600}
-                              height={375}
-                              className="w-full h-full object-cover transition-transform duration-700 group-hover/spotlight:scale-105"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                            <div className="absolute bottom-0 left-0 right-0 p-5 flex flex-col justify-end text-left">
-                              <span className="text-[10px] tracking-[0.25em] text-gold uppercase font-semibold mb-1">FEATURED STORY</span>
-                              <h5 className="font-serif text-xl text-white font-medium mb-1">Quiet Luxury</h5>
-                              <p className="text-xs text-[#FAD6E3]/80 font-sans mb-3">Refined eyewear, carefully selected.</p>
-                              <span className="text-xs font-bold tracking-[0.2em] text-gold uppercase group-hover/spotlight:translate-x-1 transition-transform inline-flex items-center gap-1">
-                                EXPLORE &rarr;
-                              </span>
-                            </div>
-                          </Link>
-                        </div>
-                      </div>
-
-                      <div className="mt-6 pt-4 border-t border-[#2E2820] text-center">
-                        <Link
-                          href="/the-edit"
-                          className="inline-block border border-gold/50 text-gold hover:bg-gold hover:text-background px-8 py-2.5 text-xs font-bold tracking-[0.2em] transition-colors duration-300 uppercase"
-                        >
-                          EXPLORE THE EDIT
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-
             if (n.megaShop) {
               return (
                 <div key={n.label} className="group relative">
