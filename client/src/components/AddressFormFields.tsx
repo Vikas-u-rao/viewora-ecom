@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { INDIAN_STATES, STATE_LIST } from "@/constants/indiaLocationData";
+import React from "react";
+import { STATE_LIST } from "@/constants/indiaLocationData";
 import { AddressPayload } from "@/services/account";
 
 interface AddressFormFieldsProps {
@@ -17,39 +17,6 @@ export default function AddressFormFields({
   disabled = false,
   isCompact = false,
 }: AddressFormFieldsProps) {
-  const [customCityMode, setCustomCityMode] = useState(false);
-
-  // Available cities for currently selected state
-  const availableCities = form.state && INDIAN_STATES[form.state] ? INDIAN_STATES[form.state] : [];
-
-  // Sync customCityMode if current city is not in the predefined list for the state
-  useEffect(() => {
-    if (form.city && availableCities.length > 0 && !availableCities.includes(form.city)) {
-      setCustomCityMode(true);
-    } else if (!form.city) {
-      setCustomCityMode(false);
-    }
-  }, [form.state]);
-
-  const handleStateChange = (selectedState: string) => {
-    setCustomCityMode(false);
-    onChange({
-      ...form,
-      state: selectedState,
-      city: "", // reset city when state changes
-    });
-  };
-
-  const handleCitySelectChange = (selectedCity: string) => {
-    if (selectedCity === "__custom__") {
-      setCustomCityMode(true);
-      onChange({ ...form, city: "" });
-    } else {
-      setCustomCityMode(false);
-      onChange({ ...form, city: selectedCity });
-    }
-  };
-
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/\D/g, "").slice(0, 10);
     onChange({ ...form, phone: raw });
@@ -160,7 +127,7 @@ export default function AddressFormFields({
 
       {/* State & City Grid */}
       <div className="grid gap-3 sm:grid-cols-2">
-        {/* State Selection */}
+        {/* State Selection Dropdown */}
         <div>
           <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-gold/90">
             State <span className="text-red-500">*</span>
@@ -169,7 +136,7 @@ export default function AddressFormFields({
             required
             disabled={disabled}
             value={form.state || ""}
-            onChange={(e) => handleStateChange(e.target.value)}
+            onChange={(e) => onChange({ ...form, state: e.target.value })}
             className={selectClasses}
           >
             <option value="" disabled>
@@ -183,56 +150,20 @@ export default function AddressFormFields({
           </select>
         </div>
 
-        {/* City Selection / Custom Input */}
+        {/* City Input (Free-text entry) */}
         <div>
           <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-gold/90">
             City / Town <span className="text-red-500">*</span>
           </label>
-          {!customCityMode && availableCities.length > 0 ? (
-            <select
-              required
-              disabled={disabled || !form.state}
-              value={form.city || ""}
-              onChange={(e) => handleCitySelectChange(e.target.value)}
-              className={selectClasses}
-            >
-              <option value="" disabled>
-                {form.state ? "-- Select City * --" : "-- Select State First --"}
-              </option>
-              {availableCities.map((cityName) => (
-                <option key={cityName} value={cityName}>
-                  {cityName}
-                </option>
-              ))}
-              <option value="__custom__" className="text-gold font-bold">
-                + Other / Enter Custom City
-              </option>
-            </select>
-          ) : (
-            <div className="space-y-1">
-              <input
-                type="text"
-                required
-                disabled={disabled}
-                placeholder="Enter City / Town *"
-                value={form.city || ""}
-                onChange={(e) => onChange({ ...form, city: e.target.value })}
-                className={inputClasses}
-              />
-              {availableCities.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCustomCityMode(false);
-                    onChange({ ...form, city: availableCities[0] });
-                  }}
-                  className="text-[10px] text-gold hover:underline"
-                >
-                  ← Choose from list of cities
-                </button>
-              )}
-            </div>
-          )}
+          <input
+            type="text"
+            required
+            disabled={disabled}
+            placeholder="e.g. Mumbai / Pune / Bengaluru"
+            value={form.city || ""}
+            onChange={(e) => onChange({ ...form, city: e.target.value })}
+            className={inputClasses}
+          />
         </div>
       </div>
 
