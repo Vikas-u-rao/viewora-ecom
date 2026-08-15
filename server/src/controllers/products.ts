@@ -183,7 +183,6 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
         whereClause.AND.push({
           OR: [
             { collections: { some: { collection: { slug: colSlug } } } },
-            { editorialCollections: { some: { collection: { slug: colSlug } } } },
             { name: { contains: "gold", mode: "insensitive" } },
             { name: { contains: "edition", mode: "insensitive" } },
             { name: { contains: "luxury", mode: "insensitive" } },
@@ -194,10 +193,7 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
         });
       } else {
         whereClause.AND.push({
-          OR: [
-            { collections: { some: { collection: { slug: colSlug } } } },
-            { editorialCollections: { some: { collection: { slug: colSlug } } } },
-          ],
+          collections: { some: { collection: { slug: colSlug } } },
         });
       }
     }
