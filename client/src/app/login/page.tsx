@@ -73,7 +73,7 @@ function LoginContent() {
           router.push(redirect);
         }
       }, 1000);
-    } catch (err: any) {
+    } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       console.error("Login fetch error:", err);
       setError({ message: err?.message || 'Connection error. Please check your network connection and try again.' });
     } finally {

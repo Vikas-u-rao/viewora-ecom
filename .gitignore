@@ -35,3 +35,16 @@ hero-section-redesign/
 # Uploaded local product images
 server/public/uploads/products/*
 !server/public/uploads/products/.gitkeep
+
+# Scraper scripts, scraped dry-run data & local documentation — keep off GitHub
+scraper.py
+fast_brand_scraper.py
+scraper_extra_brands.py
+scraped-*.json
+VIEWORA_Project_Documentation-*.md
+server/src/scripts/applyBrandCapR2Images.ts
+server/src/scripts/cleanCatalogWorkingImages.ts
+server/src/scripts/clearProducts.ts
+server/src/scripts/ingestStep4BatchR2.ts
+server/src/scripts/syncProductSlugsToR2Urls.ts
+server/src/scripts/uploadLocalImagesToR2.ts
