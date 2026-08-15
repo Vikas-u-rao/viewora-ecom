@@ -1,7 +1,17 @@
 import { Response, NextFunction } from 'express';
+import crypto from 'crypto';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { AuthRequest } from '../middleware/auth';
+import { sendOtpEmail } from '../services/email';
+
+function hashOtp(otp: string): string {
+  return crypto.createHash('sha256').update(otp).digest('hex');
+}
+
+function generateOtp(): string {
+  return crypto.randomInt(100000, 1000000).toString();
+}
 
 // GET /users/me
 export async function getProfile(req: AuthRequest, res: Response, next: NextFunction) {
@@ -35,19 +45,23 @@ export async function updateProfile(req: AuthRequest, res: Response, next: NextF
     const userId = req.userId!;
     const { name, email, phone } = req.body;
 
+    const currentUser = await prisma.user.findUnique({ where: { id: userId } });
+    if (!currentUser) {
+      throw new AppError('NOT_FOUND', 404, 'User not found');
+    }
+
     const updateData: any = {};
     if (name !== undefined) updateData.name = name;
 
     if (email !== undefined) {
       const normalizedEmail = email.trim().toLowerCase();
-      // Check duplicate email
-      const existingUser = await prisma.user.findUnique({
-        where: { email: normalizedEmail },
-      });
-      if (existingUser && existingUser.id !== userId) {
-        throw new AppError('ALREADY_EXISTS', 409, 'A user with this email already exists');
+      if (normalizedEmail !== currentUser.email) {
+        throw new AppError(
+          'VALIDATION_ERROR',
+          400,
+          'Direct email modification is not allowed. Please use /users/me/email-change/request to request an email change with verification.'
+        );
       }
-      updateData.email = normalizedEmail;
     }
 
     if (phone !== undefined) {
@@ -227,3 +241,136 @@ export async function deleteAddress(req: AuthRequest, res: Response, next: NextF
     next(error);
   }
 }
+
+// POST /users/me/email-change/request
+export async function requestEmailChange(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const userId = req.userId!;
+    const { newEmail } = req.body;
+
+    if (!newEmail || typeof newEmail !== 'string') {
+      throw new AppError('VALIDATION_ERROR', 400, 'New email address is required');
+    }
+
+    const normalizedEmail = newEmail.trim().toLowerCase();
+    const currentUser = await prisma.user.findUnique({ where: { id: userId } });
+    if (!currentUser) {
+      throw new AppError('NOT_FOUND', 404, 'User not found');
+    }
+
+    if (normalizedEmail === currentUser.email) {
+      throw new AppError('VALIDATION_ERROR', 400, 'New email must be different from current email');
+    }
+
+    const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    if (existing) {
+      throw new AppError('ALREADY_EXISTS', 409, 'A user with this email address already exists');
+    }
+
+    const otp = generateOtp();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    await prisma.otpVerification.upsert({
+      where: { email: normalizedEmail },
+      update: {
+        purpose: 'email_change',
+        otpHash: hashOtp(otp),
+        attempts: 0,
+        expiresAt,
+        name: userId,
+      },
+      create: {
+        email: normalizedEmail,
+        purpose: 'email_change',
+        otpHash: hashOtp(otp),
+        attempts: 0,
+        expiresAt,
+        name: userId,
+      },
+    });
+
+    await sendOtpEmail(normalizedEmail, otp, 'email_change');
+
+    res.status(200).json({
+      message: 'Email change verification code sent to new email address.',
+      email: normalizedEmail,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// POST /users/me/email-change/verify
+export async function verifyEmailChange(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const userId = req.userId!;
+    const { newEmail, otp } = req.body;
+
+    if (!newEmail || !otp) {
+      throw new AppError('VALIDATION_ERROR', 400, 'New email and OTP are required');
+    }
+
+    const normalizedEmail = newEmail.trim().toLowerCase();
+    const verification = await prisma.otpVerification.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    if (!verification || verification.purpose !== 'email_change' || verification.name !== userId) {
+      throw new AppError('NOT_FOUND', 404, 'No pending email change request found');
+    }
+
+    if (verification.expiresAt < new Date()) {
+      await prisma.otpVerification.delete({ where: { email: normalizedEmail } });
+      throw new AppError('VALIDATION_ERROR', 400, 'OTP has expired. Please request a new one.');
+    }
+
+    if (verification.otpHash !== hashOtp(String(otp).trim())) {
+      throw new AppError('UNAUTHORIZED', 400, 'Invalid OTP code');
+    }
+
+    // Update user email
+    await prisma.user.update({
+      where: { id: userId },
+      data: { email: normalizedEmail },
+    });
+
+    await prisma.otpVerification.delete({ where: { email: normalizedEmail } });
+
+    res.status(200).json({
+      message: 'Email updated and verified successfully.',
+      email: normalizedEmail,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// DELETE /users/me
+export async function deleteAccount(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const userId = req.userId!;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new AppError('NOT_FOUND', 404, 'User not found');
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.refreshToken.deleteMany({ where: { userId } });
+      await tx.cartItem.deleteMany({ where: { userId } });
+      await tx.wishlistItem.deleteMany({ where: { userId } });
+      await tx.user.delete({ where: { id: userId } });
+    });
+
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    res.status(200).json({ message: 'Account deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+}
+

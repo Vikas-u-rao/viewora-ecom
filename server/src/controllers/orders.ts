@@ -27,9 +27,10 @@ export async function createOrder(req: AuthRequest, res: Response, next: NextFun
       throw new AppError('VALIDATION_ERROR', 400, 'Order items are required');
     }
 
-    if (paymentMethod !== 'phonepe') {
-      throw new AppError('VALIDATION_ERROR', 400, 'Invalid payment method. Only online payment (PhonePe) is supported.');
+    if (paymentMethod !== 'phonepe' && paymentMethod !== 'razorpay') {
+      throw new AppError('VALIDATION_ERROR', 400, 'Invalid payment method. Only online payment (Razorpay / PhonePe) is supported.');
     }
+
 
     const userId = req.userId || null;
 
@@ -309,8 +310,12 @@ export async function getOrderDetails(req: AuthRequest, res: Response, next: Nex
     }
 
     // Auth check
-    if (order.userId && order.userId !== req.userId) {
-      throw new AppError('FORBIDDEN', 403, 'Access denied to this order');
+    if (order.userId) {
+      if (order.userId !== req.userId) {
+        throw new AppError('FORBIDDEN', 403, 'Access denied to this order');
+      }
+    } else if (req.userId) {
+      throw new AppError('FORBIDDEN', 403, 'Access denied to guest order');
     }
 
     res.json({ order });
@@ -397,6 +402,14 @@ export async function cancelOrder(req: AuthRequest, res: Response, next: NextFun
           fulfillmentStatus: 'cancelled',
         },
       });
+
+      // If order has applied coupon, restore it to active
+      if (order.appliedCouponId) {
+        await tx.coupon.updateMany({
+          where: { id: order.appliedCouponId, status: 'used' },
+          data: { status: 'active', usedAt: null },
+        });
+      }
     });
 
     res.json({ message: 'Order cancelled successfully' });

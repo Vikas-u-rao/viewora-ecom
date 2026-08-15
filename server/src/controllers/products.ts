@@ -171,20 +171,23 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
       } else if (colSlug === "limited-edition") {
         whereClause.AND.push({
           OR: [
+            { collections: { some: { collection: { slug: colSlug } } } },
+            { editorialCollections: { some: { collection: { slug: colSlug } } } },
             { name: { contains: "gold", mode: "insensitive" } },
             { name: { contains: "edition", mode: "insensitive" } },
             { name: { contains: "luxury", mode: "insensitive" } },
-            { collections: { some: { collection: { slug: colSlug } } } }
+            { name: { contains: "aviator", mode: "insensitive" } },
+            { name: { contains: "titanium", mode: "insensitive" } },
+            { startingPrice: { gte: 3000 } },
           ],
         });
       } else {
-        whereClause.collections = {
-          some: {
-            collection: {
-              slug: colSlug,
-            },
-          },
-        };
+        whereClause.AND.push({
+          OR: [
+            { collections: { some: { collection: { slug: colSlug } } } },
+            { editorialCollections: { some: { collection: { slug: colSlug } } } },
+          ],
+        });
       }
     }
 
@@ -391,15 +394,8 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
       pages: Math.ceil(total / limitNum),
       brands,
     });
-  } catch (error: any) {
-    console.error("GET PRODUCTS ERROR:", error);
-    res.status(500).json({
-      error: {
-        code: "PRODUCTS_FETCH_ERROR",
-        message: error?.message || String(error),
-        details: error?.stack ? [error.stack] : [],
-      },
-    });
+  } catch (error) {
+    next(error);
   }
 }
 

@@ -63,12 +63,13 @@ export const updateProfileSchema = z.object({
 
 export const addressSchema = z.object({
   label: z.string().trim().optional().nullable(),
-  name: z.string().trim().min(1, 'Name is required'),
+  name: z.string().trim().min(1, 'Full name is required'),
+  phone: z.string().trim().regex(/^\d{10}$/, 'Phone number must be exactly 10 digits'),
   line1: z.string().trim().min(1, 'Address line 1 is required'),
   line2: z.string().trim().optional().nullable(),
   city: z.string().trim().min(1, 'City is required'),
   state: z.string().trim().min(1, 'State is required'),
-  pincode: z.string().trim().min(1, 'Pincode is required'),
+  pincode: z.string().trim().regex(/^\d{6}$/, 'Pincode must be exactly 6 digits'),
   isDefault: z.boolean().optional(),
 });
 

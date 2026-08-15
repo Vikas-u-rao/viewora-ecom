@@ -20,9 +20,16 @@ export async function listAllOrders(req: AuthRequest, res: Response, next: NextF
     const page = Math.max(1, parseInt(String(req.query.page || '1'), 10));
     const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit || '50'), 10)));
     const skip = (page - 1) * limit;
+    const paymentStatus = req.query.paymentStatus as string;
+
+    const where: Prisma.OrderWhereInput = {};
+    if (paymentStatus) {
+      where.paymentStatus = paymentStatus as any;
+    }
 
     const [orders, total] = await prisma.$transaction([
       prisma.order.findMany({
+        where,
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
@@ -41,7 +48,7 @@ export async function listAllOrders(req: AuthRequest, res: Response, next: NextF
           refunds: true,
         },
       }),
-      prisma.order.count(),
+      prisma.order.count({ where }),
     ]);
 
     res.json({

@@ -4,11 +4,12 @@ import axios from 'axios';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { AuthRequest } from '../middleware/auth';
-import { sendOrderConfirmationEmail } from '../services/email';
+import { sendOrderConfirmationEmail, sendStockConflictAlertEmail } from '../services/email';
 import { logger } from '../lib/logger';
 import { Prisma } from '@prisma/client';
 
 import { merchantId, saltKey, saltIndex, baseUrl, redirectUrl, callbackUrl } from '../lib/phonepe';
+import { getRazorpayClient, razorpayKeyId, razorpayKeySecret } from '../lib/razorpay';
 
 
 // POST /api/v1/payments/initiate
@@ -29,8 +30,12 @@ export async function initiatePayment(req: AuthRequest, res: Response, next: Nex
     }
 
     // Access control
-    if (order.userId && order.userId !== req.userId) {
-      throw new AppError('FORBIDDEN', 403, 'Access denied to this order');
+    if (order.userId) {
+      if (order.userId !== req.userId) {
+        throw new AppError('FORBIDDEN', 403, 'Access denied to this order');
+      }
+    } else if (req.userId) {
+      throw new AppError('FORBIDDEN', 403, 'Access denied to guest order');
     }
 
     if (order.paymentStatus === 'paid') {
@@ -86,14 +91,27 @@ export async function initiatePayment(req: AuthRequest, res: Response, next: Nex
           'Content-Type': 'application/json',
           'X-VERIFY': signature,
         },
+        timeout: 10000,
       }
-    );
+    ).catch((error: any) => {
+      if (error.code === 'ECONNABORTED') {
+        logger.error({ msg: 'PhonePe pay API call timed out', orderId: order.id });
+      } else {
+        logger.error({ msg: 'PhonePe pay API call failed', error: error.message, orderId: order.id });
+      }
+      throw error;
+    });
 
     if (response.data && response.data.success) {
       const payUrl = response.data.data.instrumentResponse.redirectInfo.url;
       res.json({ success: true, redirectUrl: payUrl });
     } else {
-      throw new AppError('BAD_GATEWAY', 502, 'PhonePe initiation failed', response.data);
+      throw new AppError(
+        'BAD_GATEWAY',
+        502,
+        'PhonePe initiation failed',
+        [{ message: 'Payment gateway initiation failed. Please try again.' }]
+      );
     }
   } catch (error: any) {
     logger.error({ msg: 'Payment initiation error', error: error.message, details: error.response?.data });
@@ -192,9 +210,11 @@ export async function paymentCallback(req: Request, res: Response, next: NextFun
         where: { id: payment.id },
         data: {
           status: newStatus,
-          phonepeTransactionId: payload.data?.transactionId || null,
+          gatewayTransactionId: payload.data?.transactionId || null,
+          provider: 'phonepe',
         },
       });
+
 
       // Update Order Status
       await tx.order.update({
@@ -236,71 +256,7 @@ export async function paymentCallback(req: Request, res: Response, next: NextFun
 
       // Handle successful payment business rules (Coupon/Referral/etc.)
       if (isSuccess) {
-
-        // B. Generate 10% subtotal coupon if order subtotal >= 5000
-        if (payment.order.subtotal.greaterThanOrEqualTo(5000)) {
-          const couponValue = payment.order.subtotal.mul(0.10);
-          const couponCode = `VW-CPN-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
-          const expiresAt = new Date();
-          expiresAt.setDate(expiresAt.getDate() + 90);
-
-          await tx.coupon.create({
-            data: {
-              code: couponCode,
-              value: couponValue,
-              userId: payment.order.userId,
-              guestEmail: payment.order.guestEmail,
-              guestPhone: payment.order.guestPhone,
-              status: 'active',
-              expiresAt,
-              sourceOrderId: payment.orderId,
-            },
-          });
-        }
-
-        // C. Handle referrals for first-time paid users
-        if (payment.order.userId) {
-          const paidOrdersCount = await tx.order.count({
-            where: {
-              userId: payment.order.userId,
-              paymentStatus: 'paid',
-              id: { not: payment.orderId },
-            },
-          });
-
-          if (paidOrdersCount === 0) {
-            const referral = await tx.referral.findFirst({
-              where: {
-                referredUserId: payment.order.userId,
-                status: 'pending',
-              },
-            });
-
-            if (referral) {
-              const referrerCouponCode = `VW-REF-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
-              const expiresAt = new Date();
-              expiresAt.setDate(expiresAt.getDate() + 90);
-
-              const referrerCoupon = await tx.coupon.create({
-                data: {
-                  code: referrerCouponCode,
-                  value: new Prisma.Decimal(500),
-                  userId: referral.referrerId,
-                  status: 'active',
-                  expiresAt,
-                },
-              });
-
-              await tx.referral.update({
-                where: { id: referral.id },
-                data: {
-                  status: 'qualified',
-                  generatedCouponId: referrerCoupon.id,
-                },
-              });
-            }
-          }
-        }
+        await applyPostPaymentRewards(tx, payment.order);
       }
 
       // Mark callback as processed
@@ -345,8 +301,12 @@ export async function getPaymentStatus(req: AuthRequest, res: Response, next: Ne
     }
 
     // Access checks
-    if (order.userId && order.userId !== req.userId) {
-      throw new AppError('FORBIDDEN', 403, 'Access denied to this order');
+    if (order.userId) {
+      if (order.userId !== req.userId) {
+        throw new AppError('FORBIDDEN', 403, 'Access denied to this order');
+      }
+    } else if (req.userId) {
+      throw new AppError('FORBIDDEN', 403, 'Access denied to guest order');
     }
 
     // If order paid/failed, return immediately
@@ -370,6 +330,14 @@ export async function getPaymentStatus(req: AuthRequest, res: Response, next: Ne
             'X-VERIFY': signature,
             'X-MERCHANT-ID': merchantId,
           },
+          timeout: 10000,
+        }).catch((error: any) => {
+          if (error.code === 'ECONNABORTED') {
+            logger.error({ msg: 'PhonePe status API call timed out', orderId: order.id });
+          } else {
+            logger.error({ msg: 'PhonePe status API call failed', error: error.message, orderId: order.id });
+          }
+          throw error;
         });
 
         if (response.data && response.data.success) {
@@ -384,9 +352,10 @@ export async function getPaymentStatus(req: AuthRequest, res: Response, next: Ne
                 where: { id: order.payment!.id },
                 data: {
                   status: newStatus,
-                  phonepeTransactionId: response.data.data?.transactionId || null,
+                  gatewayTransactionId: response.data.data?.transactionId || null,
                 },
               });
+
 
               await tx.order.update({
                 where: { id: order.id },
@@ -416,6 +385,15 @@ export async function getPaymentStatus(req: AuthRequest, res: Response, next: Ne
                     },
                   });
                 }
+              }
+
+              if (isSuccess) {
+                await applyPostPaymentRewards(tx, order);
+              } else if (order.appliedCouponId) {
+                await tx.coupon.updateMany({
+                  where: { id: order.appliedCouponId, status: 'used' },
+                  data: { status: 'active', usedAt: null },
+                });
               }
             });
 
@@ -457,3 +435,641 @@ export async function getPaymentStatus(req: AuthRequest, res: Response, next: Ne
     next(error);
   }
 }
+
+// POST /api/v1/payments/razorpay/create-order
+export async function createRazorpayOrder(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const { orderId } = req.body;
+
+    if (!orderId) {
+      throw new AppError('VALIDATION_ERROR', 400, 'Order ID is required');
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new AppError('NOT_FOUND', 404, 'Order not found');
+    }
+
+    // Access control
+    if (order.userId) {
+      if (order.userId !== req.userId) {
+        throw new AppError('FORBIDDEN', 403, 'Access denied to this order');
+      }
+    } else if (req.userId) {
+      throw new AppError('FORBIDDEN', 403, 'Access denied to guest order');
+    }
+
+    if (order.paymentStatus === 'paid') {
+      throw new AppError('BAD_REQUEST', 400, 'Order is already paid');
+    }
+
+    // Amount in paise (paise = INR * 100)
+    const amountInPaise = Math.round(Number(order.finalPayableAmount) * 100);
+
+    const razorpay = getRazorpayClient();
+    const receipt = `vw_rcpt_${order.id.replace(/-/g, '').slice(0, 14)}`;
+
+    logger.info({ msg: 'Creating Razorpay order', orderId: order.id, amountInPaise });
+
+    const razorpayOrder = await razorpay.orders.create({
+      amount: amountInPaise,
+      currency: 'INR',
+      receipt,
+      notes: {
+        orderId: order.id,
+        userId: order.userId || 'guest',
+      },
+    });
+
+    // Create or update payment record
+    await prisma.payment.upsert({
+      where: { orderId: order.id },
+      update: {
+        merchantTransactionId: razorpayOrder.id,
+        amount: order.finalPayableAmount,
+        status: 'initiated',
+        provider: 'razorpay',
+      },
+      create: {
+        orderId: order.id,
+        merchantTransactionId: razorpayOrder.id,
+        amount: order.finalPayableAmount,
+        status: 'initiated',
+        provider: 'razorpay',
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      orderId: order.id,
+      razorpayOrderId: razorpayOrder.id,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      keyId: process.env.RAZORPAY_KEY_ID || razorpayKeyId,
+    });
+  } catch (error: any) {
+    logger.error({ msg: 'Razorpay order creation error', error: error.message, details: error.error || error.response?.data });
+    next(error);
+  }
+}
+
+// POST /api/v1/payments/razorpay/verify
+// Shared reward/referral logic (Fix 6)
+export async function applyPostPaymentRewards(
+  tx: Prisma.TransactionClient,
+  order: {
+    id: string;
+    userId: string | null;
+    guestEmail: string | null;
+    guestPhone: string | null;
+    subtotal: Prisma.Decimal;
+  }
+) {
+  // A. Generate 10% subtotal coupon if order subtotal >= 5000
+  if (order.subtotal.greaterThanOrEqualTo(5000)) {
+    const couponValue = order.subtotal.mul(0.10);
+    const couponCode = `VW-CPN-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 90);
+
+    try {
+      await tx.coupon.create({
+        data: {
+          code: couponCode,
+          value: couponValue,
+          userId: order.userId,
+          guestEmail: order.guestEmail,
+          guestPhone: order.guestPhone,
+          status: 'active',
+          expiresAt,
+          sourceOrderId: order.id,
+        },
+      });
+    } catch (err: any) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+        logger.info({ msg: 'Reward coupon already exists for order', orderId: order.id });
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  // B. Handle referrals for first-time paid users
+  if (order.userId) {
+    const paidOrdersCount = await tx.order.count({
+      where: {
+        userId: order.userId,
+        paymentStatus: 'paid',
+        id: { not: order.id },
+      },
+    });
+
+    if (paidOrdersCount === 0) {
+      const referral = await tx.referral.findFirst({
+        where: {
+          referredUserId: order.userId,
+          status: 'pending',
+        },
+      });
+
+      if (referral) {
+        const referrerCouponCode = `VW-REF-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 90);
+
+        const referrerCoupon = await tx.coupon.create({
+          data: {
+            code: referrerCouponCode,
+            value: new Prisma.Decimal(500),
+            userId: referral.referrerId,
+            status: 'active',
+            expiresAt,
+          },
+        });
+
+        await tx.referral.update({
+          where: { id: referral.id },
+          data: {
+            status: 'qualified',
+            generatedCouponId: referrerCoupon.id,
+          },
+        });
+      }
+    }
+  }
+}
+
+// Shared finalization logic for Razorpay transactions (Fix 1)
+export async function finalizeRazorpayPayment(
+  orderId: string,
+  rzpOrderId: string,
+  rzpPaymentId: string,
+  isSuccess: boolean
+) {
+  return await prisma.$transaction(async (tx) => {
+    // 1. Lock the order row to prevent concurrency race conditions
+    const lockedOrders: any = await tx.$queryRaw`
+      SELECT id, payment_status AS "paymentStatus" FROM orders WHERE id = ${orderId} FOR UPDATE
+    `;
+    const lockedOrder = lockedOrders[0];
+    if (!lockedOrder) {
+      throw new AppError('NOT_FOUND', 404, 'Order not found');
+    }
+
+    // Double check status inside transaction
+    if (lockedOrder.paymentStatus === 'paid' || lockedOrder.paymentStatus === 'paid_stock_conflict') {
+      logger.info({ msg: 'Order already paid, skipping finalization', orderId });
+      return { success: true, alreadyProcessed: true, isStockConflict: false, order: null };
+    }
+
+    // 2. Fetch full order details
+    const order = await tx.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: {
+          include: {
+            variant: {
+              include: { product: true },
+            },
+          },
+        },
+        reservations: true,
+        payment: true,
+      },
+    });
+
+    if (!order) {
+      throw new AppError('NOT_FOUND', 404, 'Order not found');
+    }
+
+    const newStatus = isSuccess ? 'success' : 'failed';
+    const newPaymentStatus = isSuccess ? 'paid' : 'failed';
+
+    // Update or create Payment record
+    await tx.payment.upsert({
+      where: { orderId: order.id },
+      update: {
+        merchantTransactionId: rzpOrderId,
+        gatewayTransactionId: rzpPaymentId,
+        provider: 'razorpay',
+        status: newStatus,
+      },
+      create: {
+        orderId: order.id,
+        merchantTransactionId: rzpOrderId,
+        gatewayTransactionId: rzpPaymentId,
+        provider: 'razorpay',
+        amount: order.finalPayableAmount,
+        status: newStatus,
+      },
+    });
+
+    let isStockConflict = false;
+
+    if (isSuccess) {
+      // Stock Reservation & Late Payment handling
+      const activeReservations = order.reservations.filter((r) => r.status === 'active');
+      const hasAllActiveReservations =
+        activeReservations.length > 0 && activeReservations.length === order.items.length;
+
+      if (hasAllActiveReservations) {
+        // Standard flow: customer completed payment within 10 minutes
+        for (const reservation of activeReservations) {
+          await tx.stockReservation.update({
+            where: { id: reservation.id },
+            data: {
+              status: 'fulfilled',
+            },
+          });
+        }
+      } else {
+        // Late payment edge case: reservation expired & released by cleanup job
+        logger.warn({
+          msg: 'Late Razorpay payment received after reservation timeout. Verifying current inventory stock.',
+          orderId: order.id,
+          rzpPaymentId,
+        });
+
+        // Re-verify current variant stock availability
+        for (const item of order.items) {
+          const currentVariant = await tx.productVariant.findUnique({
+            where: { id: item.variantId },
+          });
+
+          if (!currentVariant || currentVariant.stock < item.quantity) {
+            isStockConflict = true;
+            break;
+          }
+        }
+
+        if (isStockConflict) {
+          logger.error({
+            msg: 'CRITICAL: Stock conflict detected on late Razorpay payment. Inventory already claimed by other shoppers.',
+            orderId: order.id,
+            rzpPaymentId,
+          });
+        } else {
+          // Re-claim inventory stock safely
+          for (const item of order.items) {
+            await tx.productVariant.update({
+              where: { id: item.variantId },
+              data: {
+                stock: { decrement: item.quantity },
+              },
+            });
+
+            await tx.stockReservation.updateMany({
+              where: { orderId: order.id, variantId: item.variantId },
+              data: { status: 'fulfilled' },
+            });
+          }
+        }
+      }
+
+      // Update Order payment status
+      if (isStockConflict) {
+        await tx.order.update({
+          where: { id: order.id },
+          data: {
+            paymentStatus: 'paid_stock_conflict',
+            fulfillmentStatus: 'cancelled',
+          },
+        });
+      } else {
+        await tx.order.update({
+          where: { id: order.id },
+          data: {
+            paymentStatus: 'paid',
+            fulfillmentStatus: 'unfulfilled',
+          },
+        });
+
+        // Generate rewards
+        await applyPostPaymentRewards(tx, order);
+      }
+    } else {
+      // Payment failed
+      await tx.order.update({
+        where: { id: order.id },
+        data: {
+          paymentStatus: 'failed',
+          fulfillmentStatus: 'cancelled',
+        },
+      });
+
+      // Stock Reservation handling for failure
+      for (const reservation of order.reservations) {
+        if (reservation.status === 'active') {
+          await tx.stockReservation.update({
+            where: { id: reservation.id },
+            data: {
+              status: 'released',
+            },
+          });
+
+          await tx.productVariant.update({
+            where: { id: reservation.variantId },
+            data: {
+              stock: {
+                increment: reservation.quantity,
+              },
+            },
+          });
+        }
+      }
+
+      // Restore reserved coupon back to active
+      if (order.appliedCouponId) {
+        await tx.coupon.updateMany({
+          where: { id: order.appliedCouponId, status: 'used' },
+          data: { status: 'active', usedAt: null },
+        });
+      }
+    }
+
+    return { success: true, alreadyProcessed: false, isStockConflict, order };
+  });
+}
+
+// POST /api/v1/payments/razorpay/verify
+export async function verifyRazorpayPayment(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const {
+      orderId,
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      razorpayOrderId,
+      razorpayPaymentId,
+      razorpaySignature,
+    } = req.body;
+
+    const rzpOrderId = razorpay_order_id || razorpayOrderId;
+    const rzpPaymentId = razorpay_payment_id || razorpayPaymentId;
+    const rzpSignature = razorpay_signature || razorpaySignature;
+
+    if (!orderId || !rzpOrderId || !rzpPaymentId || !rzpSignature) {
+      throw new AppError(
+        'VALIDATION_ERROR',
+        400,
+        'Missing required payment verification details (orderId, razorpay_order_id, razorpay_payment_id, razorpay_signature)'
+      );
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        payment: true,
+      },
+    });
+
+    if (!order) {
+      throw new AppError('NOT_FOUND', 404, 'Order not found');
+    }
+
+    // Access control check
+    if (order.userId) {
+      if (order.userId !== req.userId) {
+        throw new AppError('FORBIDDEN', 403, 'Access denied to this order');
+      }
+    } else if (req.userId) {
+      throw new AppError('FORBIDDEN', 403, 'Access denied to guest order');
+    }
+
+    // Duplicate/Idempotency check
+    if (order.paymentStatus === 'paid' && order.payment?.status === 'success') {
+      logger.info({ msg: 'Payment already processed successfully', orderId: order.id, rzpPaymentId });
+      return res.status(200).json({ success: true, message: 'Payment already processed', orderId: order.id });
+    }
+
+    // Compute expected HMAC-SHA256 signature
+    const secret = process.env.RAZORPAY_KEY_SECRET || razorpayKeySecret;
+    if (!secret) {
+      throw new AppError('INTERNAL_ERROR', 500, 'Razorpay secret key not configured');
+    }
+
+    const payload = `${rzpOrderId}|${rzpPaymentId}`;
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(payload)
+      .digest('hex');
+
+    const expectedBuffer = Buffer.from(expectedSignature, 'utf8');
+    const receivedBuffer = Buffer.from(String(rzpSignature), 'utf8');
+
+    // Constant-time signature comparison to prevent timing attacks
+    const isSignatureValid =
+      expectedBuffer.length === receivedBuffer.length &&
+      crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
+
+    // Audit log callback / verification attempt unconditionally
+    const callbackLog = await prisma.paymentCallbackLog.create({
+      data: {
+        merchantTransactionId: rzpOrderId,
+        rawPayload: {
+          provider: 'razorpay',
+          orderId,
+          razorpay_order_id: rzpOrderId,
+          razorpay_payment_id: rzpPaymentId,
+          razorpay_signature: rzpSignature,
+        },
+        checksumValid: isSignatureValid,
+        processed: false,
+      },
+    });
+
+    if (!isSignatureValid) {
+      logger.error({
+        msg: 'Razorpay signature verification failed (tampered or invalid)',
+        orderId: order.id,
+        rzpOrderId,
+        rzpPaymentId,
+        callbackLogId: callbackLog.id,
+      });
+      throw new AppError('BAD_REQUEST', 400, 'Invalid payment signature');
+    }
+
+    const result = await finalizeRazorpayPayment(order.id, rzpOrderId, rzpPaymentId, true);
+
+    // Mark callback log as processed
+    await prisma.paymentCallbackLog.update({
+      where: { id: callbackLog.id },
+      data: { processed: true },
+    });
+
+    if (result.alreadyProcessed) {
+      return res.status(200).json({ success: true, message: 'Payment already processed', orderId: order.id });
+    }
+
+    // Send confirmation email asynchronously on success (if no stock conflict)
+    if (!result.isStockConflict && result.order) {
+      const customerEmail = result.order.guestEmail || (await prisma.user.findUnique({
+        where: { id: result.order.userId || '' },
+      }))?.email;
+
+      if (customerEmail) {
+        sendOrderConfirmationEmail(customerEmail, result.order).catch((err: any) => {
+          logger.error({ msg: 'Background email sending error (Razorpay)', err });
+        });
+      }
+    }
+
+    if (result.isStockConflict && result.order) {
+      // Fire internal alert for late payment stock conflict (Fix 3)
+      const adminEmail = process.env.ADMIN_ALERT_EMAIL || 'admin@viewora.in';
+      const customerEmail = result.order.guestEmail || (result.order.userId ? (await prisma.user.findUnique({
+        where: { id: result.order.userId },
+      }))?.email : null);
+      const contactInfo = result.order.userId
+        ? `Registered User: ${result.order.userId} (Email: ${customerEmail || 'unknown'})`
+        : `Guest User (Email: ${result.order.guestEmail || 'unknown'}, Phone: ${result.order.guestPhone || 'unknown'})`;
+
+      sendStockConflictAlertEmail(adminEmail, result.order.id, Number(result.order.finalPayableAmount), contactInfo).catch((err: any) => {
+        logger.error({ msg: 'Failed to send admin stock conflict alert email', err, orderId: result.order!.id });
+      });
+
+      return res.status(200).json({
+        success: true,
+        warning: 'STOCK_CONFLICT',
+        message: 'Payment received but inventory was released due to checkout timeout. Support team will contact you for resolution/refund.',
+        orderId: order.id,
+      });
+    }
+
+    logger.info({ msg: 'Razorpay payment verified and order marked paid', orderId: order.id, rzpPaymentId });
+    res.status(200).json({ success: true, message: 'Payment verified successfully', orderId: order.id });
+  } catch (error: any) {
+    logger.error({ msg: 'Razorpay payment verification error', error: error.message });
+    next(error);
+  }
+}
+
+// POST /api/v1/payments/razorpay/webhook (Fix 1)
+export async function razorpayWebhookHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    const receivedSignature = req.headers['x-razorpay-signature'] as string;
+    if (!receivedSignature) {
+      throw new AppError('BAD_REQUEST', 400, 'Missing X-Razorpay-Signature header');
+    }
+
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      throw new AppError('INTERNAL_ERROR', 500, 'Razorpay webhook secret not configured');
+    }
+
+    // Verify raw body signature
+    const rawBody = req.body;
+    if (!Buffer.isBuffer(rawBody)) {
+      throw new AppError('INTERNAL_ERROR', 500, 'Request body is not a raw buffer');
+    }
+
+    const expectedSignature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(rawBody)
+      .digest('hex');
+
+    const expectedBuffer = Buffer.from(expectedSignature, 'utf8');
+    const receivedBuffer = Buffer.from(receivedSignature, 'utf8');
+
+    const isSignatureValid =
+      expectedBuffer.length === receivedBuffer.length &&
+      crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
+
+    // Parse payload
+    const bodyString = rawBody.toString('utf8');
+    const event = JSON.parse(bodyString);
+
+    const rzpOrderId = event.payload?.payment?.entity?.order_id;
+    const rzpPaymentId = event.payload?.payment?.entity?.id;
+
+    // Audit log webhook unconditionally
+    const callbackLog = await prisma.paymentCallbackLog.create({
+      data: {
+        merchantTransactionId: rzpOrderId || 'UNKNOWN',
+        rawPayload: event,
+        checksumValid: isSignatureValid,
+        processed: false,
+      },
+    });
+
+    if (!isSignatureValid) {
+      logger.error({
+        msg: 'Razorpay webhook signature verification failed',
+        rzpOrderId,
+        rzpPaymentId,
+        callbackLogId: callbackLog.id,
+      });
+      throw new AppError('BAD_REQUEST', 400, 'Invalid payment signature');
+    }
+
+    // We only process payment.captured (success) and payment.failed (failed) events
+    if (event.event !== 'payment.captured' && event.event !== 'payment.failed') {
+      logger.info({ msg: `Ignoring unhandled Razorpay webhook event: ${event.event}`, rzpOrderId });
+      return res.status(200).json({ success: true, message: 'Event ignored' });
+    }
+
+    if (!rzpOrderId) {
+      throw new AppError('BAD_REQUEST', 400, 'Razorpay Order ID not found in payload');
+    }
+
+    const payment = await prisma.payment.findUnique({
+      where: { merchantTransactionId: rzpOrderId },
+    });
+
+    if (!payment) {
+      logger.error({ msg: 'Payment record not found for Razorpay webhook', rzpOrderId });
+      return res.status(200).json({ success: true, message: 'Transaction not found in our records' });
+    }
+
+    const isSuccess = event.event === 'payment.captured';
+    const result = await finalizeRazorpayPayment(payment.orderId, rzpOrderId, rzpPaymentId, isSuccess);
+
+    // Mark callback log as processed
+    await prisma.paymentCallbackLog.update({
+      where: { id: callbackLog.id },
+      data: { processed: true },
+    });
+
+    if (result.alreadyProcessed) {
+      return res.status(200).json({ success: true, message: 'Already processed' });
+    }
+
+    // Send confirmation email asynchronously on success (if no stock conflict)
+    if (isSuccess && !result.isStockConflict && result.order) {
+      const customerEmail = result.order.guestEmail || (await prisma.user.findUnique({
+        where: { id: result.order.userId || '' },
+      }))?.email;
+
+      if (customerEmail) {
+        sendOrderConfirmationEmail(customerEmail, result.order).catch((err: any) => {
+          logger.error({ msg: 'Background email sending error (Razorpay Webhook)', err });
+        });
+      }
+    }
+
+    if (isSuccess && result.isStockConflict && result.order) {
+      // Fire internal alert for late payment stock conflict (Fix 3)
+      const adminEmail = process.env.ADMIN_ALERT_EMAIL || 'admin@viewora.in';
+      const customerEmail = result.order.guestEmail || (result.order.userId ? (await prisma.user.findUnique({
+        where: { id: result.order.userId },
+      }))?.email : null);
+      const contactInfo = result.order.userId
+        ? `Registered User: ${result.order.userId} (Email: ${customerEmail || 'unknown'})`
+        : `Guest User (Email: ${result.order.guestEmail || 'unknown'}, Phone: ${result.order.guestPhone || 'unknown'})`;
+
+      sendStockConflictAlertEmail(adminEmail, result.order.id, Number(result.order.finalPayableAmount), contactInfo).catch((err: any) => {
+        logger.error({ msg: 'Failed to send admin stock conflict alert email via webhook', err, orderId: result.order!.id });
+      });
+    }
+
+    res.status(200).json({ success: true });
+  } catch (error: any) {
+    logger.error({ msg: 'Razorpay webhook processing error', error: error.message });
+    next(error);
+  }
+}
+
+

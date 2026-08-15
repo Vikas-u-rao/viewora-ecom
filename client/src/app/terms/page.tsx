@@ -29,7 +29,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-white font-serif text-xl mb-3">3. Orders & Payment</h2>
-            <p>By placing an order, you represent that the information you provide is accurate and complete. We accept payments via UPI, credit cards, debit cards, and net banking through our payment partner PhonePe. Your order is confirmed only after successful payment. We reserve the right to cancel orders at our discretion.</p>
+            <p>By placing an order, you represent that the information you provide is accurate and complete. We accept payments via UPI, credit cards, debit cards, and net banking through our payment partner Razorpay. Your order is confirmed only after successful payment. We reserve the right to cancel orders at our discretion.</p>
           </section>
 
           <section>

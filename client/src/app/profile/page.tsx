@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, API_BASE } from '@/context/AuthContext';
 import Header from '@/components/header';
+import AddressFormFields from '@/components/AddressFormFields';
 import {
   User as UserIcon,
   Mail,
@@ -23,10 +24,13 @@ import {
   Bookmark
 } from 'lucide-react';
 
+import { AddressPayload } from '@/services/account';
+
 interface Address {
   id: string;
   label?: string | null;
   name: string;
+  phone?: string | null;
   line1: string;
   line2?: string | null;
   city: string;
@@ -60,9 +64,10 @@ export default function ProfilePage() {
   // Address Modal/Form State
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
-  const [addressForm, setAddressForm] = useState({
+  const [addressForm, setAddressForm] = useState<AddressPayload>({
     label: 'Home',
     name: '',
+    phone: '',
     line1: '',
     line2: '',
     city: '',
@@ -175,10 +180,12 @@ export default function ProfilePage() {
 
   // Open address modal for adding new
   const openAddAddressModal = () => {
+    if (!user) return;
     setEditingAddressId(null);
     setAddressForm({
       label: 'Home',
       name: user.name || '',
+      phone: user.phone || '',
       line1: '',
       line2: '',
       city: '',
@@ -196,6 +203,7 @@ export default function ProfilePage() {
     setAddressForm({
       label: address.label || 'Home',
       name: address.name,
+      phone: address.phone || '',
       line1: address.line1,
       line2: address.line2 || '',
       city: address.city,
@@ -211,14 +219,31 @@ export default function ProfilePage() {
   const handleAddressSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!accessToken) return;
+
+    if (!addressForm.name?.trim() || !addressForm.line1?.trim() || !addressForm.city?.trim() || !addressForm.state?.trim()) {
+      setModalError('Please complete all required address fields.');
+      return;
+    }
+
+    if (!/^\d{10}$/.test((addressForm.phone || '').trim())) {
+      setModalError('Phone number must be exactly 10 digits.');
+      return;
+    }
+
+    if (!/^\d{6}$/.test((addressForm.pincode || '').trim())) {
+      setModalError('Pincode must be exactly 6 digits.');
+      return;
+    }
+
     setIsSubmittingAddress(true);
     setModalError(null);
 
     const payload = {
       label: addressForm.label,
       name: addressForm.name.trim(),
+      phone: (addressForm.phone || '').trim(),
       line1: addressForm.line1.trim(),
-      line2: addressForm.line2.trim() || null,
+      line2: (addressForm.line2 || '').trim() || null,
       city: addressForm.city.trim(),
       state: addressForm.state.trim(),
       pincode: addressForm.pincode.trim(),
@@ -609,93 +634,11 @@ export default function ProfilePage() {
             )}
 
             <form onSubmit={handleAddressSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] tracking-wider text-muted-foreground uppercase mb-1.5">Address Label</label>
-                  <select
-                    value={addressForm.label}
-                    onChange={(e) => setAddressForm({ ...addressForm, label: e.target.value })}
-                    className="w-full bg-input border border-border px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-gold transition-colors rounded-sm"
-                  >
-                    <option value="Home">Home</option>
-                    <option value="Work">Work</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] tracking-wider text-muted-foreground uppercase mb-1.5">Recipient Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={addressForm.name}
-                    onChange={(e) => setAddressForm({ ...addressForm, name: e.target.value })}
-                    placeholder="Recipient's Name"
-                    className="w-full bg-input border border-border px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-gold transition-colors rounded-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] tracking-wider text-muted-foreground uppercase mb-1.5">Address Line 1</label>
-                <input
-                  type="text"
-                  required
-                  value={addressForm.line1}
-                  onChange={(e) => setAddressForm({ ...addressForm, line1: e.target.value })}
-                  placeholder="Street Address, P.O. Box, Company"
-                  className="w-full bg-input border border-border px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-gold transition-colors rounded-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] tracking-wider text-muted-foreground uppercase mb-1.5">Address Line 2 (Optional)</label>
-                <input
-                  type="text"
-                  value={addressForm.line2}
-                  onChange={(e) => setAddressForm({ ...addressForm, line2: e.target.value })}
-                  placeholder="Apartment, Suite, Unit, Building, Floor"
-                  className="w-full bg-input border border-border px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-gold transition-colors rounded-sm"
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-[10px] tracking-wider text-muted-foreground uppercase mb-1.5">City</label>
-                  <input
-                    type="text"
-                    required
-                    value={addressForm.city}
-                    onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })}
-                    placeholder="City"
-                    className="w-full bg-input border border-border px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-gold transition-colors rounded-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] tracking-wider text-muted-foreground uppercase mb-1.5">State</label>
-                  <input
-                    type="text"
-                    required
-                    value={addressForm.state}
-                    onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })}
-                    placeholder="State"
-                    className="w-full bg-input border border-border px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-gold transition-colors rounded-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] tracking-wider text-muted-foreground uppercase mb-1.5">Pincode</label>
-                  <input
-                    type="text"
-                    required
-                    value={addressForm.pincode}
-                    onChange={(e) => setAddressForm({ ...addressForm, pincode: e.target.value })}
-                    placeholder="Pincode"
-                    className="w-full bg-input border border-border px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-gold transition-colors rounded-sm"
-                  />
-                </div>
-              </div>
+              <AddressFormFields
+                form={addressForm}
+                onChange={(updated) => setAddressForm(updated)}
+                disabled={isSubmittingAddress}
+              />
 
               <div className="pt-2">
                 <label className="flex items-center gap-2.5 cursor-pointer">

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { Loader2, Package } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Loader2, Package, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import AccountLayout from "@/components/AccountLayout";
 import { useAuth } from "@/context/AuthContext";
@@ -13,6 +13,7 @@ function money(value: string) {
 }
 
 export default function OrdersPage() {
+  const router = useRouter();
   const { accessToken } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,19 +44,25 @@ export default function OrdersPage() {
                 <th className="py-3">Order Date</th>
                 <th className="py-3">Status</th>
                 <th className="py-3 text-right">Total Amount</th>
+                <th className="py-3 w-10"></th>
               </tr>
             </thead>
             <tbody>
               {orders.map((order) => (
-                <tr key={order.id} className="border-b border-border/70">
-                  <td className="py-4">
-                    <Link href={`/account/orders/${order.id}`} className="font-medium text-gold hover:underline">
-                      {order.id.slice(0, 8).toUpperCase()}
-                    </Link>
+                <tr
+                  key={order.id}
+                  onClick={() => router.push(`/account/orders/${order.id}`)}
+                  className="border-b border-border/70 cursor-pointer hover:bg-gold/10 transition-colors group"
+                >
+                  <td className="py-4 font-medium text-gold group-hover:underline">
+                    {order.id.slice(0, 8).toUpperCase()}
                   </td>
                   <td className="py-4 text-muted-foreground">{new Date(order.createdAt).toLocaleDateString("en-IN")}</td>
                   <td className="py-4 capitalize">{order.fulfillmentStatus.replace("_", " ")}</td>
-                  <td className="py-4 text-right tabular-nums">{money(order.finalPayableAmount)}</td>
+                  <td className="py-4 text-right tabular-nums font-medium text-white">{money(order.finalPayableAmount)}</td>
+                  <td className="py-4 text-right pr-2">
+                    <ChevronRight className="size-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all inline-block" />
+                  </td>
                 </tr>
               ))}
             </tbody>

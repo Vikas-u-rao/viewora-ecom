@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { Edit2, Loader2, MapPin, Plus, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import AccountLayout from "@/components/AccountLayout";
+import AddressFormFields from "@/components/AddressFormFields";
 import { useAuth } from "@/context/AuthContext";
 import { Address, AddressPayload, deleteAddressApi, fetchAddressesApi, saveAddressApi } from "@/services/account";
 
@@ -67,9 +68,19 @@ export default function AccountAddressesPage() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     if (!accessToken) return;
-    const required = [form.name, form.line1, form.city, form.state, form.pincode];
-    if (required.some((value) => !String(value).trim())) {
+
+    if (!form.name.trim() || !form.line1.trim() || !form.city.trim() || !form.state.trim()) {
       toast.error("Please complete all required address fields.");
+      return;
+    }
+
+    if (!/^\d{10}$/.test((form.phone || "").trim())) {
+      toast.error("Phone number must be exactly 10 digits.");
+      return;
+    }
+
+    if (!/^\d{6}$/.test((form.pincode || "").trim())) {
+      toast.error("Pincode must be exactly 6 digits.");
       return;
     }
 
@@ -78,6 +89,7 @@ export default function AccountAddressesPage() {
       await saveAddressApi(accessToken, {
         ...form,
         name: form.name.trim(),
+        phone: (form.phone || "").trim(),
         line1: form.line1.trim(),
         line2: form.line2?.trim() || null,
         city: form.city.trim(),
@@ -114,7 +126,7 @@ export default function AccountAddressesPage() {
 
   return (
     <AccountLayout title="Addresses">
-      <div className="grid gap-8 grid-cols-[1fr_360px]">
+      <div className="grid gap-8 grid-cols-1 lg:grid-cols-[1fr_400px]">
         <div className="space-y-4">
           {loading ? (
             <div className="flex justify-center py-16"><Loader2 className="size-7 animate-spin text-gold" /></div>
@@ -154,26 +166,24 @@ export default function AccountAddressesPage() {
           ))}
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3 border border-border bg-background/40 p-5">
-          <div className="flex items-center justify-between">
+        <form onSubmit={handleSubmit} className="space-y-4 border border-border bg-background/40 p-5 rounded-none">
+          <div className="flex items-center justify-between border-b border-border pb-3">
             <h2 className="font-serif text-xl text-white">{editingId ? "Edit Address" : "Add Address"}</h2>
-            <button type="button" onClick={startAdd} className="text-gold"><Plus className="size-4" /></button>
+            <button type="button" onClick={startAdd} className="text-gold flex items-center gap-1 text-xs"><Plus className="size-4" /> Reset</button>
           </div>
-          {(["label", "name", "phone", "line1", "line2", "city", "state", "pincode"] as const).map((field) => (
-            <input
-              key={field}
-              required={!["label", "line2", "phone"].includes(field)}
-              placeholder={field === "line1" ? "Address line 1" : field === "line2" ? "Address line 2" : field === "phone" ? "Phone number" : field[0].toUpperCase() + field.slice(1)}
-              value={String(form[field] || "")}
-              onChange={(event) => setForm((prev) => ({ ...prev, [field]: event.target.value }))}
-              className="w-full border border-border bg-input px-3 py-2.5 text-sm outline-none focus:border-gold"
-            />
-          ))}
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          
+          <AddressFormFields
+            form={form}
+            onChange={(updated) => setForm(updated)}
+            disabled={saving}
+          />
+
+          <label className="flex items-center gap-2 text-sm text-muted-foreground pt-1">
             <input type="checkbox" checked={form.isDefault} onChange={(event) => setForm((prev) => ({ ...prev, isDefault: event.target.checked }))} />
             Set as default shipping address
           </label>
-          <button disabled={saving} className="flex w-full items-center justify-center gap-2 bg-gold py-3 text-xs font-bold tracking-[0.2em] text-background disabled:opacity-60">
+
+          <button disabled={saving} className="flex w-full items-center justify-center gap-2 bg-gold py-3 text-xs font-bold tracking-[0.2em] text-background disabled:opacity-60 transition-opacity">
             {saving && <Loader2 className="size-4 animate-spin" />}
             {editingId ? "SAVE ADDRESS" : "ADD ADDRESS"}
           </button>

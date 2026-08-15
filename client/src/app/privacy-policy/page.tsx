@@ -29,7 +29,7 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-white font-serif text-xl mb-3">3. Information Sharing</h2>
-            <p>We do not sell or rent your personal information to third parties. We share your information only with: payment processors (PhonePe) to complete transactions; shipping partners to deliver your orders; and service providers who help us operate our website (e.g., email service providers).</p>
+            <p>We do not sell or rent your personal information to third parties. We share your information only with: payment processors (Razorpay) to complete transactions; shipping partners to deliver your orders; and service providers who help us operate our website (e.g., email service providers).</p>
           </section>
 
           <section>

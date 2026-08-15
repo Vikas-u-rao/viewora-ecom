@@ -6,9 +6,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
+
 
 // ── Enums ──────────────────────────────────────────────────────────────────
 
@@ -20,9 +22,11 @@ enum Role {
 enum PaymentStatus {
   pending
   paid
+  paid_stock_conflict
   failed
   refunded
 }
+
 
 enum FulfillmentStatus {
   unfulfilled
@@ -359,7 +363,8 @@ model Payment {
   id                    String          @id @default(uuid())
   orderId               String          @unique @map("order_id")
   merchantTransactionId String          @unique @map("merchant_transaction_id")
-  phonepeTransactionId  String?         @unique @map("phonepe_transaction_id")
+  gatewayTransactionId  String?         @unique @map("gateway_transaction_id")
+  provider              String          @default("phonepe")
   status                PaymentTxStatus @default(initiated)
   amount                Decimal         @db.Decimal(10, 2)
   createdAt             DateTime        @default(now()) @map("created_at")
@@ -371,6 +376,7 @@ model Payment {
   @@index([merchantTransactionId])
   @@map("payments")
 }
+
 
 model PaymentCallbackLog {
   id                    String   @id @default(uuid())

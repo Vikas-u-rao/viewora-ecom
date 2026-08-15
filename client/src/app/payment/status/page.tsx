@@ -19,13 +19,24 @@ function PaymentStatusContent() {
   const { refreshCart } = useCart();
 
   const orderId = searchParams.get("orderId");
+  const initialStatusParam = searchParams.get("status");
 
-  const [status, setStatus] = useState<StatusState>("loading");
+  const [status, setStatus] = useState<StatusState>(() => {
+    if (initialStatusParam === "cancelled" || initialStatusParam === "failed") {
+      return "failed";
+    }
+    return "loading";
+  });
   const [attempts, setAttempts] = useState(0);
   const maxAttempts = 10;
 
   const checkStatus = useCallback(async () => {
     if (!orderId) {
+      setStatus("failed");
+      return;
+    }
+
+    if (initialStatusParam === "cancelled" || initialStatusParam === "failed") {
       setStatus("failed");
       return;
     }
@@ -50,7 +61,7 @@ function PaymentStatusContent() {
     } catch {
       setStatus("pending");
     }
-  }, [orderId, accessToken, refreshCart, router]);
+  }, [orderId, initialStatusParam, accessToken, refreshCart, router]);
 
   useEffect(() => {
     checkStatus();
@@ -80,7 +91,7 @@ function PaymentStatusContent() {
             <p className="text-muted-foreground">
               {status === "pending" && attempts > 0
                 ? `Still checking… (attempt ${attempts}/${maxAttempts})`
-                : "Please wait while we confirm your payment with PhonePe."}
+                : "Please wait while we confirm your payment status."}
             </p>
             {status === "pending" && attempts >= maxAttempts && (
               <div className="mt-6 space-y-4">
@@ -111,22 +122,22 @@ function PaymentStatusContent() {
         {status === "failed" && (
           <div className="space-y-6">
             <XCircle className="mx-auto size-16 text-destructive" />
-            <h1 className="font-serif text-3xl text-white">Payment Failed</h1>
+            <h1 className="font-serif text-3xl text-white">Payment Incomplete</h1>
             <p className="text-muted-foreground">
-              Your payment could not be completed. Your order has been held for 10 minutes — try again before it expires.
+              Your payment was cancelled or could not be completed. Your order reservation is held for 10 minutes.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
               {orderId && (
                 <Link
-                  href={`/order-confirmation/${orderId}`}
-                  className="border border-gold px-6 py-3 text-xs font-bold tracking-[0.2em] text-gold hover:bg-gold hover:text-background transition-colors"
+                  href={`/account/orders/${orderId}`}
+                  className="bg-gold px-6 py-3 text-xs font-bold tracking-[0.2em] text-background hover:bg-gold-soft transition-colors uppercase"
                 >
-                  VIEW ORDER
+                  VIEW ORDER DETAILS
                 </Link>
               )}
               <Link
                 href="/shop"
-                className="bg-gold px-6 py-3 text-xs font-bold tracking-[0.2em] text-background hover:opacity-90 transition-opacity"
+                className="border border-gold px-6 py-3 text-xs font-bold tracking-[0.2em] text-gold hover:bg-gold hover:text-background transition-colors uppercase"
               >
                 CONTINUE SHOPPING
               </Link>
