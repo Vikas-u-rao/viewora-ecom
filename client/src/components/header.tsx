@@ -84,15 +84,21 @@ export default function Header() {
   const { wishlistCount } = useWishlist();
   const router = useRouter();
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchVal, setSearchVal] = useState("");
   const [searchResults, setSearchResults] = useState<ApiProduct[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const isActiveLink = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   };
+
 
   useEffect(() => {
     if (!searchVal.trim()) {
@@ -194,7 +200,7 @@ export default function Header() {
                           </Link>
                         ))}
                       </div>
-                      
+
                       <button
                         onClick={() => {
                           router.push(`/shop?search=${encodeURIComponent(searchVal.trim())}`);
@@ -211,8 +217,8 @@ export default function Header() {
                 </div>
               )}
             </div>
-            <button 
-              onClick={() => { setShowSearch(false); setSearchVal(""); }} 
+            <button
+              onClick={() => { setShowSearch(false); setSearchVal(""); }}
               className="text-[#FAD6E3] hover:text-gold transition-colors cursor-pointer self-start mt-1.5"
               type="button"
             >
@@ -269,10 +275,10 @@ export default function Header() {
                   ))}
                   <SheetClose asChild>
                     <Link
-                      href={user ? "/account/profile" : "/login"}
+                      href={mounted && user ? "/account/profile" : "/login"}
                       className="text-sm sm:text-base tracking-[0.15em] font-semibold text-[#FAD6E3] hover:text-gold transition-colors py-3 border-b border-[#2E2820]"
                     >
-                      {user ? "PROFILE" : "LOGIN"}
+                      {mounted && user ? "PROFILE" : "LOGIN"}
                     </Link>
                   </SheetClose>
                 </nav>
@@ -423,9 +429,9 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-2.5 sm:gap-4">
-          <button 
-            onClick={() => setShowSearch(true)} 
-            className="hover:text-gold text-[#FAD6E3] transition-colors cursor-pointer flex items-center justify-center p-1" 
+          <button
+            onClick={() => setShowSearch(true)}
+            className="hover:text-gold text-[#FAD6E3] transition-colors cursor-pointer flex items-center justify-center p-1"
             aria-label="Open Search"
           >
             <Search className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.5} />

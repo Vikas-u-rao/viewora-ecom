@@ -30,6 +30,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 const STORAGE_KEY_USER = 'viewora_user';
+const STORAGE_KEY_TOKEN = 'viewora_access_token';
 
 function getStoredUser(): User | null {
   if (typeof window === 'undefined') return null;
@@ -42,8 +43,17 @@ function getStoredUser(): User | null {
   }
 }
 
+function getStoredToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return localStorage.getItem(STORAGE_KEY_TOKEN);
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(getStoredUser);
+  const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -52,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(null);
     if (typeof window !== 'undefined') {
       localStorage.removeItem(STORAGE_KEY_USER);
+      localStorage.removeItem(STORAGE_KEY_TOKEN);
     }
   }, []);
 
@@ -60,12 +71,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(token);
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(u));
+      localStorage.setItem(STORAGE_KEY_TOKEN, token);
     }
   }, []);
 
-  // Validate session on mount via httpOnly cookie refresh
+  // Validate session on mount via httpOnly cookie refresh or stored token
   useEffect(() => {
     let cancelled = false;
+    const stored = getStoredUser();
+    const storedToken = getStoredToken();
+    if (stored) {
+      setUser(stored);
+    }
+    if (storedToken) {
+      setAccessToken(storedToken);
+    }
 
     const tryRefresh = async () => {
       try {
@@ -78,6 +98,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (res.ok) {
           const data = await res.json();
           setAccessToken(data.accessToken);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(STORAGE_KEY_TOKEN, data.accessToken);
+          }
 
           const profileRes = await fetch(`${baseUrl}/users/me`, {
             headers: { Authorization: `Bearer ${data.accessToken}` },
@@ -89,15 +112,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const profileUser = profileData.user || profileData;
             setUser(profileUser);
             localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(profileUser));
-          } else {
-            clearAuth();
           }
-        } else {
-          // Session expired or non-logged in visitor: clear stale session quietly
+        } else if (!storedToken) {
           clearAuth();
         }
       } catch {
-        clearAuth();
+        if (!storedToken) clearAuth();
       } finally {
         if (!cancelled) setIsLoading(false);
       }

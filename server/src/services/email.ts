@@ -298,3 +298,57 @@ function logSubscriptionToConsole(email: string) {
     '='.repeat(60) + '\n'
   );
 }
+
+export async function sendStockConflictAlertEmail(
+  adminEmail: string,
+  orderId: string,
+  amount: number,
+  contactInfo: string
+) {
+  const subject = `CRITICAL ALERT: Stock Conflict on Paid Order #${orderId.slice(0, 8).toUpperCase()}`;
+
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ff4d4f; border-radius: 8px; background-color: #ffffff; color: #333333;">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h1 style="color: #ff4d4f; margin: 0; font-family: 'Playfair Display', Georgia, serif;">VIEWORA ALERT</h1>
+        <p style="font-size: 12px; letter-spacing: 2px; color: #888888; margin: 5px 0 0 0; text-transform: uppercase;">Stock Conflict Detected</p>
+      </div>
+      <hr style="border: 0; border-top: 1px solid #f0f0f0; margin-bottom: 20px;">
+      <h2 style="font-size: 20px; color: #d32f2f; margin-top: 0;">CRITICAL: Late Payment Stock Conflict</h2>
+      <p style="font-size: 15px; line-height: 1.5; color: #555555;">An order has been paid but the inventory reservation was already released and stock is unavailable.</p>
+      
+      <h3>Order Details</h3>
+      <p><strong>Order ID:</strong> ${orderId}</p>
+      <p><strong>Amount Captured:</strong> ₹${Number(amount).toLocaleString('en-IN')}</p>
+      <p><strong>Customer Contact:</strong> ${contactInfo}</p>
+      
+      <p style="font-size: 15px; line-height: 1.5; color: #555555;">Please process a manual refund or contact the customer to resolve the stock shortage immediately.</p>
+      <hr style="border: 0; border-top: 1px solid #f0f0f0; margin: 20px 0;">
+      <p style="font-size: 12px; color: #999999; text-align: center; margin: 0;">&copy; 2026 VIEWORA. Admin Alert System.</p>
+    </div>
+  `;
+
+  if (transporter) {
+    try {
+      await transporter.sendMail({
+        from: `"VIEWORA Alerts" <${from}>`,
+        to: sanitizeHeaderValue(adminEmail),
+        subject,
+        html: htmlContent,
+      });
+      logger.info({ msg: `Stock conflict alert email sent to ${adminEmail}`, orderId });
+    } catch (error) {
+      logger.error({ msg: `Failed to send stock conflict alert email to ${adminEmail}`, error, orderId });
+      logStockConflictToConsole(adminEmail, orderId, amount, contactInfo);
+    }
+  } else {
+    logStockConflictToConsole(adminEmail, orderId, amount, contactInfo);
+  }
+}
+
+function logStockConflictToConsole(adminEmail: string, orderId: string, amount: number, contactInfo: string) {
+  logger.info('\n' + '='.repeat(60) + 
+    `\n[DEVELOPMENT FALLBACK] STOCK CONFLICT ALERT FOR ADMIN: ${adminEmail}\nORDER ID: ${orderId}\nAMOUNT: ₹${amount}\nCONTACT: ${contactInfo}\n` + 
+    '='.repeat(60) + '\n'
+  );
+}

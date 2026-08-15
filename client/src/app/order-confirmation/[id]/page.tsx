@@ -28,7 +28,7 @@ function PaymentStatusBadge({ status }: { status: string }) {
 export default function OrderConfirmationPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { accessToken } = useAuth();
+  const { accessToken, isLoading: authLoading } = useAuth();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -37,22 +37,25 @@ export default function OrderConfirmationPage() {
   );
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || authLoading) return;
+    setLoading(true);
     fetchOrderApi(id, accessToken)
-      .then((data) => setOrder(data.order))
+      .then((data) => {
+        setOrder(data.order);
+        setFetchError(null);
+      })
       .catch((error: Error) => {
         setFetchError(error.message);
-        toast.error(error.message);
       })
       .finally(() => setLoading(false));
-  }, [accessToken, id]);
+  }, [accessToken, authLoading, id]);
 
-  // Guard: redirect if loading done, no order, and no error (invalid URL access)
+  // Guard: redirect only if loading done, no order, and no error
   useEffect(() => {
-    if (!loading && !order && !fetchError) {
+    if (!loading && !authLoading && !order && !fetchError) {
       router.replace("/");
     }
-  }, [loading, order, fetchError, router]);
+  }, [loading, authLoading, order, fetchError, router]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">

@@ -45,17 +45,6 @@ export default function GlobalError({
           Go Home
         </Link>
       </div>
-      {process.env.NODE_ENV === 'development' && error?.message && (
-        <details className="mt-8 text-left max-w-lg">
-          <summary className="text-xs text-muted-foreground cursor-pointer hover:text-white">
-            Error details (dev only)
-          </summary>
-          <pre className="mt-2 text-xs text-destructive bg-card p-4 rounded overflow-auto border border-border">
-            {error.message}
-            {error.stack && `\n\n${error.stack}`}
-          </pre>
-        </details>
-      )}
     </div>
   );
 }

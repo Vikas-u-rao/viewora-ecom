@@ -46,6 +46,7 @@ export interface Order {
   payment?: {
     status: string;
     merchantTransactionId: string;
+    provider?: string;
   } | null;
   earnedCoupon?: {
     code: string;
@@ -132,4 +133,60 @@ export async function getPaymentStatusApi(orderId: string, token?: string | null
   });
   return parseJson<{ paymentStatus: string; status: string }>(res);
 }
+
+export interface RazorpayOrderResponse {
+  success: boolean;
+  orderId: string;
+  razorpayOrderId: string;
+  amount: number;
+  currency: string;
+  keyId: string;
+}
+
+export async function createRazorpayOrderApi(orderId: string, token?: string | null) {
+  const res = await fetch(`${API_BASE}/payments/razorpay/create-order`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    credentials: "include",
+    body: JSON.stringify({ orderId }),
+  });
+  return parseJson<RazorpayOrderResponse>(res);
+}
+
+export interface VerifyRazorpayPayload {
+  orderId: string;
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+export async function verifyRazorpayPaymentApi(payload: VerifyRazorpayPayload, token?: string | null) {
+  const res = await fetch(`${API_BASE}/payments/razorpay/verify`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+  return parseJson<{ success: boolean; message: string; orderId: string }>(res);
+}
+
+export async function cancelOrderApi(orderId: string, token?: string | null) {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/cancel`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    credentials: "include",
+  });
+  return parseJson<{ success: boolean; message: string }>(res);
+}
+
+
 

@@ -116,6 +116,9 @@ app.use(rateLimit({
   keyGenerator: getClientIp,
 }));
 
+// Support raw body parser for Razorpay webhook (needs to run before express.json())
+app.use('/api/v1/payments/razorpay/webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json());
 import path from 'path';
 
@@ -131,6 +134,7 @@ const authLimiter = rateLimit({
   max: 50,
   validate: { trustProxy: false, xForwardedForHeader: false },
   keyGenerator: getClientIp,
+  skip: (req) => req.originalUrl === '/api/v1/payments/razorpay/webhook',
 });
 
 // Stricter rate limit for order creation (prevents double-clicks & order spam)
@@ -162,7 +166,7 @@ app.use('/api/v1/collections', collectionRoutes);
 app.use('/api/v1/editorial-collections', editorialRoutes);
 app.use('/api/v1/cart', cartRoutes);
 app.use('/api/v1/wishlist', wishlistRoutes);
-app.use('/api/v1/orders', orderLimiter, orderRoutes);
+app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/payments', authLimiter, paymentRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/contact', contactRoutes);
