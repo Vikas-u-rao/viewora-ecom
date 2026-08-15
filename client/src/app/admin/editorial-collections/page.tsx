@@ -72,8 +72,8 @@ export default function AdminEditorialCollectionsPage() {
       }
 
       setAllProducts(prodData.products || []);
-    } catch (err: any) {
-      setError(err.message || "Failed to load data");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load data");
     } finally {
       setLoading(false);
     }
@@ -81,6 +81,7 @@ export default function AdminEditorialCollectionsPage() {
 
   useEffect(() => {
     if (accessToken) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadData();
     }
   }, [accessToken]);
@@ -152,8 +153,8 @@ export default function AdminEditorialCollectionsPage() {
         const errData = await res.json();
         alert(errData.error || "Failed to save collection");
       }
-    } catch (err: any) {
-      alert(err.message || "Failed to save collection");
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to save collection");
     } finally {
       setIsSaving(false);
     }
@@ -173,8 +174,8 @@ export default function AdminEditorialCollectionsPage() {
       } else {
         alert("Failed to delete collection");
       }
-    } catch (err: any) {
-      alert(err.message || "Failed to delete collection");
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to delete collection");
     }
   };
 

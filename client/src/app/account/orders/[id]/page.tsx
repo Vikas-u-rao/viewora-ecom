@@ -15,6 +15,7 @@ import {
   cancelOrderApi,
   Order,
 } from "@/services/orders";
+import type { RazorpayGlobal, RazorpayConstructor, RazorpayPaymentFailedResponse } from "@/lib/razorpay";
 
 export default function AccountOrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -37,8 +38,8 @@ export default function AccountOrderDetailPage() {
     setIsPaying(true);
 
     try {
-      // Ensure Razorpay SDK is loaded
-      if (typeof window !== "undefined" && !(window as any).Razorpay) {
+      const rzpWindow = window as RazorpayGlobal;
+      if (!rzpWindow.Razorpay) {
         await new Promise<boolean>((resolve) => {
           const script = document.createElement("script");
           script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -84,9 +85,9 @@ export default function AccountOrderDetailPage() {
             toast.dismiss("retry-pay");
             toast.success("Payment verified successfully!");
             router.push(`/order-confirmation/${order.id}`);
-          } catch (err: any) {
+          } catch (err: unknown) {
             toast.dismiss("retry-pay");
-            toast.error(err?.message || "Verification failed");
+            toast.error(err instanceof Error ? err.message : "Verification failed");
             setIsPaying(false);
           }
         },
@@ -98,14 +99,14 @@ export default function AccountOrderDetailPage() {
         },
       };
 
-      const rzp = new (window as any).Razorpay(options);
-      rzp.on("payment.failed", (response: any) => {
+      const rzp = new (rzpWindow.Razorpay as RazorpayConstructor)(options);
+      rzp.on("payment.failed", (response: RazorpayPaymentFailedResponse) => {
         setIsPaying(false);
         toast.error(response?.error?.description || "Payment failed.");
       });
       rzp.open();
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to initiate payment");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to initiate payment");
       setIsPaying(false);
     }
   };
@@ -124,8 +125,8 @@ export default function AccountOrderDetailPage() {
       // Refresh order state
       const refreshed = await fetchOrderApi(order.id, accessToken);
       setOrder(refreshed.order);
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to cancel order");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to cancel order");
     } finally {
       setIsCancelling(false);
     }

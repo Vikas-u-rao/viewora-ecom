@@ -81,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const stored = getStoredUser();
     const storedToken = getStoredToken();
     if (stored) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUser(stored);
     }
     if (storedToken) {

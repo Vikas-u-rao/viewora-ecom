@@ -38,6 +38,7 @@ export default function OrderConfirmationPage() {
 
   useEffect(() => {
     if (!id || authLoading) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetchOrderApi(id, accessToken)
       .then((data) => {
