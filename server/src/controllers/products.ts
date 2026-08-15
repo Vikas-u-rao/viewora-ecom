@@ -161,11 +161,22 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
         });
       } else if (colSlug === "optical-frames" || colSlug === "optical") {
         whereClause.AND.push({
-          OR: [
-            { category: { slug: { not: "sunglasses" } } },
-            { name: { contains: "frame", mode: "insensitive" } },
-            { name: { contains: "glasses", mode: "insensitive" } },
-            { collections: { some: { collection: { slug: colSlug } } } }
+          AND: [
+            {
+              OR: [
+                { category: { slug: { in: ["optical-frames", "optical", "eyeglasses", "frames"] } } },
+                { name: { contains: "frame", mode: "insensitive" } },
+                { name: { contains: "eyeglass", mode: "insensitive" } },
+                { collections: { some: { collection: { slug: colSlug } } } }
+              ],
+            },
+            {
+              NOT: [
+                { category: { slug: "sunglasses" } },
+                { name: { contains: "sunglass", mode: "insensitive" } },
+                { description: { contains: "sunglass", mode: "insensitive" } },
+              ],
+            },
           ],
         });
       } else if (colSlug === "limited-edition") {
@@ -203,9 +214,20 @@ export async function getProducts(req: Request, res: Response, next: NextFunctio
         });
       } else if (t === 'optical-frames') {
         whereClause.AND.push({
-          OR: [
-            { category: { slug: 'optical-frames' } },
-            { name: { contains: 'frame', mode: 'insensitive' } },
+          AND: [
+            {
+              OR: [
+                { category: { slug: 'optical-frames' } },
+                { name: { contains: 'frame', mode: 'insensitive' } },
+                { name: { contains: 'eyeglass', mode: 'insensitive' } },
+              ],
+            },
+            {
+              NOT: [
+                { category: { slug: 'sunglasses' } },
+                { name: { contains: 'sunglass', mode: 'insensitive' } },
+              ],
+            },
           ],
         });
       } else if (t === 'reading-glasses') {

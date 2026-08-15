@@ -48,11 +48,11 @@ function LoginContent() {
         credentials: 'include',
         body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        const code = data?.error?.code;
-        const message = data?.error?.message || data?.message || 'Login failed';
+        const code = data?.error?.code || data?.code;
+        const message = data?.error?.message || data?.message || `Login failed (${res.status} ${res.statusText})`;
         
         if (res.status === 403) {
           // Account not verified — redirect to OTP
@@ -73,8 +73,9 @@ function LoginContent() {
           router.push(redirect);
         }
       }, 1000);
-    } catch {
-      setError({ message: 'An unexpected error occurred. Please try again.' });
+    } catch (err: any) {
+      console.error("Login fetch error:", err);
+      setError({ message: err?.message || 'Connection error. Please check your network connection and try again.' });
     } finally {
       setIsLoading(false);
     }
