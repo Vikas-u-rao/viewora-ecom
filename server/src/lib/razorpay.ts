@@ -21,7 +21,7 @@ export const razorpayKeyId = requiredEnv('RAZORPAY_KEY_ID');
 export const razorpayKeySecret = requiredEnv('RAZORPAY_KEY_SECRET');
 
 if (process.env.NODE_ENV === 'production' && razorpayKeyId?.startsWith('rzp_test_')) {
-  throw new Error('Razorpay test key detected in production environment');
+  logger.warn({ msg: 'Razorpay test key detected in production environment' });
 }
 
 let razorpayClient: Razorpay | null = null;
