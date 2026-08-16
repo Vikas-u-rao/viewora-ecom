@@ -57,8 +57,10 @@ if (hasCredentials) {
 /**
  * Sends an OTP to the user's email address.
  * Falls back to logging to console in development environment if credentials are not configured.
+ * Throws in production so a missing/misconfigured SMTP never silently pretends an OTP was sent.
  */
 export async function sendOtpEmail(email: string, otp: string, purpose: 'signup' | 'forgot_password' | 'email_change') {
+  const isProduction = process.env.NODE_ENV === 'production';
   const subject = purpose === 'signup'
     ? 'Verify Your Account - VIEWORA'
     : purpose === 'forgot_password'
@@ -103,10 +105,16 @@ export async function sendOtpEmail(email: string, otp: string, purpose: 'signup'
       logger.info({ msg: `OTP email sent to ${email}`, purpose });
     } catch (error) {
       logger.error({ msg: `Failed to send OTP email to ${email}`, error });
+      if (isProduction) {
+        throw new Error(`SMTP delivery failed for OTP email to ${email}: ${(error as Error)?.message || 'unknown error'}`);
+      }
       // Fallback in case of SMTP failure
       logOtpToConsole(email, otp, purpose);
     }
   } else {
+    if (isProduction) {
+      throw new Error('SMTP email credentials are not configured in production; cannot deliver OTP');
+    }
     logOtpToConsole(email, otp, purpose);
   }
 }

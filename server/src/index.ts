@@ -54,6 +54,9 @@ if (process.env.NODE_ENV === 'production') {
     'JWT_ACCESS_SECRET',
     'JWT_REFRESH_SECRET',
     'DATABASE_URL',
+    'EMAIL_HOST',
+    'EMAIL_USER',
+    'EMAIL_PASS',
   ];
   const missing = requiredSecrets.filter((k) => !process.env[k]);
   if (missing.length > 0) {
